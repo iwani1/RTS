@@ -37,9 +37,15 @@ function sessionCookie(response) {
 }
 
 // 1. Reject bad credentials with a friendly message, not a 500.
+//
+// The failed attempt is made against a throwaway identifier, not the real
+// account. The sign-in throttle counts failures per identifier and locks an
+// account after five tries in fifteen minutes, so a failure aimed at the
+// administrator would lock the administrator out of the very next run — and
+// of the browser session the operator is using.
 {
   const body = new URLSearchParams({
-    email: values.email,
+    email: `failed-probe-${Date.now()}@staffridegh.com`,
     password: "definitely-not-the-password",
     code: values.code,
   });
@@ -50,9 +56,14 @@ function sessionCookie(response) {
   });
   const location = response.headers.get("location") ?? "";
   check(
-    "bad password -> redirect back to /login",
+    "a failed sign-in -> redirect back to /login",
     response.status === 303 && location.includes("/login?error="),
     `status=${response.status}`,
+  );
+  check(
+    "a failed sign-in -> no session cookie",
+    sessionCookie(response) === "",
+    sessionCookie(response) ? "a cookie was issued" : "",
   );
 }
 

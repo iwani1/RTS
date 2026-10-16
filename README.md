@@ -45,6 +45,10 @@ npm run build
 npm start                 # http://localhost:3000
 ```
 
+`npm start` runs the standalone server — the same bundle the container runs. The build step copies
+the migrations and the client assets into it, so a rebuild never takes the demonstration database
+with it and the app is styled from the first request.
+
 **Option B — the dev server (for changing the code).**
 Hot reload, on-demand compilation. Heavier on memory — if you are on a machine with less than 4 GB
 free, use Option A.
@@ -118,6 +122,7 @@ Two things to know:
 | `RuntimeError: Aborted()` on start | The data directory was left open by a process that was killed. | `rm -rf .data/pgdata && npm start` — the schema and the seed are rebuilt automatically |
 | A server action returns "Invalid Server Actions request" | The browser's origin does not match the host the request arrived on. | Browse to the same address you typed, or list the public origin in `SERVER_ACTION_ALLOWED_ORIGINS` |
 | `npm run test:smoke` says the session route is missing | The server was started without `TEST_SESSION_TOKEN`. | Start the server with the same value the tests use |
+| "Too many failed attempts. Try again in 15 minutes." | The sign-in throttle saw five failed attempts for that account in fifteen minutes. | Wait for the window to pass, or reset the local database with `rm -rf .data/pgdata` |
 | The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
 | Port 3000 is already in use | Another application is on that port. | `PORT=3100 npm start`, then open `http://localhost:3100` |
 

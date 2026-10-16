@@ -450,5 +450,5 @@ src/
 drizzle/               5 migrations
 tests/                 15 domain tests
 scripts/               audit-authz.py · smoke.mjs · auth-form.mjs
-                       action-invoke.mjs · demo.mjs · copy-migrations.mjs
+                       action-invoke.mjs · demo.mjs · origin-check.mjs
 ```
