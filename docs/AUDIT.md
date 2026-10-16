@@ -340,13 +340,106 @@ With the server running:
 
 ```bash
 TEST_SESSION_TOKEN=local-qa-token node scripts/smoke.mjs   # 67 route checks, 8 roles
-node scripts/auth-form.mjs                                 # native (no-JS) auth flow
+node scripts/auth-form.mjs                                 # native (no-JS) auth flow + CSRF guard
 node scripts/action-invoke.mjs                             # server-action transport + guards
+node scripts/origin-check.mjs                             # the Server Action origin guard
+node scripts/latency.mjs                                   # p50 / p95 for the read paths
+```
+
+The harness signs in as any account, so the server must be started with it explicitly enabled:
+
+```bash
+TEST_SESSION_ENABLED=true TEST_SESSION_TOKEN=local-qa-token npm start
 ```
 
 ---
 
-## 6. Tracking the remaining work
+## 6. Second audit — dependencies, live behaviour and the deploy path
+
+**Date:** 2026-10-16 (following the workstation-enablement work)
+**Method:** `npm audit`, reading the running server, and measuring it. Every finding below was
+reproduced with a command or read out of the source; the resolutions were re-verified by running
+the suite again.
+
+### 6.1 Dependency advisories
+
+| Advisory | Severity | Exposure | Resolution |
+| --- | --- | --- | --- |
+| Next.js proxy bypass (App Router, Turbopack, single locale) | **critical** | The application ships `src/proxy.ts` and builds with Turbopack. The proxy is not an authorisation boundary — every permission is enforced in the route and data layer — but the advisory applies to the file that is deployed. | **Fixed.** Next 16.2.6 → 16.4.2 |
+| PostCSS — XSS via unescaped `</style>` in CSS stringification; arbitrary file read through an attacker-controlled `sourceMappingURL` | high | `postcss` is a **direct** dependency, so it ships. | **Fixed.** 8.5.22 → 8.5.30 |
+| sharp / libvips / libheif / librsvg | high | Transitive through Next, in the runtime image. | **Fixed.** Resolved by the Next upgrade |
+| braces / fast-glob / micromatch | high | `eslint-config-next` → `@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`. **Build-time only** — `npm ls --omit=dev` shows the chain is absent from the production tree. No published fix upstream. | Pinned to the patched releases with `overrides`. Residual advisory is build-time only. |
+| esbuild | moderate | `drizzle-kit` → `@esbuild-kit` → `esbuild`. The advisory is about a dev server accepting cross-origin requests; `drizzle-kit` runs the migration tool, not a server. Build-time only. | Accepted, documented. |
+
+`npm audit` now reports **0 critical** and **0 high** in the production dependency tree.
+
+### 6.2 The origin guard on the native auth screens
+
+React server actions carry Next's own cross-origin check. The four public auth screens post to
+**route handlers** instead, so they work with JavaScript disabled — and a route handler has no such
+check. A page on another site could therefore have driven a sign-in, a sign-out, an OTP request or
+a password reset in this origin. `sameSite=lax` does not close it: a sign-in does not need the
+victim's cookie.
+
+**Fixed.** `src/lib/auth-forms.ts` gained `isCrossSiteRequest()`, which compares the `Origin` (or
+`Referer`) host with the host the request was addressed to and refuses a mismatch. It is applied
+to the seven state-changing auth handlers. The two OpenID Connect routes are deliberately exempt:
+they are top-level redirect `GET`s, a browser sends no `Origin` on a navigation, and the correct
+defence for that flow is the `state` value and the PKCE verifier, both of which are already
+checked on the callback.
+
+`scripts/auth-form.mjs` now asserts that a cross-site sign-in is refused with 403 and issues no
+session.
+
+### 6.3 The test harness was a master key
+
+`POST /api/test/session` signs in as **any** account with no password and no second factor. It was
+gated on a shared secret alone, so a deployment that happened to have `TEST_SESSION_TOKEN` in its
+environment had a full account-takeover path.
+
+**Fixed.** The route now requires `TEST_SESSION_ENABLED=true` *and* the matching token. A server
+with only the token answers 404 — verified against a second instance.
+
+### 6.4 Internal error text reached the driver's device
+
+`POST /api/driver/sync` returned `(error as Error).message` verbatim. A driver-visible response
+carrying a database error names tables, columns and constraint definitions.
+
+**Fixed.** The endpoint now maps the error through `describeError()`, the same function the server
+actions use, which keeps the known messages and makes the rest generic.
+
+### 6.5 Measured behaviour
+
+| Surface | Result |
+| --- | --- |
+| Read-path latency (40 requests per endpoint) | p50 4–59 ms, p95 6–120 ms, **0 errors** across 14 endpoints |
+| Live dispatch feed | 14 active trips, latest fix per trip, served in 11 ms |
+| Session cookie | `httpOnly`, `sameSite=lax`, `secure` in production, token stored hashed |
+| Sign-in throttle | 5 failures in 15 minutes locks the identifier |
+| Retention | sessions, OTP codes, password resets, login attempts (90 d) and GPS events (90 d) are purged by a scheduled job |
+| Accessibility | every button has an accessible name and every form control a label, on every screen checked |
+| Build output | **zero warnings** |
+
+### 6.6 The file-tracing rule
+
+Next 16.4 promotes the "a file was traced that indicates that the whole project was traced"
+warning to a **build failure**. The path helpers were rewritten around a single scoped
+`path.join(process.cwd(), ".data")`, so the bundler traces the data folder and nothing else.
+The build now completes with no warnings at all.
+
+### 6.7 Still open, and why
+
+| Item | Status |
+| --- | --- |
+| `braces` / `fast-glob` / `micromatch` | Build-time only, no upstream fix. Pinned to the patched releases. |
+| `esbuild` via `drizzle-kit` | Build-time only. The migration tool does not run a server. |
+| The map renderer | A stylised vector lattice, not a survey basemap. `NEXT_PUBLIC_MAP_PROVIDER` swaps in Mapbox or Google. |
+| Telematics integration | Positions come from the driver app or manual entry. No tracker-vendor API. |
+| Multi-instance job execution | The runner is a single-process timer. Move the job names to a dedicated worker — a configuration change, not a rewrite. |
+
+---
+
+## 7. Tracking the remaining work
 
 `docs/prompt-gap-map.md` §3 holds the 30-item gap list (T0 foundation, T1
 schema ports, T2 features, T3 interface rebuild). Every T0 and T1 item and
