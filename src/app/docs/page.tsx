@@ -231,10 +231,40 @@ Server actions (form posts, same authorisation model):
   auth.resetPasswordAction, auth.changeOwnPasswordAction, auth.logoutAction`}</Code>
       </Section>
 
+      <Section id="local" title="Run it on your own computer">
+        <p>
+          Two commands and the platform is running. The database is created,
+          migrated and seeded at server start, so there is no separate setup
+          step and no database server to install.
+        </p>
+        <Code>{`git clone https://github.com/iwani1/RTS.git
+cd RTS
+npm ci
+npm run build
+npm start                      # http://localhost:3000`}</Code>
+        <p>
+          Use <code>npm run dev</code> for the development server with hot
+          reload, and <code>npm run dev:lan</code> to bind to every interface
+          so a phone or a second machine on the same network can reach it at
+          <code>http://&lt;your-lan-ip&gt;:3000</code>. The driver and
+          passenger apps are installable PWAs. Every seeded account uses the
+          password <code>Password123!</code>; the administrator also needs the
+          one-time code <code>246810</code>.
+        </p>
+        <p>
+          The checks run the same way locally: start the server with{" "}
+          <code>TEST_SESSION_TOKEN=local-qa-token npm start</code>, then{" "}
+          <code>npm run test:smoke</code>, <code>npm run test:auth</code>,{" "}
+          <code>npm run test:action</code>, <code>npm run test:demo</code> and{" "}
+          <code>npm run test:origin</code> in a second terminal.
+        </p>
+      </Section>
+
       <Section id="configuration" title="Configuration">
         <Code>{`DATABASE_URL=postgresql://user:pass@host:5432/tms     # production
 PGLITE_DATA_DIR=.data/pgdata                      # local fallback database
 SEED_ON_BOOT=false                                # disable demo seeding
+SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42        # extra allowed origins (reverse proxy)
 NEXT_PUBLIC_MAP_PROVIDER=mapbox|google            # optional
 NEXT_PUBLIC_MAPBOX_TOKEN=...                      # optional (basemap)
 PAYSTACK_SECRET_KEY=...                           # optional (payments)

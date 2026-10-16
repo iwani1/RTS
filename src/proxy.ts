@@ -8,11 +8,12 @@ import { increment, log, observe, requestId } from "@/lib/observability";
  * The counter names are the route shape, not the concrete URL, so
  * `/trips/17` and `/trips/18` share one series and the metric cardinality
  * stays bounded.
+ *
+ * This is the `proxy` file convention (Next 16's replacement for
+ * `middleware.ts`). It runs on the Node.js runtime, which is what makes the
+ * counters visible to `/api/metrics` — they live in the same process.
  */
 export const config = {
-  // Node.js runtime so the counters live in the same process as the
-  // application and the metrics endpoint can read them.
-  runtime: "nodejs",
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icons/).*)",
   ],
@@ -35,7 +36,7 @@ function routeShape(pathname: string): string {
   );
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const started = Date.now();
   const id = requestId();
   const shape = routeShape(request.nextUrl.pathname);

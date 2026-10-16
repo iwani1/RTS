@@ -27,6 +27,7 @@ import { Pool } from "pg";
 import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
+import { pgliteDataDir as resolvePgliteDataDir } from "@/lib/paths";
 
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
 
@@ -70,13 +71,9 @@ let pool: Pool | null = null;
 
 /** Resolve the PGlite data directory. Defaults to `.data/pgdata` under the app root. */
 function pgliteDataDir(): string {
-  const configured = process.env.PGLITE_DATA_DIR;
-  if (configured) {
-    return path.isAbsolute(configured)
-      ? configured
-      : path.join(/*turbopackIgnore: true*/ process.cwd(), configured);
-  }
-  return path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "pgdata");
+  // The path helper knows how to step out of the standalone bundle, so a
+  // rebuild never takes the demonstration database with it.
+  return resolvePgliteDataDir();
 }
 
 /**

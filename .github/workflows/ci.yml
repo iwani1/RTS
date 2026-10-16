@@ -50,6 +50,10 @@ jobs:
       # created lazily and migrations run at server start, so a compile never
       # touches a database.
       - name: Production build
+        env:
+          # The origin guard test below needs a configured extra origin, and
+          # the allowed origins are compiled into the build.
+          SERVER_ACTION_ALLOWED_ORIGINS: 192.168.1.42
         run: npm run build
 
       - name: Route smoke test
@@ -85,6 +89,15 @@ jobs:
         env:
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/demo.mjs
+
+      # The Server Action CSRF guard. A browser whose origin matches the host
+      # is allowed; a rewritten host is allowed only when the public origin is
+      # configured. The build below is made with the extra origin in place.
+      - name: Origin guard test
+        env:
+          TEST_SESSION_TOKEN: ci-smoke-token
+          SERVER_ACTION_ALLOWED_ORIGINS: 192.168.1.42
+        run: node scripts/origin-check.mjs
 
   image:
     name: Container image

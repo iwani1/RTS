@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:lan": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
@@ -19,7 +20,8 @@
     "postbuild": "node scripts/copy-migrations.mjs",
     "test:auth": "node scripts/auth-form.mjs",
     "test:action": "node scripts/action-invoke.mjs",
-    "test:demo": "node scripts/demo.mjs"
+    "test:demo": "node scripts/demo.mjs",
+    "test:origin": "node scripts/origin-check.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",
@@ -53,5 +55,8 @@
     "postcss": "8.5.8",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

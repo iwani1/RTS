@@ -9,32 +9,124 @@ button, form and dashboard action performs a real, authorised server operation.
 
 ---
 
-## 1. Quick start
+## 1. Run it on your own computer
 
-### With PostgreSQL
+### What you need
 
-```bash
-npm install
-cp .env.example .env              # set DATABASE_URL
-npm run build && npm run start    # or: npm run dev
-```
+| | |
+| --- | --- |
+| **Node.js** | 20.9 or newer — `node -v`. The app was built and tested on Node 22. |
+| **npm** | ships with Node. |
+| **A database** | optional. Without one the app runs on an embedded PostgreSQL — see below. |
+| **Disk** | ~500 MB for `node_modules`, ~300 MB for the build, ~100 MB for the demo database. |
 
-Migrations and the demonstration dataset are applied automatically at **server start** by
-`src/instrumentation.ts`. You never run a migration command by hand.
+Nothing else. There is no database server to install and no API key to obtain before you can see the
+app working.
 
-### Without a database server
-
-Leave `DATABASE_URL` empty and the platform runs on **PGlite** — a real PostgreSQL engine compiled to
-WebAssembly, executing the same migration files in-process. This is how the demo boots with nothing
-installed.
+### Step 1 — get the code and install
 
 ```bash
-npm install
-npm run dev
+git clone https://github.com/iwani1/RTS.git
+cd RTS
+npm ci
 ```
 
-> PGlite is **single-process**. Only one process may open the data directory at a time. If a second
-> process writes to it, reset it with `rm -rf .data/pgdata && npm run dev`.
+`npm ci` installs exactly what the lockfile pins. Use `npm install` only if you are deliberately
+changing a dependency.
+
+### Step 2 — choose how to run it
+
+**Option A — the production build (recommended for testing the real thing).**
+This is the same build CI produces and the container runs. It is fast, it uses far less memory than
+the dev server, and it is the mode the automated tests exercise.
+
+```bash
+npm run build
+npm start                 # http://localhost:3000
+```
+
+**Option B — the dev server (for changing the code).**
+Hot reload, on-demand compilation. Heavier on memory — if you are on a machine with less than 4 GB
+free, use Option A.
+
+```bash
+npm run dev               # http://localhost:3000
+```
+
+**Option C — the container.**
+
+```bash
+docker build -t staffride .
+docker run --rm -p 3000:3000 staffride
+```
+
+### Step 3 — sign in
+
+Open **http://localhost:3000** and use one of the seeded accounts below. The database is created,
+migrated and seeded **at server start** — you never run a migration command by hand.
+
+### The database
+
+| | |
+| --- | --- |
+| **Embedded (default)** | Leave `DATABASE_URL` empty. The app runs on **PGlite** — a real PostgreSQL engine compiled to WebAssembly, executing the same migration files in-process. The data lives in `.data/pgdata` next to the project. |
+| **A real PostgreSQL** | `cp .env.example .env`, set `DATABASE_URL=postgresql://user:pass@host:5432/staffride`, then start the app. The schema and the seed are applied to it the same way. |
+
+> **PGlite is single-process.** Only one process may open `.data/pgdata` at a time. Stop the server
+> before running a second one, and if the server is ever killed uncleanly, reset the directory and
+> let it rebuild:
+>
+> ```bash
+> rm -rf .data/pgdata && npm start
+> ```
+>
+> The seed is idempotent, so the demonstration dataset comes straight back.
+
+### Testing from another device on your network
+
+Bind to every interface so the server answers on your LAN address as well as on `localhost`:
+
+```bash
+npm run dev:lan          # development
+HOSTNAME=0.0.0.0 npm start   # production build
+```
+
+Then open `http://192.168.1.42:3000` on the other device, where `192.168.1.42` is your machine's
+address. Find it with `ip addr` on Linux, `ipconfig getifaddr en0` on macOS, or `ipconfig` on
+Windows. The driver and passenger apps are installable PWAs — open the browser menu and choose
+*Add to Home Screen*.
+
+Two things to know:
+
+- **The port must be open in your firewall.** macOS asks on first run; Linux often does not.
+- **React server actions check the origin.** A browser that loads the app from
+  `http://192.168.1.42:3000` sends that same address as the `Origin`, so it matches the host the
+  request arrived on and is allowed. If you put the app behind a reverse proxy that rewrites the
+  `Host` header, the two no longer match — list the public address in
+  `SERVER_ACTION_ALLOWED_ORIGINS` (comma-separated). In development the variable is read when the
+  server starts; in a production build it is compiled in, so set it before `npm run build`.
+
+  ```bash
+  SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42 npm run build
+  ```
+
+### Running the checks yourself
+
+With the server running in another terminal:
+
+```bash
+export TEST_SESSION_TOKEN=local-qa-token     # the server must be started with the same value
+npm run test:smoke     # 67 route checks across all eight roles
+npm run test:auth      # the native, no-JavaScript sign-in flow
+npm run test:action    # the server-action transport
+npm run test:demo      # 54 checks: the live end-to-end demonstration
+npm run test:origin    # 5 checks: the Server Action origin guard
+npm run verify         # lint · typecheck · unit tests · migration drift
+```
+
+`TEST_SESSION_TOKEN` is what the server expects on `POST /api/test/session`. Start the server with
+the same value, for example `TEST_SESSION_TOKEN=local-qa-token npm start`. The route returns 404
+unless the value matches, so it is inert in production.
 
 ### Demo accounts — password `Password123!`
 
@@ -117,7 +209,7 @@ than simulated.
 | Passenger corridor view, live tracking of the corridor, share codes | ✅ Phase 3 | `/passenger/corridor` |
 | Multicurrency, exchange rates, per-currency agreements | ✅ Phase 3 | `src/lib/currency.ts`, `/currencies` |
 | Route optimisation solver | ◐ heuristic, not OR-Tools | `/optimise`, `src/lib/vrp.ts` |
-| Observability stack — JSON logs, Prometheus metrics | ✅ Phase 3 | `src/middleware.ts`, `/api/metrics` |
+| Observability stack — JSON logs, Prometheus metrics | ✅ Phase 3 | `src/proxy.ts`, `/api/metrics` |
 | Automated backups | ✅ Phase 3 | `src/lib/backup.ts`, `/operations` |
 | Pagination and saved views | ✅ Phase 3 | `src/components/ui/pagination.tsx`, `src/components/saved-views.tsx` |
 | Real identity provider, real SMS/e-mail/push delivery, native apps, queue workers | ⏳ Phase 4 | see `/docs` roadmap |
@@ -154,7 +246,7 @@ lib/
   vrp.ts            Clarke-Wright savings + 2-opt routing solver
   seed.ts           demonstration dataset
 instrumentation.ts  migrate + seed + register the jobs at server start
-middleware.ts       timing, request counters, one JSON log line per request
+proxy.ts            timing, request counters, one JSON log line per request
 drizzle/            5 migrations
 ```
 

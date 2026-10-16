@@ -141,7 +141,7 @@ against a running server.
 | 16 | OR-Tools VRP service | ◐ | `/optimise` runs a real solver — Clarke-Wright savings with a 2-opt pass — over live staff locations, the client campus and the available fleet. **It is not OR-Tools.** The screen says so, names OR-Tools as the upgrade path, and the solver sits behind one function so the swap is a replacement, not a rewrite |
 | 17 | SSO / SAML / OIDC | ◐ | `/api/auth/oidc` performs a real authorization-code exchange with PKCE against a configured issuer. **No identity provider is configured here**, so the SSO buttons are hidden and the flow is in demo mode until `OIDC_ISSUER` is set |
 | 18 | Multicurrency | ● | `src/lib/currency.ts` + `/currencies` — an `exchange_rates` table with a base currency, inline rate updates with a date stamp, and client agreements billed in their own currency. Rates are indicative, and the screen says so |
-| 19 | Observability stack | ● | `src/middleware.ts` + `src/lib/observability.ts` — one structured JSON log line per request, request counters and latency percentiles, and a Prometheus text endpoint at `/api/metrics` that is session-guarded unless `METRICS_PUBLIC=true` |
+| 19 | Observability stack | ● | `src/proxy.ts` + `src/lib/observability.ts` — one structured JSON log line per request, request counters and latency percentiles, and a Prometheus text endpoint at `/api/metrics` that is session-guarded unless `METRICS_PUBLIC=true` |
 | 20 | Automated backups | ● | The `backup-database` job takes an archive on a schedule — `pg_dump` against a real server, a directory archive under PGlite — and prunes to the configured retention |
 
 Legend: ● implemented · ◐ implemented with a stated, honest limitation ·

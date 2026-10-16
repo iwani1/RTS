@@ -20,11 +20,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { log } from "@/lib/observability";
+import { backupDir as resolveBackupDir, pgliteDataDir as resolvePgliteDataDir } from "@/lib/paths";
 
 const run = promisify(execFile);
 
 function backupDir(): string {
-  return process.env.BACKUP_DIR ?? path.join(process.cwd(), ".data", "backups");
+  return resolveBackupDir();
 }
 
 function retainCount(): number {
@@ -84,8 +85,7 @@ export async function runBackup(): Promise<Record<string, unknown>> {
   }
 
   // PGlite: copy the data directory.
-  const dataDir =
-    process.env.PGLITE_DATA_DIR ?? path.join(process.cwd(), ".data", "pgdata");
+  const dataDir = resolvePgliteDataDir();
   try {
     await fs.access(path.join(dataDir, "PG_VERSION"));
   } catch {

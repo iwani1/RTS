@@ -85,7 +85,7 @@ flowchart TB
     D7 --> B1
     B1 --> B2
     B3 -. applied at boot .-> B1
-    M1[middleware.ts<br/>timing, counters, JSON log] -. every request .-> A1 & A2
+    M1[proxy.ts<br/>timing, counters, JSON log] -. every request .-> A1 & A2
     M1 --> D9
 ```
 
@@ -411,7 +411,7 @@ src/
     fonts.ts           self-hosted Inter / Space Grotesk / JetBrains Mono
     globals.css        every design token
     instrumentation.ts migrate + seed + register the jobs at server start
-    middleware.ts      timing, request counters, one JSON log line per request
+    proxy.ts           timing, request counters, one JSON log line per request
   components/
     ui/                Panel · TableWrap · StatusChip · Field · Button · …
                        pagination.tsx

@@ -97,6 +97,46 @@ npm run build
 DATABASE_URL=postgresql://… npm run start
 ```
 
+### On a workstation
+
+The same two commands work on a laptop. `npm run dev` is the development server; `npm run build &&
+npm start` is the production build and is the mode the test suite exercises.
+
+```bash
+npm ci
+npm run build
+npm start                   # http://localhost:3000
+```
+
+The database is created, migrated and seeded at server start, so there is no separate setup step.
+Two rules apply on a workstation:
+
+* **One process at a time.** PGlite is single-process. Stop the dev server before starting the
+  production server, and reset the directory with `rm -rf .data/pgdata` if a process was killed
+  while it held the directory open.
+* **The data directory sits beside the project**, in `.data/pgdata`, not inside `.next/`, so a
+  rebuild does not take the demonstration database with it.
+
+To open the app from a phone or a second machine on the same network, bind to every interface:
+
+```bash
+npm run dev:lan                  # development
+HOSTNAME=0.0.0.0 npm start       # production build
+```
+
+React server actions compare the browser's `Origin` with the `Host` the request arrived on. A
+browser that loaded the app from `http://192.168.1.42:3000` sends that same address as its origin,
+so it is allowed without any configuration. Behind a reverse proxy that rewrites the `Host` header
+the two differ, and the public address has to be listed:
+
+```bash
+SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42 npm run build   # compiled into the build
+SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42 npm run dev     # read when the server starts
+```
+
+`npm run test:origin` asserts all four cases: a matching origin, a LAN address, a rewritten host
+with the origin configured, and an unknown origin that is refused.
+
 ### Migrations
 
 * Versioned SQL lives in `drizzle/` and is applied in order at boot.
