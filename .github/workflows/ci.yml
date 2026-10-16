@@ -77,6 +77,15 @@ jobs:
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/action-invoke.mjs
 
+      # The end-to-end demonstration: signs in through the real login form,
+      # walks every screen, and exercises saved views, pagination, PDF
+      # export, the routing solver, the job runner, live tracking,
+      # multicurrency and the observability stack.
+      - name: Live demo
+        env:
+          TEST_SESSION_TOKEN: ci-smoke-token
+        run: node scripts/demo.mjs
+
   image:
     name: Container image
     runs-on: ubuntu-latest

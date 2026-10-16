@@ -327,18 +327,23 @@ SMTP_URL=...                                      # optional (email)`}</Code>
                 </td>
                 <td className="px-3 py-2.5">
                   Invoices, payments, driver earnings, payroll export, maintenance
-                  reminders, SLA records, analytics and CSV/print exports.
+                  reminders, SLA records, analytics, server-generated CSV and PDF
+                  exports, scheduled invoicing, multicurrency, the route
+                  optimisation solver, pagination and saved views.
                 </td>
               </tr>
               <tr>
                 <td className="px-3 py-2.5 font-medium text-ink">Phase 4 — Scale</td>
                 <td className="px-3 py-2.5">
-                  <StatusChip tone="caution" label="Pending" />
+                  <StatusChip tone="caution" label="Delivered in part" />
                 </td>
                 <td className="px-3 py-2.5">
-                  HR/SSO integrations (SAML/OIDC), OR-Tools VRP service, live
-                  traffic, multicurrency, native mobile apps, queue workers,
-                  observability stack.
+                  Delivered: OIDC/PKCE single sign-on, the observability stack
+                  (structured JSON logs, Prometheus metrics), automated backups,
+                  the scheduled job runner and the calendar scheduling view.
+                  Still open: a real identity provider, real SMS/e-mail/push
+                  delivery, OR-Tools as the VRP solver, a dedicated job worker
+                  and native mobile apps.
                 </td>
               </tr>
             </tbody>
@@ -358,20 +363,33 @@ SMTP_URL=...                                      # optional (email)`}</Code>
       <Section id="limitations" title="Known limitations">
         <ul className="list-inside list-disc space-y-1">
           <li>
-            Mapping, SMS, email and payment providers are stubbed behind documented
-            interfaces until credentials are supplied.
+            The route solver is a real Clarke-Wright savings heuristic with a
+            2-opt pass — not OR-Tools. Time windows are soft, there is a single
+            depot, and the solution is not proven optimal. The screen says so.
           </li>
           <li>
-            Recurring bookings are stored as a rule on the booking; a scheduler job
-            is required to expand them into daily instances.
+            There is no identity provider configured. The OIDC client performs a
+            real authorization-code exchange with PKCE, but without an issuer
+            the SSO buttons stay hidden.
           </li>
           <li>
-            Geofenced arrival detection is modelled (arrival timestamps, grace
-            windows) but requires a telematics feed for automation.
+            SMS, email and push messages are composed and recorded with a
+            delivery status of <em>simulated</em> until provider credentials are
+            configured. Mapping and payment providers behave the same way.
           </li>
           <li>
-            Two-factor authentication uses a server-side code for the demo;
-            production should use TOTP or SMS.
+            Exchange rates are a dated snapshot, not a live feed. A production
+            deployment should record the rate actually used on an invoice so a
+            historical invoice never re-prices.
+          </li>
+          <li>
+            GPS positions arrive through the driver endpoint rather than a
+            telematics vendor poller. The geofence job works on whatever
+            positions are in the database.
+          </li>
+          <li>
+            The job runner is a single-process timer, which is the right shape
+            for one application container plus managed PostgreSQL.
           </li>
         </ul>
       </Section>
