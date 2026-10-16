@@ -114,6 +114,59 @@ Returns `text/csv` with a `content-disposition` attachment header.
 * `bookings` — one row per booking with employee, leg, status, cancellation reason
 * `payroll` — one row per driver earnings entry (finance role only)
 
+### `GET /api/reports/pdf?type=trips|manifest|invoice&from=YYYY-MM-DD&to=YYYY-MM-DD&company=ID&tripId=ID&id=ID`
+**RBAC:** `reports` or `finance`; an invoice also requires `finance`. Corporate admins are scoped to their own client.
+Returns `application/pdf` with a `content-disposition` attachment header.
+
+The document is written server side by `src/lib/pdf.ts` — a small PDF writer with no dependencies — so the
+client receives a file it can open, print and archive without a browser print dialog.
+
+* `trips` — the trip register for the period, with vehicle, driver, seat load and status
+* `manifest` — the passenger manifest for one trip: booking reference, name, staff code, department, status
+* `invoice` — one invoice: its lines, subtotal, tax and total, in the invoice's own currency
+
+### `GET /api/metrics`
+**RBAC:** any signed-in user. Set `METRICS_PUBLIC=true` to open it to anonymous callers — only appropriate
+behind a private network or an authenticating reverse proxy.
+Returns the Prometheus text exposition format.
+
+* `GET /api/metrics?format=json` returns the same data as a JSON snapshot: counters, latency percentiles
+  and process uptime.
+
+Metric families: `staffride_uptime_seconds`, `staffride_http_<method>_<route>_total` (request counters, keyed
+by route shape so cardinality stays bounded), `staffride_http_<method>_<route>_duration_ms` (p95, count, sum),
+and one counter per named operation.
+
+### `GET /api/jobs`
+**RBAC:** the `operations` section.
+Returns the registered job list with the last run of each job and the run history.
+
+### `POST /api/views/save` and `POST /api/views/delete`
+**RBAC:** any signed-in user; a view belongs to the user who saved it and cannot be read or deleted by anyone else.
+Plain form posts — no JavaScript required.
+
+| Field | Meaning |
+| --- | --- |
+| `scope` | the list the view belongs to, e.g. `trips` or `bookings` |
+| `name` | the view name; re-saving the same name replaces the filters |
+| `filter.<key>` | one filter value, repeated for each filter |
+| `returnTo` | where the browser lands afterwards |
+
+### `POST /api/auth/otp` and `POST /api/auth/otp/verify`
+Phone OTP sign-in. `POST /api/auth/otp` takes a phone number and issues a six-digit code; the code is stored
+hashed with scrypt with an expiry and an attempt counter, never in clear. `POST /api/auth/otp/verify` takes the
+phone number and the code, and creates the session on success.
+
+**Demo mode:** with no `SMS_PROVIDER_API_KEY` configured the message is not sent — the code is written to the
+server log and the delivery is recorded as `simulated`. The screen says so.
+
+### `GET /api/auth/oidc` and `GET /api/auth/oidc/callback`
+OIDC authorization-code flow with PKCE against a configured issuer. The redirect URI, the state parameter and
+the code verifier are all checked on the way back.
+
+**Demo mode:** with no `OIDC_ISSUER` configured the SSO buttons are hidden and the flow is unavailable. The
+client code is real; there is simply no issuer to talk to.
+
 ## Server actions
 
 Server actions accept `FormData` and return `{ ok?: boolean; message?: string; data?: Record<string,string> }`.
@@ -147,6 +200,14 @@ They are invoked by the `<ActionForm>` / `<InlineActionForm>` client components 
 | `ops.driverTripAction` | `driver.duty` | start / complete / delay a duty, accrues earnings |
 | `ops.setAvailabilityAction` | `driver.duty` | availability toggle |
 | `ops.markNotificationsReadAction` | any session | clears the notification badge |
+| `auth.requestPhoneOtpAction` / `verifyPhoneOtpAction` | public | issue and verify a phone one-time code |
+| `auth.enableTotpAction` / `confirmTotpAction` / `disableTotpAction` | any session | authenticator-app enrolment and removal |
+| `platform.saveViewAction` / `deleteViewAction` | any session | the caller's own saved filter sets |
+| `platform.recordFuelLogAction` | `vehicle.manage` | litres, cost, odometer and station for a vehicle |
+| `platform.createSafetyInspectionAction` | `vehicle.manage` | an inspection result and the next due date |
+| `platform.shareTripAction` / `revokeShareAction` | `booking.own` | a short-lived corridor share code, and its revocation |
+| `platform.updateExchangeRateAction` | `finance.manage` | update a rate and the date it was observed |
+| `platform.runJobAction` | `operations` | run one registered job on demand |
 
 ### Error semantics
 

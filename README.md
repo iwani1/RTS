@@ -69,6 +69,7 @@ TEST_SESSION_TOKEN=local-qa-token npm run dev
 TEST_SESSION_TOKEN=local-qa-token npm run test:smoke
 TEST_SESSION_TOKEN=local-qa-token npm run test:auth
 TEST_SESSION_TOKEN=local-qa-token npm run test:action
+TEST_SESSION_TOKEN=local-qa-token npm run test:demo
 ```
 
 `scripts/auth-form.mjs` asserts the native (no-JavaScript) sign-in flow: a bad password returns a friendly
@@ -81,6 +82,12 @@ resolves, runs, and returns a guarded result rather than a crash.
 
 `scripts/smoke.mjs` signs in as each of the eight roles and requests every route each role can reach —
 67 checks covering the portal, the mobile apps, the detail pages and the API.
+
+`scripts/demo.mjs` is the live demonstration: 54 checks that sign in through the real login form, walk
+every screen, and exercise saved views, pagination, PDF export, the route-optimisation solver, the job
+runner, live tracking, multicurrency and the observability stack. Its form submissions take the same
+multipart path a browser without JavaScript would take, so the no-JavaScript behaviour is tested rather
+than simulated.
 
 ---
 
@@ -101,11 +108,19 @@ resolves, runs, and returns a guarded result rather than a crash.
 | Incidents, SOS, breakdown workflow, safety documents | ✅ Phase 2 | `/incidents` |
 | Offline driver actions + sync | ✅ Phase 2 | `/api/driver/sync` |
 | Invoicing, payments, waiting/overtime surcharges, driver payroll | ✅ Phase 3 | `/finance` |
-| Analytics, CSV / print-PDF exports | ✅ Phase 3 | `/reports`, `/api/reports/export` |
+| Analytics, CSV exports, server-rendered PDF exports | ✅ Phase 3 | `/reports`, `/api/reports/export`, `/api/reports/pdf` |
 | Audit trail | ✅ Phase 3 | `/audit` |
 | Installable PWA (driver + passenger), offline shell | ✅ Phase 2 | `public/manifest.webmanifest`, `public/sw.js`, `/offline` |
-| Calendar scheduling view | ⏳ open | see `docs/FEATURE-CHECKLIST.md` |
-| HR / SSO integrations, OR-Tools VRP, multicurrency, native apps, queue workers | ⏳ Phase 4 | see `/docs` roadmap |
+| Calendar scheduling view | ✅ Phase 3 | `/calendar` |
+| Scheduled job runner — recurring expansion, waitlist promotion, invoicing, inspections, geofence, purge, backup | ✅ Phase 3 | `src/lib/scheduled-jobs.ts`, `/operations` |
+| Notification fan-out, TOTP, phone OTP, OIDC/PKCE | ✅ Phase 3 | `src/lib/notify.ts`, `src/lib/totp.ts`, `src/lib/otp.ts`, `src/lib/sso.ts` |
+| Passenger corridor view, live tracking of the corridor, share codes | ✅ Phase 3 | `/passenger/corridor` |
+| Multicurrency, exchange rates, per-currency agreements | ✅ Phase 3 | `src/lib/currency.ts`, `/currencies` |
+| Route optimisation solver | ◐ heuristic, not OR-Tools | `/optimise`, `src/lib/vrp.ts` |
+| Observability stack — JSON logs, Prometheus metrics | ✅ Phase 3 | `src/middleware.ts`, `/api/metrics` |
+| Automated backups | ✅ Phase 3 | `src/lib/backup.ts`, `/operations` |
+| Pagination and saved views | ✅ Phase 3 | `src/components/ui/pagination.tsx`, `src/components/saved-views.tsx` |
+| Real identity provider, real SMS/e-mail/push delivery, native apps, queue workers | ⏳ Phase 4 | see `/docs` roadmap |
 
 The full per-module ledger — implemented, partial and pending — is `docs/FEATURE-CHECKLIST.md`.
 
@@ -117,19 +132,30 @@ The full per-module ledger — implemented, partial and pending — is `docs/FEA
 Next.js App Router (React server components)
 ├── (auth)          login / register / password recovery
 ├── (portal)        role-aware workspace shell (sidebar driven by the RBAC matrix)
-├── actions/        48 server actions — every mutation is authorised, validated and audited
-├── api/            REST: health, dispatch/live, driver/sync, reports/export, search, auth/logout
+├── actions/        61 server actions — every mutation is authorised, validated and audited
+├── api/            REST: health, metrics, dispatch/live, driver/sync, jobs, reports/export,
+│                   reports/pdf, search, views/save, views/delete, auth/*, test/session
 components/         UI primitives, app shell, SVG charts, vector map, dispatch centre
-db/                 Drizzle schema (40 tables) + lazily initialised driver
+db/                 Drizzle schema (42 tables) + lazily initialised driver
 lib/
   auth.ts           hashed sessions, scrypt, throttling, guards, audit, tenant scope
-  rbac.ts           8 roles · 16 sections · 15 permissions
+  rbac.ts           8 roles · 20 sections · 15 permissions
   domain.ts         pure business rules (no framework imports → unit testable)
   queries.ts        analytics aggregations
   validation.ts     zod schemas and bounded form readers
+  jobs.ts           the background runner and the global job registry
+  scheduled-jobs.ts the eight registered jobs
+  notify.ts         notification fan-out with a real delivery status
+  currency.ts       multicurrency · conversion · formatting
+  totp.ts / otp.ts  authenticator codes · hashed phone codes
+  sso.ts            OIDC authorisation-code flow with PKCE
+  observability.ts  JSON logs · counters · latency percentiles
+  pdf.ts            a dependency-free PDF writer
+  vrp.ts            Clarke-Wright savings + 2-opt routing solver
   seed.ts           demonstration dataset
-instrumentation.ts  migrate + seed at server start
-drizzle/            4 migrations
+instrumentation.ts  migrate + seed + register the jobs at server start
+middleware.ts       timing, request counters, one JSON log line per request
+drizzle/            5 migrations
 ```
 
 **The driver is created lazily.** `next build` imports every route module to collect page data, so a
@@ -158,11 +184,14 @@ migrations during a compile. Migrations now run at server start instead.
 * Sessions are DB-backed with a 7-day expiry; only a SHA-256 hash of the token is stored.
 * Login and password-reset requests are rate limited: five failures per identifier inside a 15-minute
   window, with a generic response that cannot be used to enumerate accounts.
-* 2FA is required for privileged roles (super admin, ops manager, finance officer).
+* 2FA is required for privileged roles (super admin, ops manager, finance officer). A TOTP authenticator
+  app is the primary factor; phone one-time codes are also available.
 * Home addresses, phone numbers and GPS history are exposed only to the roles that need them — a driver
   sees passengers only on their own duty.
 * Every mutation writes an audit log entry with actor, entity, tenant and payload.
-* Retention: GPS events 90 days, audit logs 24 months, sessions 7 days.
+* Retention: GPS events 90 days, audit logs 24 months, sessions 7 days — enforced by a scheduled purge job.
+* The metrics endpoint is closed to anonymous callers unless `METRICS_PUBLIC=true` is set.
+* The authorisation audit reports 61 server actions, 61 guarded and 0 unvalidated.
 
 ---
 

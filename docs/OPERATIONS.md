@@ -51,7 +51,7 @@ invalid operation impossible rather than merely discouraged.
 
 | Data | Retention | Mechanism |
 | --- | --- | --- |
-| GPS events | 90 days | purge job on `gps_events.recorded_at` — the window is defined in `retentionDate()`; the scheduled job is still open |
+| GPS events | 90 days | the `purge-expired-data` job deletes on `gps_events.recorded_at`; the window is defined in `retentionDate()` |
 | Sessions | 7 days | expiry enforced on every request, and revoked on password change or reset |
 | Audit logs | 24 months | archive before purge |
 | Passenger contact details | while employed + 90 days | cascade from `employees` |
@@ -122,19 +122,58 @@ executes the same migration files in-process.
 
 ### Backups
 
-* Nightly `pg_dump` with 30-day retention; point-in-time recovery via WAL archiving.
+The `backup-database` job takes an archive on a schedule and prunes to the configured retention.
+
+| Deployment | Method | Location |
+| --- | --- | --- |
+| PostgreSQL | `pg_dump` of the configured `DATABASE_URL` | `BACKUP_DIR` (default `.data/backups`) |
+| PGlite | a directory archive of the PGlite data directory | `BACKUP_DIR` |
+
+```bash
+BACKUP_DIR=.data/backups   # where archives are written
+BACKUP_RETAIN=7            # how many archives to keep before the oldest is pruned
+```
+
 * The audit trail is append-only and is the record of who changed what — it is included in the backup.
+* **Restore:** stop the application, replace the database with the archive, start it again. The migrations run at
+  boot, so a restored archive is brought forward to the current schema automatically.
+* The last backup and its result are on the **Operations** screen.
 
 ### Monitoring
 
 * `/api/health` for liveness and a database check.
-* Structured server-side error logging; the audit trail is the business-level log.
+* One structured JSON log line per request, with a request id, the method, the route and the duration. The log
+  is the machine-readable record; the audit trail is the business-level record.
+* `/api/metrics` exposes Prometheus counters, latency percentiles and process uptime. It is closed to
+  anonymous callers unless `METRICS_PUBLIC=true`.
+* **Operations** shows the job registry, the run history, the slowest operations and the process counters.
 * Alert on open critical incidents and on document-expiry spikes.
+
+### The scheduled job runner
+
+Eight jobs run on a timer inside the application process. Each one records a `job_runs` row before and after
+its work, so a crash still leaves a `running` row behind — that is how a failed job is spotted.
+
+| Job | Interval | What it does |
+| --- | --- | --- |
+| `expand-recurring-bookings` | 15 min | materialises the next 14 days of instances from a stored recurrence rule |
+| `promote-waitlist` | 5 min | moves the first waitlisted passenger into a free seat and notifies them |
+| `fan-out-trip-reminders` | 30 min | sends the pickup reminders for the next 24 hours |
+| `raise-scheduled-invoices` | 60 min | raises the invoice for an agreement on its billing day |
+| `schedule-safety-inspections` | 1440 min | generates the next inspection from its cycle |
+| `detect-geofence-arrivals` | 5 min | compares the last GPS fix with the stop and records the arrival and boarding |
+| `purge-expired-data` | 1440 min | removes expired sessions, one-time codes, GPS events and job runs |
+| `backup-database` | 1440 min | takes an archive and prunes to the retention window |
+
+Any job can also be run on demand from **Operations** → *Run*. `JOBS_ENABLED=false` switches the runner off
+entirely. The runner is idempotent: a multi-instance deployment should run the same job names from one
+dedicated worker instead, which is a configuration change rather than a rewrite.
 
 ### Scaling
 
 * Stateless app instances behind a load balancer; pooled PostgreSQL.
 * Move GPS ingestion to a queue plus a time-series store beyond roughly 50 vehicles.
+* Move the job runner to a dedicated worker when running more than one application instance.
 
 ## 6. Verification before a release
 
@@ -143,9 +182,16 @@ npm run verify        # lint · typecheck · unit tests · schema drift
 npm run test:smoke   # 67 route checks across all eight roles (server running)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
+npm run test:demo    # the live demo: 54 checks against a running server
 npm run build         # production build, no database required
 npm run audit:authz   # server-action authorisation and validation audit
 ```
+
+`npm run test:demo` is the end-to-end demonstration. It signs in through the real login form, walks every
+screen, and exercises the features that were added last — saved views, pagination, PDF export, the route
+optimisation solver, the job runner, live tracking, multicurrency and the observability stack. Its form
+submissions use the same multipart path a browser without JavaScript would take, so it tests the real
+no-JavaScript behaviour rather than simulating it.
 
 With the server running and `TEST_SESSION_TOKEN` set, `npm run test:smoke` signs in as each of the eight
 roles and requests every reachable route — 67 checks covering the portal, the mobile apps, the detail
@@ -153,10 +199,25 @@ pages and the API.
 
 ## 7. Known limitations
 
-* Mapping, SMS, email and payment providers are implemented as documented interfaces with demo behaviour until
-  credentials are configured (clearly labelled in the interface with a `Notice`).
-* Recurring bookings store the rule; a scheduler is required to expand daily/weekly/monthly instances.
-* Geofenced arrival detection is modelled via timestamps and grace windows; automation requires a telematics feed.
-* 2FA uses a server-side code for the demo — production should use TOTP or SMS.
-* The retention purge, scheduled invoicing and notification fan-out all need a job runner; the `job_runs`
-  table and the runner exist, but no jobs are registered yet.
+These are the honest edges of the build. Each one names what is real and what is not.
+
+* **The route solver is a heuristic, not OR-Tools.** `/optimise` runs Clarke-Wright savings with a 2-opt pass
+  over live staff locations. Time windows are soft, there is a single depot, and the solution is not proven
+  optimal. The screen says this and names OR-Tools as the upgrade path. Swapping the solver means replacing
+  one function in `src/lib/vrp.ts`.
+* **There is no identity provider configured.** The OIDC client performs a real authorization-code exchange
+  with PKCE, but without `OIDC_ISSUER` there is nothing to talk to, so the SSO buttons are hidden.
+* **Messages are composed but not delivered.** SMS, e-mail and push notifications are written to the
+  notification table with a delivery status of `simulated` and a copy in the server log until provider
+  credentials are configured.
+* **Exchange rates are indicative.** The rate table is seeded with a dated snapshot. A production deployment
+  should pull live rates and record the rate actually used on an invoice, so a historical invoice never
+  re-prices.
+* **GPS arrives through the driver endpoint, not a vendor poller.** The geofence job works on whatever
+  positions are in `gps_events`; a telematics integration is a separate piece of work.
+* **The job runner is a single-process timer.** That is the right shape for one application container plus
+  managed PostgreSQL. Running more than one instance means moving the job names to a dedicated worker.
+* **Mapping, payment and push providers** are documented interfaces with demo behaviour until credentials are
+  configured, clearly labelled in the interface.
+* **The audit trail is append-only** and grows without a purge; archive it before a long-running deployment
+  needs the space back.

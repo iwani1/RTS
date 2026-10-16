@@ -62,12 +62,16 @@ flowchart TB
         D3[domain.ts — pure rules<br/>routing · capacity · pricing]
         D4[queries.ts — analytics aggregations]
         D5[validation.ts — zod schemas]
+        D6[jobs.ts + scheduled-jobs.ts<br/>the runner and the eight jobs]
+        D7[vrp.ts — the routing solver]
+        D8[currency.ts · pdf.ts · notify.ts<br/>totp.ts · otp.ts · sso.ts]
+        D9[observability.ts — logs, counters, percentiles]
     end
 
     subgraph Data
         B1[db/index.ts<br/>lazy driver + migrations]
-        B2[db/schema.ts<br/>Drizzle — 40 tables]
-        B3[drizzle/*.sql — 4 migrations]
+        B2[db/schema.ts<br/>Drizzle — 42 tables]
+        B3[drizzle/*.sql — 5 migrations]
     end
 
     L1 --> L2 & L3 & L4
@@ -77,9 +81,20 @@ flowchart TB
     A2 --> D1 & D2 & D4
     D1 --> B1
     D4 --> B1
+    D6 --> B1
+    D7 --> B1
     B1 --> B2
     B3 -. applied at boot .-> B1
+    M1[middleware.ts<br/>timing, counters, JSON log] -. every request .-> A1 & A2
+    M1 --> D9
 ```
+
+**The job runner and the page bundle share one registry.** Next bundles the
+instrumentation hook and the route handlers separately, so a module-level
+`Map` of jobs would exist twice: the runner would tick through eight jobs
+while the operations screen listed none. The registry therefore lives on
+`globalThis`, and the operations screen imports the job module directly so
+the list is populated even before the instrumentation hook has run.
 
 **The rule that matters:** the presentation layer never decides authorisation.
 A page may hide a button, but the action behind it resolves the permission
@@ -103,6 +118,7 @@ sequenceDiagram
     I->>D: runMigrations()
     D->>P: apply drizzle/*.sql
     I->>D: ensureSeeded()
+    I->>D: register the eight jobs, start the runner
 
     U->>N: POST form
     N->>G: resolve session → user + role
@@ -385,35 +401,54 @@ migrates exactly once, at boot, against the live database.
 ```text
 src/
   app/
-    (auth)/            login · register · forgot/reset password
-    (portal)/          16 role-aware workspace screens
-    actions/           admin.ts (22) · ops.ts (19) · auth.ts (6)
-    api/               health · dispatch/live · driver/sync · reports/export
-                       search · auth/logout · test/session (QA only)
+    (auth)/            login · register · forgot/reset password · otp
+    (portal)/          26 role-aware workspace screens
+    actions/           admin.ts (22) · ops.ts (19) · auth.ts (12) · platform.ts (8)
+    api/               health · metrics · dispatch/live · driver/sync · jobs
+                       reports/export · reports/pdf · search · views/save
+                       views/delete · auth/* (9) · test/session (QA only)
     offline/           the service-worker's offline shell
     fonts.ts           self-hosted Inter / Space Grotesk / JetBrains Mono
     globals.css        every design token
-    instrumentation.ts migrate + seed at server start
+    instrumentation.ts migrate + seed + register the jobs at server start
+    middleware.ts      timing, request counters, one JSON log line per request
   components/
     ui/                Panel · TableWrap · StatusChip · Field · Button · …
+                       pagination.tsx
     shell/             sidebar · topbar · command palette · theme provider
     dispatch/          the Dispatch Command Centre
     marketing/         hero visual · step path
     charts.tsx         hand-drawn SVG charts
     live-map.tsx       the vector map
     action-form.tsx    progressive server-action forms
+    saved-views.tsx    the saved-filter chip bar
   db/
     index.ts           lazy driver · runMigrations()
-    schema.ts          40 tables
+    schema.ts          42 tables
   lib/
     auth.ts            sessions · guards · throttling · audit · scope
-    rbac.ts            8 roles · 16 sections · 15 permissions
+    rbac.ts            8 roles · 20 sections · 15 permissions
     domain.ts          pure rules — routing, capacity, pricing, transitions
     queries.ts         9 analytics aggregations
     validation.ts      zod schemas and bounded form readers
     status.ts          the status vocabulary
+    jobs.ts            the runner · the global job registry
+    scheduled-jobs.ts  the eight registered jobs
+    notify.ts          notification fan-out with a real delivery status
+    currency.ts        multicurrency · conversion · formatting
+    totp.ts            RFC 6238 authenticator codes
+    otp.ts             hashed phone one-time codes
+    sso.ts             OIDC authorisation-code flow with PKCE
+    observability.ts   JSON logs · counters · latency percentiles
+    pdf.ts             the dependency-free PDF writer
+    vrp.ts             Clarke-Wright savings + 2-opt routing solver
+    billing.ts         the shared invoice builder
+    backup.ts          pg_dump and PGlite archives
+    views.ts           saved filter sets
     seed.ts            idempotent demonstration dataset
-drizzle/               4 migrations
+    seed-ext.ts        roles, addresses, assignments, fuel, inspections, rates
+drizzle/               5 migrations
 tests/                 15 domain tests
-scripts/               audit-authz.py · smoke.mjs · dev-session.mjs
+scripts/               audit-authz.py · smoke.mjs · auth-form.mjs
+                       action-invoke.mjs · demo.mjs · copy-migrations.mjs
 ```
