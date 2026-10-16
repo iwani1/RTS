@@ -42,10 +42,10 @@ export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
 function resolveMigrationsFolder(): string {
   const candidates = [
     process.env.MIGRATIONS_FOLDER,
-    path.join(process.cwd(), "drizzle"),
-    path.join(process.cwd(), "..", "drizzle"),
-    path.join(process.cwd(), "..", "..", "drizzle"),
-    path.join(__dirname, "..", "..", "drizzle"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "drizzle"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "..", "drizzle"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "..", "..", "drizzle"),
+    path.join(/*turbopackIgnore: true*/ __dirname, "..", "..", "drizzle"),
   ].filter((value): value is string => Boolean(value));
 
   for (const candidate of candidates) {
@@ -55,7 +55,7 @@ function resolveMigrationsFolder(): string {
   }
   // Fall back to the conventional location so the error message names a
   // sensible path rather than an empty string.
-  return path.join(process.cwd(), "drizzle");
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), "drizzle");
 }
 
 const globalForDb = globalThis as typeof globalThis & {

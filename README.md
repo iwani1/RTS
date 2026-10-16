@@ -132,6 +132,8 @@ Two things to know:
 | "Too many failed attempts. Try again in 15 minutes." | The sign-in throttle saw five failed attempts for that account in fifteen minutes. | Wait for the window to pass, or reset the local database with `rm -rf .data/pgdata` |
 | The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
 | Port 3000 is already in use | Another application is on that port. | `PORT=3100 npm start`, then open `http://localhost:3100` |
+| `getaddrinfo ENOTFOUND <your-machine-name>` | An old build bound to the shell's `HOSTNAME`, which bash sets to the machine's name. | `HOSTNAME=0.0.0.0 npm start` — or pull the latest, where the bind address is decided by the app |
+| The server listens only on loopback | `BIND_HOST` is set to `127.0.0.1`. | `BIND_HOST=0.0.0.0 npm start` |
 
 ### Running the checks yourself
 

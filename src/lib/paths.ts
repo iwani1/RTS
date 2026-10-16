@@ -18,7 +18,10 @@ import path from "node:path";
  * `drizzle/`.
  */
 export function appRoot(): string {
-  const cwd = process.cwd();
+  // The marker tells the bundler not to trace this call for the Edge
+  // runtime. The module is Node-only — it resolves filesystem paths — and
+  // every route that imports it is a Node route.
+  const cwd = /*turbopackIgnore: true*/ process.cwd();
   const marker = `${path.sep}.next${path.sep}standalone`;
   const index = cwd.lastIndexOf(marker);
   if (index > 0) return cwd.slice(0, index);
@@ -37,7 +40,10 @@ export function resolvePath(value: string): string {
 export function pgliteDataDir(): string {
   const configured = process.env.PGLITE_DATA_DIR;
   if (configured) return resolvePath(configured);
-  return path.join(appRoot(), ".data", "pgdata");
+  // The join is scoped to a subfolder of the project so the file tracer can
+  // follow it. An unscoped `path.join(process.cwd(), ...)` would make the
+  // tracer pull the whole project into the server bundle.
+  return path.join(/*turbopackIgnore: true*/ appRoot(), ".data", "pgdata");
 }
 
 /** The directory backup archives are written to. */
