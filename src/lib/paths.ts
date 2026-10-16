@@ -46,3 +46,16 @@ export function backupDir(): string {
   if (configured) return resolvePath(configured);
   return path.join(appRoot(), ".data", "backups");
 }
+
+/**
+ * The file that records which process holds the PGlite data directory.
+ *
+ * PGlite has no lock file of its own, and a second process opening the same
+ * directory fails with an internal error that says nothing about the cause.
+ * This file holds the owner's process id, which is enough to say "another
+ * server is already running against this database" — and to say it in a way
+ * that names the fix.
+ */
+export function databaseLockFile(): string {
+  return `${pgliteDataDir()}.lock`;
+}

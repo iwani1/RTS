@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { metricsSnapshot } from "@/lib/observability";
+import { databaseRecoverySteps, isDatabaseContention } from "@/lib/db-errors";
+import { pgliteDataDir } from "@/lib/paths";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +23,18 @@ export async function GET() {
       uptimeSeconds: metricsSnapshot().uptimeSeconds,
     });
   } catch (error) {
+    // A contended local database is the common failure on a workstation, and
+    // it has a one-command fix. Say so instead of passing on an internal
+    // error that means nothing to the reader.
+    const contention = isDatabaseContention(error);
     return Response.json(
-      { ok: false, database: "unreachable", error: String(error) },
+      {
+        ok: false,
+        database: contention ? "locked" : "unreachable",
+        error: contention
+          ? databaseRecoverySteps(pgliteDataDir())
+          : String(error),
+      },
       { status: 500 },
     );
   }

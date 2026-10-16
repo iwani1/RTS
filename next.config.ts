@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    // Turbopack's Rust heap defaults to 2 GB, which is more than a laptop
+    // needs to compile this app and enough to crowd out everything else. One
+    // gigabyte compiles the same code with a fraction of the resident memory.
+    turbopackMemoryLimit: 1024 * 1024 * 1024,
     serverActions: {
       // The preview proxy terminates TLS and forwards to the app, so the
       // browser's Origin is the public host while the request Host is the

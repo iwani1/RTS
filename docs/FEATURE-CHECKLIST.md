@@ -143,6 +143,8 @@ against a running server.
 | 18 | Multicurrency | ● | `src/lib/currency.ts` + `/currencies` — an `exchange_rates` table with a base currency, inline rate updates with a date stamp, and client agreements billed in their own currency. Rates are indicative, and the screen says so |
 | 19 | Observability stack | ● | `src/proxy.ts` + `src/lib/observability.ts` — one structured JSON log line per request, request counters and latency percentiles, and a Prometheus text endpoint at `/api/metrics` that is session-guarded unless `METRICS_PUBLIC=true` |
 | 20 | Automated backups | ● | The `backup-database` job takes an archive on a schedule — `pg_dump` against a real server, a directory archive under PGlite — and prunes to the configured retention |
+| 21 | Run on a workstation | ● | `npm ci` → `npm run build` → `npm start`, no database server and no setup step — the schema and the seed are applied at boot. `npm run dev:lan` binds to every interface for a phone or a second machine, and `SERVER_ACTION_ALLOWED_ORIGINS` covers a reverse proxy that rewrites the Host header. `npm run test:origin` asserts the guard |
+| 22 | Friendly failure | ● | A root error boundary replaces the blank page with the cause, the recovery command and a reference. A contended local database is named as such, in the browser and in `/api/health`, instead of an internal `adapterFn is not a function` |
 
 Legend: ● implemented · ◐ implemented with a stated, honest limitation ·
 ○ not built.

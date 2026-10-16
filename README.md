@@ -110,6 +110,17 @@ Two things to know:
   SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42 npm run build
   ```
 
+### If something goes wrong
+
+| Symptom | What it means | What to do |
+| --- | --- | --- |
+| `Another process is already using the local database` | A second server opened the same data directory. PGlite is single-process. | Stop the other server, or give this one its own directory: `PGLITE_DATA_DIR=.data/pgdata-dev npm run dev` |
+| `RuntimeError: Aborted()` on start | The data directory was left open by a process that was killed. | `rm -rf .data/pgdata && npm start` — the schema and the seed are rebuilt automatically |
+| A server action returns "Invalid Server Actions request" | The browser's origin does not match the host the request arrived on. | Browse to the same address you typed, or list the public origin in `SERVER_ACTION_ALLOWED_ORIGINS` |
+| `npm run test:smoke` says the session route is missing | The server was started without `TEST_SESSION_TOKEN`. | Start the server with the same value the tests use |
+| The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
+| Port 3000 is already in use | Another application is on that port. | `PORT=3100 npm start`, then open `http://localhost:3100` |
+
 ### Running the checks yourself
 
 With the server running in another terminal:

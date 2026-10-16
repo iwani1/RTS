@@ -159,6 +159,15 @@ executes the same migration files in-process.
 >
 > The seed is idempotent, so the dataset is rebuilt on the next start. The boot path prints this
 > recovery command automatically when the migration fails.
+>
+> The holder of the directory records its process id in `.data/pgdata.lock`. A server that finds a
+> live owner prints the name of that process and the fix before it tries to open the directory, and
+> the error boundary and `/api/health` report the same recovery steps. To run two servers side by
+> side, give each one its own directory:
+>
+> ```bash
+> PGLITE_DATA_DIR=.data/pgdata-dev npm run dev
+> ```
 
 ### Backups
 
@@ -223,6 +232,7 @@ npm run test:smoke   # 67 route checks across all eight roles (server running)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
 npm run test:demo    # the live demo: 54 checks against a running server
+npm run test:origin  # the Server Action origin guard: 5 checks
 npm run build         # production build, no database required
 npm run audit:authz   # server-action authorisation and validation audit
 ```
