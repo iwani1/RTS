@@ -1,0 +1,421 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (Tailwind v4 custom variant). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   TOKENS
+   Single source of truth. See DESIGN.md — nothing outside this file may
+   introduce a colour, radius, duration or shadow.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* -- the dark ramp (absolute, theme-independent) ----------------------
+     Abyss → Carbon → Obsidian → Charcoal. Marketing bands and the offline
+     shell use these directly; the application surfaces come from --canvas
+     and --surface-*. ---------------------------------------------------- */
+  --abyss: #04070a;
+  --carbon: #090c0f;
+  --obsidian: #0f1214;
+  --charcoal: #1a1d1f;
+  --limestone: #f7f6f2;
+
+  /* -- surfaces (warm limestone) ---------------------------------------- */
+  --canvas: #f7f6f2;
+  --surface-1: #ffffff;
+  --surface-2: #f1efe9;
+  --surface-3: #e8e5dc;
+  --line: #e4e0d6;
+  --line-strong: #d3cec0;
+
+  /* -- text ------------------------------------------------------------- */
+  --text-1: #14171a;
+  --text-2: #5a6169;
+  --text-3: #8a9199;
+
+  /* -- brand ------------------------------------------------------------ */
+  --signal: #ff6314;
+  --signal-press: #e0560f;
+  --signal-wash: rgba(255, 99, 20, 0.1);
+  --signal-wash-strong: rgba(255, 99, 20, 0.16);
+  --signal-ink: #0b0c0e;
+  --signal-text: #d9490a;
+
+  /* -- status lights ---------------------------------------------------- */
+  --st-live: #0284c7;
+  --st-ok: #0e9f6e;
+  --st-scheduled: #4f46e5;
+  --st-caution: #b45309;
+  --st-critical: #dc2626;
+  --st-idle: #8a9199;
+
+  --st-live-wash: rgba(2, 132, 199, 0.1);
+  --st-ok-wash: rgba(14, 159, 110, 0.1);
+  --st-scheduled-wash: rgba(79, 70, 229, 0.1);
+  --st-caution-wash: rgba(180, 83, 9, 0.1);
+  --st-critical-wash: rgba(220, 38, 38, 0.1);
+  --st-idle-wash: rgba(138, 145, 153, 0.12);
+
+  /* -- chart series (fixed order, never reordered) ---------------------- */
+  --series-1: #ff6314;
+  --series-2: #0e9f6e;
+  --series-3: #0284c7;
+  --series-4: #b45309;
+  --series-5: #c2417a;
+  --series-6: #4f46e5;
+
+  /* -- shape ------------------------------------------------------------ */
+  --radius-control: 8px;
+  --radius-card: 8px;
+
+  /* -- density ---------------------------------------------------------- */
+  --row-h: 40px;
+  --cell-pad-x: 12px;
+  --cell-pad-y: 10px;
+  --gap: 16px;
+
+  /* -- layout ----------------------------------------------------------- */
+  --rail-w: 244px;
+
+  /* -- elevation: hairline + inset highlight, never a drop shadow -------- */
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --edge-dark: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --canvas: #04070a;
+  --surface-1: #090c0f;
+  --surface-2: #0f1214;
+  --surface-3: #15191c;
+  --line: #1a1d1f;
+  --line-strong: #242a2e;
+
+  --text-1: #f0f5fa;
+  --text-2: #a8b2bb;
+  --text-3: #676f7a;
+
+  --signal: #ff6314;
+  --signal-press: #ff7a3a;
+  --signal-wash: rgba(255, 99, 20, 0.13);
+  --signal-wash-strong: rgba(255, 99, 20, 0.2);
+  --signal-ink: #0b0c0e;
+  --signal-text: #ff8a4d;
+
+  --st-live: #16c4ff;
+  --st-ok: #33ffac;
+  --st-scheduled: #5b76ff;
+  --st-caution: #f5b841;
+  --st-critical: #ff3b47;
+  --st-idle: #676f7a;
+
+  --st-live-wash: rgba(22, 196, 255, 0.12);
+  --st-ok-wash: rgba(51, 255, 172, 0.12);
+  --st-scheduled-wash: rgba(91, 118, 255, 0.12);
+  --st-caution-wash: rgba(245, 184, 65, 0.12);
+  --st-critical-wash: rgba(255, 59, 71, 0.12);
+  --st-idle-wash: rgba(103, 111, 122, 0.14);
+
+  --series-1: #ff6314;
+  --series-2: #33ffac;
+  --series-3: #16c4ff;
+  --series-4: #f5b841;
+  --series-5: #ff7a9c;
+  --series-6: #5b76ff;
+
+  --edge: none;
+  --edge-dark: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+/* The rail collapses to icons; the page gutter follows it. */
+[data-rail="collapsed"] {
+  --rail-w: 64px;
+}
+
+/* Compact density: the same information, less vertical space. */
+[data-density="compact"] {
+  --row-h: 32px;
+  --cell-pad-x: 10px;
+  --cell-pad-y: 6px;
+  --gap: 12px;
+}
+
+@theme inline {
+  --color-abyss: var(--abyss);
+  --color-carbon: var(--carbon);
+  --color-obsidian: var(--obsidian);
+  --color-charcoal: var(--charcoal);
+  --color-limestone: var(--limestone);
+
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--text-1);
+  --color-ink-2: var(--text-2);
+  --color-ink-3: var(--text-3);
+
+  --color-signal: var(--signal);
+  --color-signal-press: var(--signal-press);
+  --color-signal-wash: var(--signal-wash);
+  --color-signal-ink: var(--signal-ink);
+  --color-signal-text: var(--signal-text);
+
+  --color-st-live: var(--st-live);
+  --color-st-ok: var(--st-ok);
+  --color-st-scheduled: var(--st-scheduled);
+  --color-st-caution: var(--st-caution);
+  --color-st-critical: var(--st-critical);
+  --color-st-idle: var(--st-idle);
+
+  --color-st-live-wash: var(--st-live-wash);
+  --color-st-ok-wash: var(--st-ok-wash);
+  --color-st-scheduled-wash: var(--st-scheduled-wash);
+  --color-st-caution-wash: var(--st-caution-wash);
+  --color-st-critical-wash: var(--st-critical-wash);
+  --color-st-idle-wash: var(--st-idle-wash);
+
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --ease-instrument: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings, navigation, buttons, labels — the angular display voice. */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Every number that is read down a column aligns. */
+.tnum,
+table td,
+table th {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus: one visible, consistent ring everywhere. */
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--signal-wash-strong);
+  color: var(--text-1);
+}
+
+/* Scrollbars — thin, recessive. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+  background-clip: content-box;
+}
+
+/* The live status light. The only looping animation in the app. */
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--st-live) 55%, transparent);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--st-live) 0%, transparent);
+  }
+}
+.pulse-live {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+/* The route drawing itself on the live map. */
+@keyframes draw {
+  from {
+    stroke-dashoffset: var(--dash, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw-in {
+  animation: draw 320ms var(--ease-instrument) forwards;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 420ms var(--ease-instrument) both;
+}
+
+/* Instruments settle; nothing bounces. */
+@keyframes tick {
+  from {
+    transform: scale(0.94);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.tick {
+  animation: tick 160ms var(--ease-instrument);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .draw-in {
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+/* Hairline surface separation. Depth is tonal — never a drop shadow. */
+@utility surface {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+  box-shadow: var(--edge);
+}
+
+@utility surface-raised {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  box-shadow: var(--edge);
+}
+
+@utility hairline-b {
+  border-bottom: 1px solid var(--line);
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--line);
+}
+
+@utility hairline-r {
+  border-right: 1px solid var(--line);
+}
+
+/* The mono eyebrow used above section headings. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Numeric readouts: mono, tabular, tight. */
+@utility numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@utility grid-noise {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@utility scroll-fade {
+  mask-image: linear-gradient(to bottom, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+}
+
+/* ==========================================================================
+   PRINT
+   ========================================================================== */
+
+@media print {
+  aside,
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .surface,
+  .surface-raised {
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+.data/
+*.log
+.env
+.env.local
+.DS_Store
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Local QA scratch
+/tmp-token.txt

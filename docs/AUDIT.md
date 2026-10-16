@@ -1,0 +1,354 @@
+# StaffRide — System Audit
+
+**Date:** 2026-10-16
+**Scope:** the whole application — build pipeline, database, authentication, authorisation, tenant isolation, input validation, design conformance, and the deliverable set required by the master build prompt.
+**Method:** every finding below was read out of the source or reproduced with a command. Nothing is inferred from naming. Where a finding could not be confirmed by reading, it is not listed as a defect.
+
+---
+
+## 1. Verdict
+
+| Gate | Before | After |
+| --- | --- | --- |
+| `npx next build` | **FAILED** — page-data collection opened the database | **PASS** |
+| `npx tsc --noEmit` | PASS | PASS |
+| `npx eslint src` | **4 errors** | **0 errors** |
+| `npm test` (node:test) | 15/15 | 15/15 |
+| `drizzle-kit check` | no drift | no drift |
+| Route smoke test (8 roles) | not present | **67/67 checks pass** |
+| Server actions without an authz guard | 5 (all legitimately anonymous) | 5 (all legitimately anonymous) |
+| Server actions reading form data with no validator | 46 | **0** |
+| Screens on the legacy component API | 8 | **0** |
+| Emoji in the interface | 13 | **0** |
+| Missing spec deliverables | 5 | **0** |
+
+The blocking defect was the build. Everything else on this page was a real
+defect, a hardening opportunity, or a missing deliverable — and all of them
+are now closed or explicitly documented as a limitation.
+
+---
+
+## 2. Findings and resolutions
+
+### P0 — blocking
+
+#### P0-1 · The production build could not complete
+**Evidence.** `rm -rf .next && npx next build` compiled and typechecked, then
+failed at page-data collection:
+
+```
+Failed to collect page data for /api/auth/logout
+  Failed query: CREATE SCHEMA IF NOT EXISTS "drizzle"
+  RuntimeError: Aborted()
+```
+
+`src/db/index.ts` constructed `new PGlite(dataDir)` and awaited
+`migrated` at **module scope**. `next build` imports every route module to
+collect page data, so the build opened a database, ran migrations against it,
+and then failed. Beyond breaking the build, this meant a production compile
+would apply migrations to the target database as a side effect of building.
+
+**Resolution.** The driver is now created lazily on first query
+(`src/db/index.ts`), the module-scope `await migrated` is gone, and
+`runMigrations()` is exported. Migrations and seeding now run from
+`src/instrumentation.ts` `register()`, which Next invokes at **server start**,
+never during a build. The PGlite path is additionally scoped with
+`turbopackIgnore` comments so the file tracer stops tracing the whole project.
+
+**Verification.** `npx next build` → 37 routes compiled, 0 warnings, 0 errors.
+
+---
+
+### P1 — security
+
+#### P1-0 · The sign-in form could not be submitted without JavaScript
+**Evidence.** A no-JS browser posts the `useActionState` form with
+`encType="multipart/form-data"`. Next 16.2.6 only accepts
+`application/x-www-form-urlencoded` on its no-JS server-action path
+([vercel/next.js#95447](https://github.com/vercel/next.js/issues/95447)), so
+the request was parsed as urlencoded, the action reference was never
+resolved, and the server answered:
+
+```
+Failed to find Server Action. This request might be from an older or newer deployment.
+```
+
+A user whose script bundle failed to load — a corporate proxy that strips
+JavaScript, a device with scripting disabled, a transient 500 from a CDN —
+could not sign in at all. Every other screen needs JavaScript, but the gateway
+did not have to.
+
+**Resolution.** The four public auth screens (sign in, register, recover,
+reset) now post to real route handlers:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /api/auth/login` | Verifies credentials, issues the session, redirects to the role home route |
+| `POST /api/auth/register` | Creates a pending or self-activating account |
+| `POST /api/auth/forgot-password` | Issues a single-use reset token |
+| `POST /api/auth/reset-password` | Consumes the token and sets the new password |
+
+Each handler calls the **same server action** that the JavaScript path used,
+so there is exactly one implementation of the credential rules, the throttling
+and the audit trail. The handler only adapts the HTTP shape: it turns the
+action's result into a `303` redirect carrying a message, which the page
+renders as an inline notice. `scripts/auth-form.mjs` asserts the whole flow
+(bad password → friendly error, good password → session cookie → authenticated
+page, logout, neutral reset response) and runs in CI.
+
+
+#### P1-1 · Session bearer tokens were stored in plaintext
+**Evidence.** `sessions.token` was the primary key and held the raw cookie
+value. `createSession` wrote the token, `getSessionUser` read it back. A read
+of the database — a leaked backup, a SQL injection elsewhere, a misconfigured
+replica — would hand over every live session in the platform.
+
+**Resolution.** `sessions.token` → `sessions.token_hash` (migration
+`0003_hash_session_tokens.sql`). The cookie still carries the raw token; the
+database carries its SHA-256. Lookups hash the cookie value before querying.
+Pre-existing sessions were invalidated by the migration, because they stored
+raw tokens that can no longer be matched.
+
+#### P1-2 · Password-reset tokens were stored in plaintext
+**Evidence.** `requestPasswordResetAction` inserted `tokenHash: token` — the
+raw token, in a column named `token_hash`. `resetPasswordAction` matched on
+it with `eq(passwordResets.tokenHash, token)`. Anyone with read access to
+`password_resets` could reset any account's password.
+
+**Resolution.** The token is hashed with the same `hashToken()` helper before
+it is written, and the lookup hashes the submitted token.
+
+#### P1-3 · Authentication was not rate limited
+**Evidence.** `login_attempts` existed in the schema with an index on
+`(identifier, created_at)` and was **never written to**. `loginAction` was an
+unthrottled oracle, and `scryptSync` meant every attempt blocked the event
+loop — a password spray was also a denial of service.
+
+**Resolution.** `assertLoginAllowed()` counts failures per identifier inside a
+15-minute window and locks after five. `recordLoginAttempt()` writes every
+attempt (success and failure). The reset-password request path is throttled
+separately so it cannot be used to spam mailboxes. The lockout response is
+identical for a wrong password and a wrong two-factor code, and the reset
+request returns the same message whether or not the account exists.
+
+#### P1-4 · No input validation on 46 server actions
+**Evidence.** Zero zod usage across the action layer. The form reader was
+`const num = (fd, key) => raw === "" ? null : Number(raw)` — `Number("abc")`
+is `NaN`, so a malformed id reached the database as `eq(employees.id, NaN)` and
+surfaced as a 500 rather than a friendly message. Strings were unbounded.
+
+**Resolution.**
+- A new `src/lib/validation.ts` provides zod schemas and bounded form readers
+  (`requiredString`, `optionalNumber`, `optionalEnum`, `passwordPair`, …).
+- The `num`/`dec` helpers now return `null` for anything that is not a finite
+  number, so a malformed id is treated as "missing" and produces the action's
+  own friendly error.
+- `str` caps input length at the column width.
+- The auth actions (login, register, reset, change password) and
+  `inviteUserAction` validate with zod end to end.
+
+**Verification.** `scripts/audit-authz.py` → *unvalidated actions: 0*.
+
+#### P1-5 · A corporate administrator could write to another tenant's employees
+**Evidence.** `toggleEmployeeAction` and `assignEmployeeShiftAction` are
+guarded by `employee.manage`, which includes `corporate_admin`, but they
+updated `employees` with only `eq(employees.id, id)` — no `companyId` check. A
+corporate HR administrator could deactivate, or re-shift, an employee belonging
+to a different client.
+
+**Resolution.** Both actions now load the target employee, compare its
+`companyId` against `companyScope(user)`, and refuse when they differ.
+`assignEmployeeShiftAction` additionally verifies that the target shift belongs
+to the same company as the employee.
+
+#### P1-6 · Branch and shift ids were not tenant-validated
+**Evidence.** `createEmployeeAction`, `importEmployeesAction` and
+`createShiftAction` accepted a `branchId` / `shiftId` straight from the form.
+A corporate administrator could attach another tenant's branch to their
+employee record, and a stale or hostile id would point an employee at someone
+else's office.
+
+**Resolution.** `resolveBranchId()` and `resolveShiftId()` load the referenced
+row and return `false` when it belongs to a different company; the action then
+refuses with a specific message.
+
+#### P1-7 · Password hashing blocked the event loop
+**Evidence.** `hashPassword` used `scryptSync`. scrypt is deliberately slow —
+that is the point — but synchronously it stalls every request on the server.
+Combined with the missing rate limit (P1-3), a burst of login attempts was a
+self-inflicted denial of service.
+
+**Resolution.** `hashPassword` and `verifyPassword` are now async and use
+`promisify(scrypt)`. All call sites await them. The comparison is a constant-
+time `timingSafeEqual`.
+
+#### P1-8 · A permission failure produced a 500 instead of a 403
+**Evidence.** `guard()` and `requirePermission()` threw a raw `Error`, which
+Next renders as a 500 error page. The user was told the server broke, not
+that they may not do the thing.
+
+**Resolution.** `src/lib/action-guard.ts` introduces `PermissionError` and
+`ValidationError`, and `withAction()` wraps every one of the 48 server
+actions. A thrown error now becomes an inline, friendly message; a permission
+failure reads as a permission failure. Postgres constraint violations are
+translated ("That record already exists.", "That record is still referenced
+elsewhere."). Next's control-flow errors (`redirect`, `notFound`) are
+re-thrown untouched.
+
+---
+
+### P2 — robustness and operations
+
+#### P2-0 · The standalone container could not find its migrations
+**Evidence.** `next build` with `output: "standalone"` emits
+`.next/standalone/server.js`, and that server changes the working directory to
+the bundle folder. The migration runner resolved `drizzle/` from
+`process.cwd()`, so the container booted with:
+
+```
+[staffride] Database migration failed.
+  Can't find meta/_journal.json file
+```
+
+**Resolution.** `resolveMigrationsFolder()` in `src/db/index.ts` walks a list of
+candidates — `MIGRATIONS_FOLDER`, the working directory, its parents, and the
+bundle root — and selects the first that actually contains
+`meta/_journal.json`. A `postbuild` step also copies `drizzle/` into
+`.next/standalone/drizzle`, so the artifact is self-contained.
+
+
+
+| # | Finding | Resolution |
+| --- | --- | --- |
+| P2-1 | `getSessionUser` swallowed every error, so a database outage presented as "everyone is logged out" | The catch was removed. A database failure now fails loudly instead of silently signing the fleet out. |
+| P2-2 | No way to revoke every session for a user | New `revokeUserSessionsAction` (super admin / operations manager), surfaced as a "Sign out" row action on `/settings`. Deactivating a user already killed their sessions; this handles a lost device. |
+| P2-3 | The CSV export route hand-rolled a second copy of the tenant-scope rules | It now calls `companyScope(user)`, the same helper the rest of the app uses. |
+| P2-4 | The PWA manifest was referenced from the root layout but no `public/` directory existed — `/manifest.webmanifest` returned 404 | `public/manifest.webmanifest` and a four-size icon set were generated from the design tokens. A `sw.js` service worker, an `/offline` shell and `PwaRegister` complete the installable PWA requirement for the driver and passenger apps. |
+| P2-5 | Four ESLint `react-hooks/set-state-in-effect` errors | Theme, density and the sidebar rail are `localStorage`-backed external state and are now read with `useSyncExternalStore` (with a stable server snapshot, so hydration stays clean). The command palette mounts its body only while open, which removes the reset effect entirely. |
+| P2-6 | The dev server rejected the sandboxed preview origin, so the live preview's HMR socket never connected | `allowedDevOrigins` added to `next.config.ts`. |
+| P2-7 | A corrupt local PGlite directory aborted the server with an opaque WASM error and no recovery hint | The boot path now prints the cause and the exact recovery command. The underlying cause was a second process writing to the single-process PGlite directory — documented in `docs/OPERATIONS.md`. |
+
+---
+
+### P3 — design conformance
+
+`DESIGN.md` is a contract, not a mood board. Eight screens were still rendered
+with the pre-contract component API and the old palette, and thirteen emoji
+were embedded in the interface.
+
+**Resolution.** All eight screens — `settings`, `reports`, `companies/[id]`,
+`trips/[id]`, `passenger`, `passenger/trips`, `driver`, `driver/trip/[id]` —
+were rewritten onto `Panel` / `MetricStrip` / `TableWrap` / `StatusChip` /
+`Field` / `Button` / `Notice`. The legacy shims (`Card`, `StatCard`,
+`StatusBadge`, `Table`, `Td`, `LinkButton`, `inputClass`, `buttonClass`) were
+**deleted** from `src/components/ui/index.tsx` so no new screen can drift back
+to the old API. The landing page and the documentation page were rebuilt on
+the marketing spine (asymmetric hero, real product visual, proof numbers read
+from the database, pillar grid, step path, security band, full-bleed CTA band,
+editorial footer).
+
+**Verification.** No legacy component usage remains; zero emoji in `src/`.
+
+---
+
+### P3 — deliverable gaps
+
+The master prompt lists sixteen deliverables. Five were missing.
+
+| Deliverable | Status |
+| --- | --- |
+| Seed data | Present — `src/lib/seed.ts`, `src/lib/seed-ext.ts`, idempotent |
+| `.env.example` | Present — extended with `PGLITE_DATA_DIR`, `SEED_ON_BOOT`, `TEST_SESSION_TOKEN` |
+| Automated tests | Present — 15 domain tests (`npm test`) + `scripts/smoke.mjs` (67 route checks) |
+| Setup / deploy documentation | Present — `README.md`, `docs/OPERATIONS.md` |
+| API documentation | Present — `docs/API.md` |
+| Architecture + database diagrams | **Added** — `docs/ARCHITECTURE.md` (Mermaid) |
+| Operational SOPs | Present — `docs/OPERATIONS.md`, `/docs#operations` |
+| Phased roadmap | Present — `/docs#roadmap`, `docs/prompt-gap-map.md` |
+| Feature checklist | **Added** — `docs/FEATURE-CHECKLIST.md` |
+| Container-ready | **Added** — `Dockerfile`, `.dockerignore` |
+| CI/CD | **Added** — `.github/workflows/ci.yml` |
+| Audit report | **Added** — this document |
+
+---
+
+## 3. Verified as *not* broken
+
+These were checked against the source and deliberately left alone:
+
+- `reportIncidentFromAppAction` — delegates to the guarded `createIncidentAction`.
+- `createBookingAction` — scoped to the caller's own employee row.
+- `decideBookingAction` — corporate administrator company check present.
+- `driverTripAction` and `api/driver/sync` — trip-ownership checks present.
+- `api/reports/export` — role check and tenant scope present.
+- `createEmployeeAction` / `importEmployeesAction` / `createShiftAction` — company forced to the caller's own for a corporate administrator (plus the new branch/shift checks).
+- `api/auth/logout` and `api/health` — intentionally unauthenticated.
+- Drizzle schema and migrations — no drift (`drizzle-kit check` clean, `generate` produces nothing).
+- The 15 domain tests — pricing, capacity, routing and transition rules all pass.
+
+---
+
+## 4. Known limitations (deliberate, documented, not defects)
+
+1. **Mapping provider.** The map is a hand-drawn vector lattice with honest
+   labelling. A Mapbox or Google key is required for a road basemap.
+2. **SMS, email and push.** Notifications are persisted in-app and delivered on
+   login. Provider delivery needs SMTP / Arkesel / Firebase credentials.
+3. **Payments.** Payment rows are reconciliation entries. A live gateway needs
+   Paystack or Flutterwave credentials.
+4. **Two-factor authentication.** The demo stores a server-side code. Production
+   should use TOTP or SMS.
+5. **Recurring bookings.** Stored as a rule on the booking; a scheduler job must
+   expand them into daily instances.
+6. **Geofenced arrival detection.** Modelled (arrival timestamps, grace
+   windows) but not automated — that needs a telematics feed.
+7. **Realtime.** The dispatch board polls `/api/dispatch/live`. The upgrade path
+   to SSE is documented; WebSockets are not implemented.
+8. **PDF export.** CSV is generated server side; PDF uses the browser print
+   dialog with the print stylesheet.
+9. **Recurring scheduler, OR-Tools VRP, SSO/SAML, multicurrency, native mobile
+   apps and a queue worker** are Phase 4 and are listed as pending in
+   `docs/FEATURE-CHECKLIST.md`.
+10. **PGlite is single-process.** The local fallback database cannot be opened
+    by two processes at once. Production uses `DATABASE_URL` and has no such
+    limit.
+11. **JavaScript is required inside the authenticated app.** The public auth
+    screens work without it (see P1-0), but the command centre, the live map,
+    the inspector drawer and the data tables are client components. This is the
+    same trade-off every Next.js application makes; a no-JS build would need a
+    different rendering strategy.
+12. **The password-reset link is shown on screen.** No mail provider is
+    configured in this environment, so the token is returned to the user
+    instead of being emailed. An attacker who can read the response can also
+    learn whether an account exists. Wiring an SMTP provider closes both.
+
+---
+
+## 5. How to re-run this audit
+
+```bash
+npx tsc --noEmit -p tsconfig.json      # types
+npx eslint src                          # lint
+npm test                                # domain rules (node:test)
+npx drizzle-kit check                   # schema / migration drift
+python3 scripts/audit-authz.py          # server-action authorisation + validation
+npx next build                          # production build
+rm -rf .next && npx next build          # from a cold cache
+```
+
+With the server running:
+
+```bash
+TEST_SESSION_TOKEN=local-qa-token node scripts/smoke.mjs   # 67 route checks, 8 roles
+node scripts/auth-form.mjs                                 # native (no-JS) auth flow
+node scripts/action-invoke.mjs                             # server-action transport + guards
+```
+
+---
+
+## 6. Tracking the remaining work
+
+`docs/prompt-gap-map.md` §3 holds the 30-item gap list (T0 foundation, T1
+schema ports, T2 features, T3 interface rebuild). Every T0 and T1 item and
+every T3 item in that list is now closed. The open T2 items are listed with
+their status in `docs/FEATURE-CHECKLIST.md`.

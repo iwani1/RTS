@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.github
+.data
+out
+coverage
+*.zip
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+docs
+DESIGN.md
+README.md

@@ -1,0 +1,52 @@
+{
+  "name": "StaffRide — Staff Transportation Management",
+  "short_name": "StaffRide",
+  "description": "Enterprise staff transportation: dispatch, fleet, driver and passenger operations in one platform.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#04070A",
+  "theme_color": "#04070A",
+  "categories": ["business", "productivity", "navigation"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dispatch board",
+      "short_name": "Dispatch",
+      "url": "/dispatch",
+      "description": "Live trip board and assignments"
+    },
+    {
+      "name": "Driver duties",
+      "short_name": "Driver",
+      "url": "/driver",
+      "description": "Today's duties and trip actions"
+    },
+    {
+      "name": "My trips",
+      "short_name": "Passenger",
+      "url": "/passenger/trips",
+      "description": "Bookings and journey status"
+    }
+  ]
+}
