@@ -42,4 +42,23 @@ export async function register() {
       console.error("[staffride] seed failed:", (error as Error).message);
     }
   }
+
+  // Register the scheduled jobs and start the runner. Importing the module is
+  // what registers the jobs; the runner then keeps them ticking.
+  try {
+    await import("./lib/scheduled-jobs");
+    const { startJobRunner, runBootJobs } = await import("./lib/jobs");
+    if (process.env.JOBS_ENABLED !== "false") {
+      const outcomes = await runBootJobs();
+      for (const outcome of outcomes) {
+        console.log(
+          `[staffride] job ${outcome.name}: ${outcome.status} (${outcome.durationMs}ms)`,
+        );
+      }
+      startJobRunner();
+    }
+  } catch (error) {
+    // The job runner is not a reason to refuse to serve traffic.
+    console.error("[staffride] job runner failed to start:", (error as Error).message);
+  }
 }

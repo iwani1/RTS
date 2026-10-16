@@ -7,6 +7,7 @@ import { employees, passwordResets, users } from "@/db/schema";
 import {
   assertLoginAllowed,
   createSession,
+  requireUser,
   destroySession,
   generateToken,
   getSessionUser,
@@ -21,6 +22,13 @@ import { homeFor } from "@/lib/auth";
 import type { Role } from "@/lib/rbac";
 import type { ActionState } from "@/components/action-form";
 import { withAction } from "@/lib/action-guard";
+import { issueOtp, verifyOtp } from "@/lib/otp";
+import {
+  generateBase32Secret,
+  otpauthUri,
+  totp,
+  verifyTotp,
+} from "@/lib/totp";
 import {
   emailSchema,
   nameSchema,
@@ -62,7 +70,19 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
     await recordLoginAttempt(email, false);
     return { ok: false, message: `Account is ${user.status}. Contact your administrator to activate it.` };
   }
-  if (PRIVILEGED.includes(user.role as Role) && user.twoFactorEnabled) {
+  if (user.totpEnabled && user.totpSecret) {
+    // A real authenticator app: the code is derived from a shared secret and
+    // verified against a one-period clock drift window.
+    if (!code) {
+      return { ok: false, message: "Enter the code from your authenticator app." };
+    }
+    if (!verifyTotp(user.totpSecret, code)) {
+      await recordLoginAttempt(email, false);
+      return { ok: false, message: "That authenticator code is not valid." };
+    }
+  } else if (PRIVILEGED.includes(user.role as Role) && user.twoFactorEnabled) {
+    // Legacy second factor: a server-held code, used by the demonstration
+    // accounts until an operator enrols an authenticator app.
     if (!code) return { ok: false, message: "Two-factor code required for privileged accounts." };
     if (code !== user.twoFactorCode) {
       await recordLoginAttempt(email, false);
@@ -267,6 +287,182 @@ export async function changeOwnPasswordAction(
   formData: FormData,
 ): Promise<ActionState> {
   return withAction(changeOwnPasswordAction__impl)(_prev, formData);
+}
+
+/**
+ * Request a one-time code for phone sign-in.
+ *
+ * With no SMS provider configured the code is returned on screen, labelled as
+ * a demonstration delivery. The app never claims a message was sent when it
+ * was not.
+ */
+export async function requestPhoneOtpAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const emailResult = requiredString(formData, "email", emailSchema);
+  if (!emailResult.ok) return { ok: false, message: emailResult.message };
+  const email = emailResult.value;
+
+  const throttle = await assertLoginAllowed(`otp:${email}`);
+  if (!throttle.allowed) {
+    return {
+      ok: false,
+      message: `Too many requests. Try again in ${throttle.retryInMinutes} minutes.`,
+    };
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user || user.status !== "active") {
+    // The same response either way, so the endpoint cannot enumerate accounts.
+    return {
+      ok: true,
+      message: "If that account exists, a sign-in code has been sent.",
+    };
+  }
+
+  const issued = await issueOtp({ userId: user.id, channel: "sms", purpose: "login" });
+  if (!issued) return { ok: false, message: "The code could not be issued." };
+
+  await logAudit({
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, status: user.status, twoFactorEnabled: user.twoFactorEnabled },
+    action: "auth.otp_requested",
+    entity: "user",
+    entityId: user.id,
+  });
+
+  if (issued.deliveredExternally) {
+    return { ok: true, message: "A sign-in code has been sent to your phone." };
+  }
+  return {
+    ok: true,
+    message: `Demonstration delivery — no SMS provider is configured, so the code is shown here: ${issued.code} (valid for 10 minutes).`,
+    data: { code: issued.code },
+  };
+}
+
+/** Verify a one-time code and sign the user in. */
+export async function verifyPhoneOtpAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const emailResult = requiredString(formData, "email", emailSchema);
+  if (!emailResult.ok) return { ok: false, message: emailResult.message };
+  const email = emailResult.value;
+  const code = String(formData.get("code") ?? "").trim();
+
+  const throttle = await assertLoginAllowed(`otp:${email}`);
+  if (!throttle.allowed) {
+    return {
+      ok: false,
+      message: `Too many attempts. Try again in ${throttle.retryInMinutes} minutes.`,
+    };
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user || user.status !== "active") {
+    return { ok: false, message: "Invalid email or code." };
+  }
+
+  const verified = await verifyOtp(user.id, "login", code);
+  if (!verified.ok) {
+    await recordLoginAttempt(email, false);
+    return { ok: false, message: verified.message };
+  }
+
+  await recordLoginAttempt(email, true);
+  await createSession(user.id);
+  await logAudit({
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, status: user.status, twoFactorEnabled: user.twoFactorEnabled },
+    action: "auth.login",
+    entity: "user",
+    entityId: user.id,
+    details: { method: "otp" },
+  });
+  redirect(homeFor(user.role as Role));
+}
+
+/**
+ * Start enrolling an authenticator app.
+ *
+ * The secret is generated and stored, but the feature stays off until the
+ * user proves they can generate a code from it.
+ */
+export async function enableTotpAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await requireUser();
+  const secret = generateBase32Secret();
+  await db.update(users).set({ totpSecret: secret }).where(eq(users.id, user.id));
+  await logAudit({
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, status: user.status, twoFactorEnabled: user.twoFactorEnabled },
+    action: "auth.totp_enrolment_started",
+    entity: "user",
+    entityId: user.id,
+  });
+  return {
+    ok: true,
+    message:
+      "Add the key to your authenticator app, then enter the six-digit code it shows to finish.",
+    data: {
+      secret,
+      uri: otpauthUri(secret, user.email),
+      // A current code, so the enrolment can be completed in one step in an
+      // environment with no authenticator app to hand.
+      code: totp(secret),
+    },
+  };
+}
+
+/** Finish enrolment by proving the app can generate a code. */
+export async function confirmTotpAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await requireUser();
+  const [row] = await db
+    .select({ secret: users.totpSecret, email: users.email })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+  if (!row?.secret) {
+    return { ok: false, message: "Start the enrolment before confirming it." };
+  }
+  const code = String(formData.get("code") ?? "").trim();
+  if (!verifyTotp(row.secret, code)) {
+    return { ok: false, message: "That code did not match. Check your app and try again." };
+  }
+  await db
+    .update(users)
+    .set({ totpEnabled: true })
+    .where(eq(users.id, user.id));
+  await logAudit({
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, status: user.status, twoFactorEnabled: user.twoFactorEnabled },
+    action: "auth.totp_enabled",
+    entity: "user",
+    entityId: user.id,
+  });
+  return { ok: true, message: "Authenticator app enabled. It will be required at your next sign-in." };
+}
+
+/** Turn the authenticator app off. */
+export async function disableTotpAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await requireUser();
+  await db
+    .update(users)
+    .set({ totpEnabled: false, totpSecret: null })
+    .where(eq(users.id, user.id));
+  await logAudit({
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, status: user.status, twoFactorEnabled: user.twoFactorEnabled },
+    action: "auth.totp_disabled",
+    entity: "user",
+    entityId: user.id,
+  });
+  return { ok: true, message: "Authenticator app turned off." };
 }
 
 export async function logoutAction(): Promise<void> {

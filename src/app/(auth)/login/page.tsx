@@ -26,6 +26,8 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string; notice?: string }>;
 }) {
   const { error, notice } = await searchParams;
+  const { oidcConfig } = await import("@/lib/sso");
+  const ssoAvailable = Boolean(oidcConfig());
   const user = await getSessionUser();
   if (user) redirect(homeFor(user.role as Role));
 
@@ -72,12 +74,15 @@ export default async function LoginPage({
         </div>
       </AuthForm>
 
-      <div className="mt-4 flex items-center justify-between text-[12.5px]">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[12.5px]">
         <Link
           href="/forgot-password"
           className="text-ink-2 transition-colors hover:text-ink"
         >
           Forgot password?
+        </Link>
+        <Link href="/otp" className="text-ink-2 transition-colors hover:text-ink">
+          Sign in with a code
         </Link>
         <Link
           href="/register"
@@ -86,6 +91,25 @@ export default async function LoginPage({
           Create an account
         </Link>
       </div>
+
+      {ssoAvailable ? (
+        <div className="mt-5">
+          <Link
+            href="/api/auth/oidc"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-line-strong px-4 font-display text-[13.5px] font-medium text-ink transition-colors hover:bg-surface-2"
+          >
+            Continue with single sign-on
+          </Link>
+        </div>
+      ) : (
+        <p className="mt-5 text-[11.5px] leading-relaxed text-ink-3">
+          Single sign-on is available once an OpenID Connect provider is configured
+          (<code className="numeric">OIDC_ISSUER</code>,{" "}
+          <code className="numeric">OIDC_CLIENT_ID</code>,{" "}
+          <code className="numeric">OIDC_CLIENT_SECRET</code>). Password and one-time
+          code sign-in are active now.
+        </p>
+      )}
 
       <Panel
         className="mt-8"

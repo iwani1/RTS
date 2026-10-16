@@ -93,6 +93,8 @@ type FieldProps = {
   options?: Array<{ value: string; label: string }>;
   rows?: number;
   autoComplete?: string;
+  /** Numeric keypad hint on mobile, e.g. for a one-time code. */
+  inputMode?: "text" | "numeric" | "decimal" | "tel" | "email" | "url" | "search";
   min?: string | number;
   max?: string | number;
   step?: string | number;
@@ -113,6 +115,7 @@ export function Field({
   options,
   rows,
   autoComplete,
+  inputMode,
   min,
   max,
   step,
@@ -153,6 +156,7 @@ export function Field({
             placeholder={placeholder}
             defaultValue={defaultValue ?? undefined}
             autoComplete={autoComplete}
+            inputMode={inputMode}
             min={min}
             max={max}
             step={step}

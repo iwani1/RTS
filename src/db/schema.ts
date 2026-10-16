@@ -271,6 +271,12 @@ export const users = pgTable(
     }),
     twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
     twoFactorCode: varchar("two_factor_code", { length: 12 }),
+    /** Base32 TOTP shared secret (RFC 6238). Null until the user enrols. */
+    totpSecret: varchar("totp_secret", { length: 64 }),
+    totpEnabled: boolean("totp_enabled").notNull().default(false),
+    /** Identity provider key and subject for SSO sign-in. */
+    ssoProvider: varchar("sso_provider", { length: 40 }),
+    ssoSubject: varchar("sso_subject", { length: 160 }),
     invitationToken: varchar("invitation_token", { length: 80 }),
     invitedById: integer("invited_by_id"),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
@@ -726,6 +732,10 @@ export const serviceAgreements = pgTable(
     /** Flat charge applied to every ad-hoc / emergency trip. */
     extraTripCharge: money("extra_trip_charge").default("250.00"),
     status: varchar("status", { length: 30 }).notNull().default("active"),
+    /** Day of the month the monthly invoice is raised by the scheduler. */
+    billingDay: integer("billing_day").notNull().default(1),
+    /** Whether the scheduler may raise invoices for this agreement. */
+    autoInvoice: boolean("auto_invoice").notNull().default(true),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -748,6 +758,7 @@ export const invoices = pgTable(
     total: money("total").notNull().default("0"),
     amountPaid: money("amount_paid").notNull().default("0"),
     status: invoiceStatusEnum("status").notNull().default("draft"),
+    currency: varchar("currency", { length: 8 }).notNull().default("GHS"),
     issuedAt: timestamp("issued_at", { withTimezone: true }),
     dueDate: date("due_date"),
     notes: text("notes"),
@@ -868,6 +879,14 @@ export const notifications = pgTable(
     }),
     tripId: integer("trip_id").references(() => trips.id, { onDelete: "cascade" }),
     readAt: timestamp("read_at", { withTimezone: true }),
+    /**
+     * How the notification was delivered. Without an SMS, email or push
+     * provider configured the row is still created in-app and the status
+     * says so — the app never pretends a message left the building.
+     */
+    deliveryStatus: varchar("delivery_status", { length: 20 }).notNull().default("delivered"),
+    /** Provider message id, when a real provider accepted the message. */
+    providerRef: varchar("provider_ref", { length: 80 }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("notifications_user_idx").on(t.userId, t.readAt)],
@@ -1178,6 +1197,53 @@ export const savedViews = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("saved_views_user_idx").on(t.userId, t.scope)],
+);
+
+/* ------------------------------------------------- currencies & live sharing */
+
+export const exchangeRates = pgTable(
+  "exchange_rates",
+  {
+    /** ISO 4217 code, e.g. GHS, USD, EUR. */
+    code: varchar("code", { length: 8 }).primaryKey(),
+    name: varchar("name", { length: 80 }).notNull(),
+    /** Units of this currency per one unit of the base currency (GHS). */
+    rateToBase: numeric("rate_to_base", { precision: 18, scale: 8 }).notNull().default("1"),
+    symbol: varchar("symbol", { length: 8 }).notNull().default("₵"),
+    /** Exactly one row is the base currency; every other rate is relative to it. */
+    isBase: boolean("is_base").notNull().default(false),
+    asOf: date("as_of").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("exchange_rates_as_of_idx").on(t.asOf)],
+);
+
+/**
+ * A passenger shares their trip with other passengers of the same corridor so
+ * they can see how full the vehicle is. The share code is short-lived and
+ * revocable, and sharing requires the sharer to have granted location consent.
+ */
+export const trackingShares = pgTable(
+  "tracking_shares",
+  {
+    id: serial("id").primaryKey(),
+    tripId: integer("trip_id")
+      .notNull()
+      .references(() => trips.id, { onDelete: "cascade" }),
+    /** The employee who created the share. */
+    employeeId: integer("employee_id")
+      .notNull()
+      .references(() => employees.id, { onDelete: "cascade" }),
+    /** Short code another passenger enters to see the corridor. */
+    shareCode: varchar("share_code", { length: 16 }).notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("tracking_shares_trip_idx").on(t.tripId),
+    index("tracking_shares_employee_idx").on(t.employeeId),
+  ],
 );
 
 export type RoleRecord = typeof roles.$inferSelect;
