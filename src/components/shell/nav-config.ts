@@ -25,7 +25,10 @@ export type IconKey =
   | "settings"
   | "headset"
   | "clipboard"
-  | "file";
+  | "file"
+  | "wrench"
+  | "activity"
+  | "coins";
 
 export type NavEntry = {
   href: string;
@@ -75,6 +78,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: "calendar",
         hint: "Passenger requests and approvals",
       },
+      {
+        href: "/calendar",
+        label: "Schedule",
+        section: "calendar",
+        icon: "calendar",
+        hint: "Month and week planning of trips and shifts",
+      },
     ],
   },
   {
@@ -87,6 +97,13 @@ export const NAV_GROUPS: NavGroup[] = [
         section: "routes",
         icon: "map",
         hint: "Corridors, stops and pickup sequences",
+      },
+      {
+        href: "/optimise",
+        label: "Route Optimisation",
+        section: "routes",
+        icon: "gauge",
+        hint: "Vehicle routing solved from live staff locations",
       },
       {
         href: "/employees",
@@ -122,6 +139,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: "user-cog",
         hint: "Driver register, licences, availability",
       },
+      {
+        href: "/compliance",
+        label: "Compliance",
+        section: "compliance",
+        icon: "wrench",
+        hint: "Inspections, fuel logs and vehicle readiness",
+      },
     ],
   },
   {
@@ -155,6 +179,20 @@ export const NAV_GROUPS: NavGroup[] = [
         section: "audit",
         icon: "scroll",
         hint: "Every recorded change, by whom and when",
+      },
+      {
+        href: "/currencies",
+        label: "Currencies",
+        section: "currencies",
+        icon: "coins",
+        hint: "Exchange rates and multi-currency billing",
+      },
+      {
+        href: "/operations",
+        label: "Operations",
+        section: "operations",
+        icon: "activity",
+        hint: "Scheduled jobs, metrics and backups",
       },
     ],
   },

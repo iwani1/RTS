@@ -142,6 +142,15 @@ export default async function ReportsPage({
             <ButtonLink href="/api/reports/export?type=trips" variant="outline" size="sm">
               Trips CSV
             </ButtonLink>
+            <ButtonLink
+              href={`/api/reports/pdf?type=trips&from=${from}&to=${to}${
+                companyId ? `&company=${companyId}` : ""
+              }`}
+              variant="signal"
+              size="sm"
+            >
+              Trip register PDF
+            </ButtonLink>
           </>
         }
       />

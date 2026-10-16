@@ -178,6 +178,12 @@ export default async function TripDetailPage({
             <ButtonLink href="/trips" variant="outline">
               All trips
             </ButtonLink>
+            <ButtonLink
+              href={`/api/reports/pdf?type=manifest&tripId=${row.trip.id}`}
+              variant="ghost"
+            >
+              Passenger manifest PDF
+            </ButtonLink>
             <ButtonLink href="/dispatch" variant="signal">
               Dispatch board
             </ButtonLink>

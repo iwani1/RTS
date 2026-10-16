@@ -12,6 +12,7 @@ import { db } from "@/db";
 import {
   addresses,
   employees,
+  exchangeRates,
   fuelLogs,
   permissions,
   rolePermissions,
@@ -43,6 +44,7 @@ async function run(): Promise<void> {
   await seedTripAssignments();
   await seedFuelLogs();
   await seedInspections();
+  await seedExchangeRates();
 }
 
 /* ------------------------------------------------------- normalised roles */
@@ -252,4 +254,89 @@ async function seedInspections(): Promise<void> {
       nextDueAt: dayIso(335 - i),
     })),
   );
+}
+
+
+/* ------------------------------------------------------------- currencies */
+
+/**
+ * Reference exchange rates.
+ *
+ * These are indicative planning rates seeded so the finance screens and the
+ * multicurrency invoice builder have a working table on day one. They are
+ * NOT live market rates — a deployment replaces them from its own rate feed
+ * (or by hand on the currencies screen). The seed marks every row with the
+ * date it was written so nobody mistakes them for today's numbers.
+ */
+async function seedExchangeRates(): Promise<void> {
+  const [existing] = await db.select({ v: count() }).from(exchangeRates);
+  if (Number(existing?.v ?? 0) > 0) return;
+
+  const asOf = new Date().toISOString().slice(0, 10);
+  await db.insert(exchangeRates).values([
+    {
+      code: "GHS",
+      name: "Ghanaian Cedi",
+      rateToBase: "1",
+      symbol: "GHS",
+      isBase: true,
+      asOf,
+    },
+    {
+      code: "USD",
+      name: "United States Dollar",
+      rateToBase: "12.40",
+      symbol: "$",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "EUR",
+      name: "Euro",
+      rateToBase: "13.55",
+      symbol: "\u20ac",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "GBP",
+      name: "Pound Sterling",
+      rateToBase: "15.90",
+      symbol: "\u00a3",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "NGN",
+      name: "Nigerian Naira",
+      rateToBase: "0.074",
+      symbol: "\u20a6",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "ZAR",
+      name: "South African Rand",
+      rateToBase: "0.69",
+      symbol: "R",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "KES",
+      name: "Kenyan Shilling",
+      rateToBase: "0.096",
+      symbol: "KSh",
+      isBase: false,
+      asOf,
+    },
+    {
+      code: "AED",
+      name: "UAE Dirham",
+      rateToBase: "3.38",
+      symbol: "AED",
+      isBase: false,
+      asOf,
+    },
+  ]);
 }

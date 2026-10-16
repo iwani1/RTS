@@ -40,7 +40,11 @@ export type Section =
   | "audit"
   | "settings"
   | "passenger"
-  | "driverapp";
+  | "driverapp"
+  | "calendar"
+  | "compliance"
+  | "operations"
+  | "currencies";
 
 export const MATRIX: Record<Section, Role[]> = {
   dashboard: ["super_admin", "ops_manager", "dispatcher", "corporate_admin", "fleet_manager", "finance_officer"],
@@ -59,6 +63,10 @@ export const MATRIX: Record<Section, Role[]> = {
   settings: ["super_admin", "ops_manager", "dispatcher", "corporate_admin", "fleet_manager", "finance_officer", "driver", "employee"],
   passenger: ["employee", "corporate_admin"],
   driverapp: ["driver"],
+  calendar: ["super_admin", "ops_manager", "dispatcher"],
+  compliance: ["super_admin", "ops_manager", "fleet_manager"],
+  operations: ["super_admin", "ops_manager"],
+  currencies: ["super_admin", "finance_officer"],
 };
 
 export function canAccess(role: Role, section: Section): boolean {

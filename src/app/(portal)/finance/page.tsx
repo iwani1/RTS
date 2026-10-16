@@ -167,6 +167,7 @@ export default async function FinancePage() {
                 <TH align="right">Total</TH>
                 <TH align="right">Paid</TH>
                 <TH>Status</TH>
+                <TH align="right">Export</TH>
               </TR>
             </THead>
             <TBody>
@@ -192,6 +193,14 @@ export default async function FinancePage() {
                   <TD align="right">{money(i.invoice.amountPaid)}</TD>
                   <TD>
                     <StatusChip status={i.invoice.status} />
+                  </TD>
+                  <TD align="right">
+                    <a
+                      href={`/api/reports/pdf?type=invoice&id=${i.invoice.id}`}
+                      className="font-display text-[12px] font-medium text-signal underline-offset-4 hover:underline"
+                    >
+                      PDF
+                    </a>
                   </TD>
                 </TR>
               ))}

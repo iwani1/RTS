@@ -145,9 +145,14 @@ export default async function PassengerPage() {
           shift ? ` · ${shift.name}` : ""
         }`}
         actions={
-          <ButtonLink href="/passenger/trips" variant="outline">
-            My trips &amp; boarding code
-          </ButtonLink>
+          <div className="flex flex-wrap items-center gap-2">
+            <ButtonLink href="/passenger/corridor" variant="ghost">
+              Live corridor
+            </ButtonLink>
+            <ButtonLink href="/passenger/trips" variant="outline">
+              My trips &amp; boarding code
+            </ButtonLink>
+          </div>
         }
       />
 

@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  Activity,
   Banknote,
   BarChart3,
   Bus,
   CalendarCheck,
   ClipboardList,
+  Coins,
   FileText,
   Gauge,
   Headphones,
@@ -18,6 +20,7 @@ import {
   Truck,
   UserCog,
   Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import type { IconKey } from "./nav-config";
@@ -43,4 +46,7 @@ export const ICONS: Record<IconKey, LucideIcon> = {
   headset: Headphones,
   clipboard: ClipboardList,
   file: FileText,
+  wrench: Wrench,
+  activity: Activity,
+  coins: Coins,
 };

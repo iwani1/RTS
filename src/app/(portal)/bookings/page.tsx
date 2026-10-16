@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bookings, companies, employees, trips, users } from "@/db/schema";
 import { ActionForm, InlineActionForm } from "@/components/action-form";
@@ -18,6 +18,9 @@ import {
   TR,
 } from "@/components/ui";
 import { Button } from "@/components/ui/button";
+import { Pagination, readPage } from "@/components/ui/pagination";
+import { SaveViewForm, SavedViewBar } from "@/components/saved-views";
+import { listViews } from "@/lib/views";
 import { Field, Input, Select } from "@/components/ui/input";
 import { decideBookingAction, moveBookingAction, planTripsAction } from "@/app/actions/ops";
 import { companyScope, requireSection } from "@/lib/auth";
@@ -40,11 +43,19 @@ const BOOKING_STATUSES = [
 export default async function BookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; company?: string; date?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    company?: string;
+    date?: string;
+    page?: string;
+  }>;
 }) {
   const user = await requireSection("bookings");
   const scope = companyScope(user);
   const { q = "", status = "", company = "", date = "" } = await searchParams;
+  const page = readPage((await searchParams).page);
+  const PAGE_SIZE = 25;
 
   const filters = [
     scope ? eq(bookings.companyId, scope) : undefined,
@@ -76,7 +87,18 @@ export default async function BookingsPage({
     .leftJoin(users, eq(users.id, bookings.approvedById))
     .where(filters.length ? and(...filters) : undefined)
     .orderBy(desc(bookings.bookingDate), desc(bookings.id))
-    .limit(80);
+    .limit(PAGE_SIZE)
+    .offset((page - 1) * PAGE_SIZE);
+
+  const [totalRow] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(bookings)
+    .innerJoin(employees, eq(employees.id, bookings.employeeId))
+    .innerJoin(companies, eq(companies.id, bookings.companyId))
+    .leftJoin(trips, eq(trips.id, bookings.tripId))
+    .leftJoin(users, eq(users.id, bookings.approvedById))
+    .where(filters.length ? and(...filters) : undefined);
+  const totalBookings = Number(totalRow?.count ?? 0);
 
   const statusCounts = await db
     .select({ status: bookings.status, v: bookings.id })
@@ -102,6 +124,12 @@ export default async function BookingsPage({
     .from(trips)
     .orderBy(desc(trips.tripDate))
     .limit(40);
+
+  const views = await listViews(user.id, "bookings");
+  const activeViewName = views.find((view) => {
+    const filters = view.filters ?? {};
+    return (filters.q ?? "") === q && (filters.status ?? "") === status;
+  })?.name;
 
   const pending = Number(tally.pending ?? 0);
   const waitlisted = Number(tally.waitlisted ?? 0);
@@ -200,13 +228,27 @@ export default async function BookingsPage({
             Apply
           </Button>
         </form>
+        <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3">
+          <SavedViewBar
+            views={views}
+            scope="bookings"
+            basePath="/bookings"
+            returnTo={`/bookings?${new URLSearchParams({ q, status, company, date }).toString()}`}
+            activeName={activeViewName}
+          />
+          <SaveViewForm
+            scope="bookings"
+            currentFilters={{ q, status, company, date }}
+            returnTo={`/bookings?${new URLSearchParams({ q, status, company, date }).toString()}`}
+          />
+        </div>
       </Panel>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Panel
           className="lg:col-span-2"
           title="Booking register"
-          subtitle={`${rows.length} shown`}
+          subtitle={`${totalBookings} match the filters — showing ${rows.length}`}
           padded={false}
         >
           <TableWrap>
@@ -306,7 +348,17 @@ export default async function BookingsPage({
             <div className="p-4">
               <EmptyState title="No bookings match your filters" />
             </div>
-          ) : null}
+          ) : (
+            <div className="px-4 pb-4">
+              <Pagination
+                page={page}
+                pageSize={PAGE_SIZE}
+                total={totalBookings}
+                basePath="/bookings"
+                params={{ q, status, company, date }}
+              />
+            </div>
+          )}
         </Panel>
 
         <div className="flex flex-col gap-4">

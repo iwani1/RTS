@@ -23,6 +23,8 @@ import { Field } from "@/components/ui/input";
 import { createTripAction, planTripsAction } from "@/app/actions/ops";
 import { companyScope, requireSection } from "@/lib/auth";
 import { dateOnly, humanize, n, timeOnly, todayISO } from "@/lib/utils";
+import { SaveViewForm, SavedViewBar } from "@/components/saved-views";
+import { listViews } from "@/lib/views";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +107,12 @@ export default async function TripsPage({
     })
     .from(routes)
     .orderBy(asc(routes.name));
+  const views = await listViews(user.id, "trips");
+  const activeViewName = views.find((view) => {
+    const filters = view.filters ?? {};
+    return (filters.date ?? "") === date && (filters.status ?? "") === status;
+  })?.name;
+
   const total = Number(summary?.total ?? 0);
   const seats = Number(summary?.seats ?? 0);
   const capacity = Number(summary?.capacity ?? 0);
@@ -174,7 +182,28 @@ export default async function TripsPage({
           <ButtonLink href={`/trips?date=${date}`} variant="ghost" size="sm">
             Reset
           </ButtonLink>
+          <ButtonLink
+            href={`/api/reports/pdf?type=trips&from=${date}&to=${date}`}
+            variant="ghost"
+            size="sm"
+          >
+            Export PDF
+          </ButtonLink>
         </form>
+        <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3">
+          <SavedViewBar
+            views={views}
+            scope="trips"
+            basePath="/trips"
+            returnTo={`/trips?${new URLSearchParams({ date, company, status }).toString()}`}
+            activeName={activeViewName}
+          />
+          <SaveViewForm
+            scope="trips"
+            currentFilters={{ date, company, status }}
+            returnTo={`/trips?${new URLSearchParams({ date, company, status }).toString()}`}
+          />
+        </div>
       </Panel>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
