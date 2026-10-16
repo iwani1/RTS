@@ -20,6 +20,9 @@ import {
 import { runJobAction } from "@/app/actions/platform";
 import { requireSection } from "@/lib/auth";
 import { recentJobRuns, registeredJobs } from "@/lib/jobs";
+// Importing the module is what registers the jobs. The operations screen
+// needs the registry even if the instrumentation hook has not run.
+import "@/lib/scheduled-jobs";
 import { metricsSnapshot } from "@/lib/observability";
 import { dateOnly, humanize, n, timeOnly } from "@/lib/utils";
 

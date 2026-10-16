@@ -18,7 +18,8 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run db:check",
     "postbuild": "node scripts/copy-migrations.mjs",
     "test:auth": "node scripts/auth-form.mjs",
-    "test:action": "node scripts/action-invoke.mjs"
+    "test:action": "node scripts/action-invoke.mjs",
+    "test:demo": "node scripts/demo.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",

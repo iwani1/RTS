@@ -382,6 +382,4 @@ export async function runJobAction(_p: ActionState, fd: FormData): Promise<Actio
 }
 
 /** Read-only helper used by the operations screen. */
-export async function savedViewsFor(userId: number, scope: string) {
-  return listViews(userId, scope);
-}
+

@@ -43,16 +43,32 @@ export type JobOutcome = {
   durationMs: number;
 };
 
-const registry = new Map<string, JobDefinition>();
+/**
+ * The job registry lives on `globalThis`.
+ *
+ * Next bundles the instrumentation hook and the route handlers separately, so
+ * a module-level `Map` would exist twice: once in the bundle that starts the
+ * runner and once in the bundle that renders the operations screen. The
+ * runner would then tick through eight jobs while the screen listed none.
+ * A global keeps one registry for the whole process.
+ */
+const globalForRegistry = globalThis as typeof globalThis & {
+  __staffrideJobRegistry?: Map<string, JobDefinition>;
+};
+
+function registry(): Map<string, JobDefinition> {
+  globalForRegistry.__staffrideJobRegistry ??= new Map<string, JobDefinition>();
+  return globalForRegistry.__staffrideJobRegistry;
+}
 
 /** Register a job. Call once per job at module load. */
 export function defineJob(definition: JobDefinition): JobDefinition {
-  registry.set(definition.name, definition);
+  registry().set(definition.name, definition);
   return definition;
 }
 
 export function registeredJobs(): JobDefinition[] {
-  return [...registry.values()];
+  return [...registry().values()];
 }
 
 /**
@@ -65,7 +81,7 @@ export async function runJob(
   name: string,
   overrides: Partial<JobContext> = {},
 ): Promise<JobOutcome> {
-  const definition = registry.get(name);
+  const definition = registry().get(name);
   const context: JobContext = {
     horizonDays: overrides.horizonDays ?? 14,
     writable: overrides.writable ?? true,
@@ -133,7 +149,14 @@ const globalForJobs = globalThis as typeof globalThis & {
   __staffrideJobsStarted?: boolean;
 };
 
-let lastRun = new Map<string, number>();
+const globalForLastRun = globalThis as typeof globalThis & {
+  __staffrideJobLastRun?: Map<string, number>;
+};
+
+function lastRun(): Map<string, number> {
+  globalForLastRun.__staffrideJobLastRun ??= new Map<string, number>();
+  return globalForLastRun.__staffrideJobLastRun;
+}
 
 /**
  * Start the scheduler. Safe to call more than once — the second call is a
@@ -148,9 +171,9 @@ export function startJobRunner(): void {
     const now = Date.now();
     for (const job of registeredJobs()) {
       const intervalMs = job.everyMinutes * 60_000;
-      const previous = lastRun.get(job.name) ?? 0;
+      const previous = lastRun().get(job.name) ?? 0;
       if (now - previous < intervalMs) continue;
-      lastRun.set(job.name, now);
+      lastRun().set(job.name, now);
       // Fire and forget: a slow job must not delay the others.
       void runJob(job.name).catch(() => undefined);
     }

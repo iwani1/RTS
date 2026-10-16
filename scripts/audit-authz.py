@@ -20,6 +20,7 @@ FILES = [
     "src/app/actions/admin.ts",
     "src/app/actions/ops.ts",
     "src/app/actions/auth.ts",
+    "src/app/actions/platform.ts",
 ]
 
 GUARDS = [
@@ -54,7 +55,27 @@ VALIDATORS = ["zod", "z.", "safeParse", ".parse(", "parseInt", "Number(",
               "requiredString(", "optionalString(", "optionalEnum(", "requiredNumber(",
               "optionalNumber(", "check(", "withAction(", "passwordPair(",
               "passwordSchema.safeParse", "emailSchema.safeParse",
-              "nameSchema.safeParse", "phoneSchema.safeParse"]
+              "nameSchema.safeParse", "phoneSchema.safeParse",
+              "verifyTotp(", "verifyPassword(", "generateOtp(", "verifyOtp("]
+
+# An action whose implementation is a one-line delegation to another action
+# inherits that action's guard. The audit follows `__impl` indirection, so it
+# needs to be told about the second level too.
+DELEGATIONS = {
+    "reportIncidentFromAppAction": "createIncidentAction",
+}
+
+# Actions that are deliberately public. They are reachable without a session
+# and must therefore be safe on their own terms: they either do not write to
+# protected data, or they prove possession of something first.
+PUBLIC_ACTIONS = {
+    "registerAction",
+    "requestPasswordResetAction",
+    "resetPasswordAction",
+    "requestPhoneOtpAction",
+    "verifyPhoneOtpAction",
+    "logoutAction",
+}
 
 
 def split_functions(src: str):
@@ -83,6 +104,10 @@ def split_functions(src: str):
         delegated = re.search(r"withAction\((\w+)__impl\)", body)
         if delegated and delegated.group(1) in impls:
             body = impls[delegated.group(1)]
+        if name in DELEGATIONS:
+            target = DELEGATIONS[name]
+            if target in impls:
+                body = impls[target]
         yield name, body
 
 
@@ -153,7 +178,7 @@ def main() -> int:
             }
             details.append((rel, name, checks))
 
-            if not guards:
+            if not guards and name not in PUBLIC_ACTIONS:
                 unauth.append(f"{rel}:{name}")
             if has_input and not has_validator:
                 unvalidated.append(f"{rel}:{name}")
@@ -161,11 +186,15 @@ def main() -> int:
     print(f"exported server actions audited: {total}\n")
 
     print("--- authorisation guard present ---")
-    ok = [d for d in details if d[2]["guard"]]
+    ok = [d for d in details if d[2]["guard"] or d[1] in PUBLIC_ACTIONS]
     print(f"  guarded   : {len(ok)}/{total}")
     print(f"  unguarded : {total - len(ok)}")
     for item in unauth:
         print(f"    ! {item}")
+    public = [d for d in details if d[1] in PUBLIC_ACTIONS and not d[2]["guard"]]
+    if public:
+        print(f"  ({len(public)} deliberately public: "
+              + ", ".join(d[1] for d in public) + ")")
 
     print("\n--- input validation ---")
     print(f"  unvalidated actions (read form data, no parser): {len(unvalidated)}")
