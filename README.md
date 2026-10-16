@@ -25,14 +25,21 @@ app working.
 
 ### Step 1 — get the code and install
 
+> **Clone the `arena/1ef49b8d-rts` branch.** The default `main` branch still holds the original
+> upload, not the finished build.
+
 ```bash
-git clone https://github.com/iwani1/RTS.git
+git clone --branch arena/1ef49b8d-rts https://github.com/iwani1/RTS.git
 cd RTS
 npm ci
 ```
 
+Without git, download the branch as a zip and unpack it:
+<https://github.com/iwani1/RTS/archive/refs/heads/arena/1ef49b8d-rts.zip>
+
 `npm ci` installs exactly what the lockfile pins. Use `npm install` only if you are deliberately
-changing a dependency.
+changing a dependency. It takes about twenty seconds on a normal connection and needs roughly
+800 MB of disk.
 
 ### Step 2 — choose how to run it
 
