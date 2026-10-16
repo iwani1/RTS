@@ -12,6 +12,10 @@ export const dynamic = "force-dynamic";
  * answers 503 with a clear reason rather than redirecting into a broken flow.
  */
 export async function GET(request: Request) {
+  // No origin check here. This is a top-level redirect, and a browser sends
+  // no `Origin` on a navigation GET — requiring one would break every
+  // sign-in. The defence is the `state` value and the PKCE verifier, both
+  // held in http-only cookies and both checked on the callback.
   const config = oidcConfig();
   if (!config) {
     return NextResponse.json(

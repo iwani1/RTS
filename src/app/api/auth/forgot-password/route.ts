@@ -1,8 +1,9 @@
 import { requestPasswordResetAction } from "@/app/actions/auth";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import { authRedirect, crossSiteResponse, isCrossSiteRequest, readForm } from "@/lib/auth-forms";
 
 /** Native password-reset request endpoint (see the login route for the rationale). */
 export async function POST(request: Request) {
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await requestPasswordResetAction(null, formData);
   if (!result?.ok) {

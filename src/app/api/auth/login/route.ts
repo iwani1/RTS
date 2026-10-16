@@ -1,5 +1,5 @@
 import { loginAction } from "@/app/actions/auth";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import { authRedirect, crossSiteResponse, isCrossSiteRequest, readForm } from "@/lib/auth-forms";
 
 /**
  * Native sign-in endpoint.
@@ -9,6 +9,7 @@ import { authRedirect, readForm } from "@/lib/auth-forms";
  * business rules; this route only adapts the HTTP shape.
  */
 export async function POST(request: Request) {
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await loginAction(null, formData);
   // A successful attempt redirects inside the action and never returns here.

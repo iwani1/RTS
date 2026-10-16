@@ -128,7 +128,7 @@ Two things to know:
 | `Another process is already using the local database` | A second server opened the same data directory. PGlite is single-process. | Stop the other server, or give this one its own directory: `PGLITE_DATA_DIR=.data/pgdata-dev npm run dev` |
 | `RuntimeError: Aborted()` on start | The data directory was left open by a process that was killed. | `rm -rf .data/pgdata && npm start` — the schema and the seed are rebuilt automatically |
 | A server action returns "Invalid Server Actions request" | The browser's origin does not match the host the request arrived on. | Browse to the same address you typed, or list the public origin in `SERVER_ACTION_ALLOWED_ORIGINS` |
-| `npm run test:smoke` says the session route is missing | The server was started without `TEST_SESSION_TOKEN`. | Start the server with the same value the tests use |
+| `npm run test:smoke` says the session route is missing | The server was started without `TEST_SESSION_ENABLED=true` and a `TEST_SESSION_TOKEN`. | Start the server with both: `TEST_SESSION_ENABLED=true TEST_SESSION_TOKEN=local-qa-token npm start` |
 | "Too many failed attempts. Try again in 15 minutes." | The sign-in throttle saw five failed attempts for that account in fifteen minutes. | Wait for the window to pass, or reset the local database with `rm -rf .data/pgdata` |
 | The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
 | Port 3000 is already in use | Another application is on that port. | `PORT=3100 npm start`, then open `http://localhost:3100` |
@@ -149,9 +149,16 @@ npm run test:origin    # 5 checks: the Server Action origin guard
 npm run verify         # lint · typecheck · unit tests · migration drift
 ```
 
-`TEST_SESSION_TOKEN` is what the server expects on `POST /api/test/session`. Start the server with
-the same value, for example `TEST_SESSION_TOKEN=local-qa-token npm start`. The route returns 404
-unless the value matches, so it is inert in production.
+`TEST_SESSION_TOKEN` is what the server expects on `POST /api/test/session`, and
+`TEST_SESSION_ENABLED=true` is what opens that route. The token signs in as **any** account with
+no password and no second factor, so the route stays closed unless it is explicitly enabled:
+
+```bash
+TEST_SESSION_ENABLED=true TEST_SESSION_TOKEN=local-qa-token npm start
+```
+
+The route returns 404 unless both are set and the token matches, so it is inert in a deployment
+that has never opted in.
 
 ### Demo accounts — password `Password123!`
 
@@ -182,7 +189,6 @@ npm run audit:authz     # server-action authorisation and validation audit
 Route smoke test, with the server running:
 
 ```bash
-TEST_SESSION_TOKEN=local-qa-token npm run dev
 TEST_SESSION_TOKEN=local-qa-token npm run test:smoke
 TEST_SESSION_TOKEN=local-qa-token npm run test:auth
 TEST_SESSION_TOKEN=local-qa-token npm run test:action

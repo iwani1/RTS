@@ -51,6 +51,7 @@ function sessionCookie(response) {
   });
   const response = await fetch(`${base}/api/auth/login`, {
     method: "POST",
+    headers: { origin: base },
     body,
     redirect: "manual",
   });
@@ -77,6 +78,7 @@ let cookie = "";
   });
   const response = await fetch(`${base}/api/auth/login`, {
     method: "POST",
+    headers: { origin: base },
     body,
     redirect: "manual",
   });
@@ -114,7 +116,7 @@ if (cookie) {
 {
   const response = await fetch(`${base}/api/auth/logout`, {
     method: "POST",
-    headers: cookie ? { cookie } : {},
+    headers: { origin: base, ...(cookie ? { cookie } : {}) },
     redirect: "manual",
   });
   check(
@@ -124,11 +126,42 @@ if (cookie) {
   );
 }
 
-// 5. The password-reset request endpoint must answer without leaking whether
+// 5. A cross-site form post must be refused.
+//
+//    The public auth screens post to route handlers so they work without
+//    JavaScript. Route handlers do not carry React's own origin check, so
+//    the application checks the origin itself. A page on another site must
+//    not be able to drive a sign-in, a sign-out or a password reset here.
+{
+  const body = new URLSearchParams({
+    email: values.email,
+    password: values.password,
+    code: values.code,
+  });
+  const response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { origin: "https://attacker.example" },
+    body,
+    redirect: "manual",
+  });
+  check(
+    "a cross-site sign-in is refused",
+    response.status === 403,
+    `status=${response.status}`,
+  );
+  check(
+    "a cross-site sign-in issues no session",
+    sessionCookie(response) === "",
+    sessionCookie(response) ? "a cookie was issued" : "",
+  );
+}
+
+// 6. The password-reset request endpoint must answer without leaking whether
 //    the account exists for an unknown address.
 {
   const body = new URLSearchParams({ email: "nobody@nowhere.test" });
   const response = await fetch(`${base}/api/auth/forgot-password`, {
+    headers: { origin: base },
     method: "POST",
     body,
     redirect: "manual",

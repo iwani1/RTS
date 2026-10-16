@@ -1,8 +1,9 @@
 import { verifyPhoneOtpAction } from "@/app/actions/auth";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import { authRedirect, crossSiteResponse, isCrossSiteRequest, readForm } from "@/lib/auth-forms";
 
 /** Verify a phone sign-in code and open the session. */
 export async function POST(request: Request) {
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await verifyPhoneOtpAction(null, formData);
   return authRedirect(

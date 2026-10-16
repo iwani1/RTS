@@ -72,7 +72,9 @@ function formFields(html, marker) {
 async function formSignIn(email, password, code) {
   const res = await fetch(`${base}/api/auth/login`, {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+    // A browser sends `Origin` on a form post, and the auth route handlers
+    // refuse a post that arrives from another site.
+    headers: { "content-type": "application/x-www-form-urlencoded", origin: base },
     body: new URLSearchParams(code ? { email, password, code } : { email, password }).toString(),
     redirect: "manual",
   });

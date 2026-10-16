@@ -11,6 +11,10 @@ export const dynamic = "force-dynamic";
 
 /** Complete an OpenID Connect sign-in. */
 export async function GET(request: Request) {
+  // No origin check here. This is a top-level redirect, and a browser sends
+  // no `Origin` on a navigation GET — requiring one would break every
+  // sign-in. The defence is the `state` value and the PKCE verifier, both
+  // held in http-only cookies and both checked on the callback.
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

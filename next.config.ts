@@ -51,10 +51,13 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
-    // Turbopack's Rust heap defaults to 2 GB, which is more than a laptop
-    // needs to compile this app and enough to crowd out everything else. One
-    // gigabyte compiles the same code with a fraction of the resident memory.
-    turbopackMemoryLimit: 1024 * 1024 * 1024,
+    // The dev server compiles on demand and keeps a lot in memory. Next 16.4
+    // replaced the old byte cap with an eviction strategy: "full" drops
+    // everything it can after each snapshot, and the garbage collector
+    // reclaims unreachable tasks from the persistent cache. Together they
+    // keep a dev session close to the size of the production server.
+    turbopackMemoryEviction: "full",
+    turbopackGc: true,
     serverActions: {
       // The preview proxy terminates TLS and forwards to the app, so the
       // browser's Origin is the public host while the request Host is the

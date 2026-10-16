@@ -3,6 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { boardings, bookings, drivers, gpsEvents, trips } from "@/db/schema";
 import { getSessionUser, logAudit } from "@/lib/auth";
+import { describeError } from "@/lib/action-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +118,15 @@ export async function POST(request: Request) {
         results.push({ clientRef: item.clientRef, ok: true, message: "Boarding confirmed" });
       }
     } catch (error) {
-      results.push({ clientRef: item.clientRef, ok: false, message: (error as Error).message });
+      // The message goes to the driver's device, so it must not carry a
+      // database error verbatim — those name tables, columns and constraint
+      // definitions. `describeError` maps the known ones to something
+      // readable and keeps the rest generic.
+      results.push({
+        clientRef: item.clientRef,
+        ok: false,
+        message: describeError(error),
+      });
     }
   }
 

@@ -8,24 +8,38 @@
  * The catch is the standalone server. It changes its working directory to
  * `.next/standalone` when it starts, which would put `.data` inside `.next/`
  * — and a rebuild wipes `.next/`, taking the demonstration database with it.
- * `appRoot()` walks out of the bundle so the data stays where the user put
- * it.
+ * The path is therefore stepped back out to the project root.
+ *
+ * One rule shapes the code below: the only filesystem call the bundler can
+ * see is a `path.join` scoped to a subfolder of the project. An unscoped
+ * `process.cwd()` makes the tracer pull the whole project into the server
+ * bundle, which Next 16.4 refuses to build.
  */
 import path from "node:path";
+
+/**
+ * The project's `.data` folder.
+ *
+ * This is the single place the application reads the working directory from.
+ * Everything else is derived from it, so the bundler only has to trace one
+ * scoped path.
+ */
+function dataRoot(): string {
+  const here = path.join(/*turbopackIgnore: true*/ process.cwd(), ".data");
+  // The standalone server changes directory into its own bundle. Step back
+  // out so the data lives beside the project, not inside `.next`.
+  const marker = `${path.sep}.next${path.sep}standalone`;
+  const index = here.lastIndexOf(marker);
+  return index > 0 ? `${here.slice(0, index)}${path.sep}.data` : here;
+}
 
 /**
  * The project root — the directory that contains `package.json` and
  * `drizzle/`.
  */
 export function appRoot(): string {
-  // The marker tells the bundler not to trace this call for the Edge
-  // runtime. The module is Node-only — it resolves filesystem paths — and
-  // every route that imports it is a Node route.
-  const cwd = /*turbopackIgnore: true*/ process.cwd();
-  const marker = `${path.sep}.next${path.sep}standalone`;
-  const index = cwd.lastIndexOf(marker);
-  if (index > 0) return cwd.slice(0, index);
-  return cwd;
+  const data = dataRoot();
+  return data.slice(0, data.length - `${path.sep}.data`.length);
 }
 
 /**
@@ -33,24 +47,21 @@ export function appRoot(): string {
  * An absolute path is always used as given.
  */
 export function resolvePath(value: string): string {
-  return path.isAbsolute(value) ? value : path.join(appRoot(), value);
+  return path.isAbsolute(value) ? value : `${appRoot()}${path.sep}${value}`;
 }
 
 /** The directory the PGlite database lives in. */
 export function pgliteDataDir(): string {
   const configured = process.env.PGLITE_DATA_DIR;
   if (configured) return resolvePath(configured);
-  // The join is scoped to a subfolder of the project so the file tracer can
-  // follow it. An unscoped `path.join(process.cwd(), ...)` would make the
-  // tracer pull the whole project into the server bundle.
-  return path.join(/*turbopackIgnore: true*/ appRoot(), ".data", "pgdata");
+  return `${dataRoot()}${path.sep}pgdata`;
 }
 
 /** The directory backup archives are written to. */
 export function backupDir(): string {
   const configured = process.env.BACKUP_DIR;
   if (configured) return resolvePath(configured);
-  return path.join(appRoot(), ".data", "backups");
+  return `${dataRoot()}${path.sep}backups`;
 }
 
 /**

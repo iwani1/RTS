@@ -58,6 +58,7 @@ jobs:
 
       - name: Route smoke test
         env:
+          TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
         run: |
           npm run start &
@@ -71,6 +72,7 @@ jobs:
       # work with JavaScript disabled. This asserts the whole native flow.
       - name: Native auth form test (no JavaScript)
         env:
+          TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/auth-form.mjs
 
@@ -78,6 +80,7 @@ jobs:
       # browser's request shape and asserts the action runs and is guarded.
       - name: Server action transport test
         env:
+          TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/action-invoke.mjs
 
@@ -87,6 +90,7 @@ jobs:
       # multicurrency and the observability stack.
       - name: Live demo
         env:
+          TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/demo.mjs
 
@@ -95,6 +99,7 @@ jobs:
       # configured. The build below is made with the extra origin in place.
       - name: Origin guard test
         env:
+          TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
           SERVER_ACTION_ALLOWED_ORIGINS: 192.168.1.42
         run: node scripts/origin-check.mjs

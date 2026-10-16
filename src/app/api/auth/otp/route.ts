@@ -1,5 +1,5 @@
 import { requestPhoneOtpAction } from "@/app/actions/auth";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import { authRedirect, crossSiteResponse, isCrossSiteRequest, readForm } from "@/lib/auth-forms";
 
 /**
  * Request a phone sign-in code.
@@ -8,6 +8,7 @@ import { authRedirect, readForm } from "@/lib/auth-forms";
  * JavaScript disabled — the same reason the password route exists.
  */
 export async function POST(request: Request) {
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await requestPhoneOtpAction(null, formData);
   if (!result?.ok) {

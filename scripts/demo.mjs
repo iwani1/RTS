@@ -93,7 +93,9 @@ async function harnessSession(email) {
 async function formSignIn(email, password, code) {
   const res = await fetch(`${base}/api/auth/login`, {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+    // A browser sends `Origin` on a form post, and the auth route handlers
+    // refuse a post that arrives from another site.
+    headers: { "content-type": "application/x-www-form-urlencoded", origin: base },
     body: new URLSearchParams(
       code ? { email, password, code } : { email, password },
     ).toString(),
@@ -264,7 +266,9 @@ heading("3 · Saved views (per-user filter sets)");
 
   const save = await text("/api/views/save", cookie, {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+    // A browser sends `Origin` on a form post, and the auth route handlers
+    // refuse a post that arrives from another site.
+    headers: { "content-type": "application/x-www-form-urlencoded", origin: base },
     body: new URLSearchParams({
       scope: "bookings",
       name: "Demo approved bookings",
@@ -291,7 +295,9 @@ heading("3 · Saved views (per-user filter sets)");
   if (idMatch) {
     const del = await text("/api/views/delete", cookie, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
+      // A browser sends `Origin` on a form post, and the auth route handlers
+    // refuse a post that arrives from another site.
+    headers: { "content-type": "application/x-www-form-urlencoded", origin: base },
       body: new URLSearchParams({
         id: idMatch[1],
         scope: "bookings",
