@@ -28,7 +28,9 @@
     "test:origin": "node scripts/origin-check.mjs",
     "test:login": "node scripts/check-logins.mjs",
     "test:sso": "node scripts/oidc-check.mjs",
-    "test:delivery": "node scripts/delivery-check.mjs"
+    "test:delivery": "node scripts/delivery-check.mjs",
+    "demo:reset": "node scripts/demo-reset.mjs",
+    "demo:check": "node scripts/demo.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",

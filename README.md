@@ -267,6 +267,18 @@ than simulated.
 
 ---
 
+## 2b. Pitching it in ten minutes
+
+`docs/PITCH.md` is the run sheet: the order to open the screens, the accounts to sign in as, the
+one line for each likely question, and the two commands that prove it while the room is watching.
+
+```bash
+npm run demo:reset      # fresh demonstration data, then start the server
+npm run demo:check     # 54 checks: the whole walkthrough, re-read from the running server
+```
+
+---
+
 ## 3. Modules delivered
 
 | Module | Status | Where |

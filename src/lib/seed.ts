@@ -325,7 +325,7 @@ async function runSeed(): Promise<void> {
         hiredAt: dayIso(-500 - i * 30),
       })),
     )
-    .returning({ id: drivers.id, fullName: drivers.fullName, userId: drivers.userId, status: drivers.status });
+    .returning({ id: drivers.id, fullName: drivers.fullName, email: drivers.email, userId: drivers.userId, status: drivers.status });
 
   // link default driver -> vehicle
   for (let i = 0; i < 10; i++) {
@@ -376,12 +376,18 @@ async function runSeed(): Promise<void> {
       const staff = employeesOf(company.id);
       routes.forEach((route, ri) => {
         const busVehicle = vehicleRows[(tripCounter + ri) % 10];
-        const driver = driverRows[(tripCounter + ri) % driverRows.length];
         const departureHour = route.direction === "home_to_office" ? 5 : 17;
         const scheduled = at(iso, departureHour + ri, 30);
         const arrival = at(iso, route.direction === "home_to_office" ? 7 : 19, 0);
         const completed = dayOffset < 0;
         const running = dayOffset === 0 && ri === 0;
+        // The first duty of the day belongs to a driver who has a portal
+        // account, so the driver demonstration opens on a trip that is
+        // genuinely on the road.
+        const driver = running
+          ? driverRows.find((d) => d.email === "driver.abena@richietransportgh.com") ??
+            driverRows[(tripCounter + ri) % driverRows.length]
+          : driverRows[(tripCounter + ri) % driverRows.length];
         tripCounter += 1;
         const passengers = staff.slice(ri * 4, ri * 4 + Math.min(busVehicle.capacity, 4 + (ri % 3)));
         tripInserts.push({
