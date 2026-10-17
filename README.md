@@ -115,8 +115,15 @@ migrated and seeded **at server start** — you never run a migration command by
 | **A real PostgreSQL** | `cp .env.example .env`, set `DATABASE_URL=postgresql://user:pass@host:5432/rts`, then start the app. The schema and the seed are applied to it the same way. |
 
 > **PGlite is single-process.** Only one process may open `.data/pgdata` at a time. Stop the server
-> before running a second one, and if the server is ever killed uncleanly, reset the directory and
-> let it rebuild:
+> before running a second one:
+>
+> ```bash
+> npm run stop            # stops this project's own server, nothing else
+> npm start
+> ```
+>
+> If the server was ever killed uncleanly, the data directory is left locked. Reset it and let it
+> rebuild:
 >
 > ```bash
 > rm -rf .data/pgdata && npm start
@@ -168,7 +175,7 @@ Two things to know:
 | "Too many failed attempts. Try again in 15 minutes." | The sign-in throttle saw five failed attempts for that account in fifteen minutes. | Wait for the window to pass, or reset the local database with `rm -rf .data/pgdata` |
 | Signing in from another device bounces back to the sign-in page | The browser dropped the session cookie. On a LAN address over plain http that means the cookie was marked `Secure`. | Update the code (`git pull origin arena/1ef49b8d-rts`), rebuild, and set `SESSION_COOKIE_SECURE=false` if it persists |
 | The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
-| `EADDRINUSE: address already in use 0.0.0.0:3000` | Something is already on that port — most often an earlier copy of this app that is still running. The app now names the process and its PID. | `kill <pid>` and run `npm start` again, or `PORT=3100 npm start` and open `http://localhost:3100` |
+| `EADDRINUSE: address already in use 0.0.0.0:3000` | Something is already on that port — most often an earlier copy of this app that is still running. The app now names the process and its PID. | `npm run stop && npm start` — the helper stops this project's own processes and leaves everything else alone. Or `kill <pid>` and run `npm start` again, or `PORT=3100 npm start` |
 | `getaddrinfo ENOTFOUND <your-machine-name>` | An old build bound to the shell's `HOSTNAME`, which bash sets to the machine's name. | `HOSTNAME=0.0.0.0 npm start` — or pull the latest, where the bind address is decided by the app |
 | The server listens only on loopback | `BIND_HOST` is set to `127.0.0.1`. | `BIND_HOST=0.0.0.0 npm start` |
 

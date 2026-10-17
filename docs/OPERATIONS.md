@@ -131,6 +131,12 @@ Two rules apply on a workstation:
   ```
 
   `PORT` is honoured by `npm start` and `npm run dev`; `BIND_HOST` decides the address.
+  `npm run stop` does the stopping for you — it stops this project's own server (found through
+  the database lock file and the port) and leaves any other program on the machine alone:
+
+  ```bash
+  npm run stop && npm start
+  ```
 
 To open the app from a phone or a second machine on the same network, bind to every interface:
 
