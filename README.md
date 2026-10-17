@@ -194,6 +194,7 @@ npm run test:login     # can all eight demo accounts actually sign in?
 npm run test:sso       # the OIDC sign-in flow, against a stand-in identity provider
 npm run test:delivery  # a real message through a stand-in SMS gateway
 npm run test:payment-audit  # the payment path, against a stand-in provider (starts its own server)
+npm run test:push      # clones the branch from GitHub, installs it, builds it and checks it
 npm run roles          # what each role can reach, read from the permission matrix
 npm run verify         # lint · typecheck · unit tests · migration drift · role matrix
 ```

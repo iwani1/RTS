@@ -627,7 +627,8 @@ the `Host` header: the browser says `localhost:3200` and the list only knows `lo
 **Fixed.** `scripts/start.mjs` now adds the port the server is actually running on — and the
 origins listed in `SERVER_ACTION_ALLOWED_ORIGINS` — to the list, in the build manifest and in the
 server bundle, before the server starts. Nothing else is added: an unknown origin is still
-refused.
+refused. The entries the build wrote are kept apart from the entries this script adds, in a small
+note next to the build, so the two are never confused and the build's own list is never disturbed.
 
 **Proved.** `scripts/origin-check.mjs` now passes **5/5** on a non-default port, including the
 case where the origin is rewritten by a proxy. Before the fix, that case was refused.
@@ -663,6 +664,7 @@ at boot, on both PGlite and PostgreSQL.
 | `npm run test:payment-audit` | **27/27** (new) |
 | `npm run test:delivery` | **16/16** |
 | `npm run test:origin` | **5/5** (the origin guard, on a non-default port) |
+| `npm run test:push` | **8/8** — the branch is cloned from GitHub, installed, built and checked |
 | `npm run roles:check` | ROLE MATRIX PASSED |
 | `npx drizzle-kit check` | Everything's fine |
 | `npm run build` | compiled, no warnings |

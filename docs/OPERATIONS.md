@@ -279,6 +279,7 @@ npm run test:smoke   # route checks across all six roles (server running)
 npm run test:sso      # the OIDC sign-in flow, against a stand-in provider (server running)
 npm run test:delivery # a real message through a stand-in SMS gateway (server running)
 npm run test:payment-audit # the payment path against a stand-in provider (starts its own server)
+npm run test:push  # clone the branch from GitHub, install, build and check it (nothing local is touched)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
 npm run test:demo    # the live demo: 55 checks against a running server
