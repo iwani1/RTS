@@ -60,6 +60,17 @@ jobs:
         env:
           TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
+          # The provider stand-ins below are started by the checks themselves;
+          # the server only needs to be told where they live.
+          OIDC_ISSUER: http://127.0.0.1:4311
+          OIDC_CLIENT_ID: rts-demo
+          OIDC_CLIENT_SECRET: demo-secret
+          OIDC_REDIRECT_URI: http://127.0.0.1:3000/api/auth/oidc/callback
+          SMS_PROVIDER: hubtel
+          SMS_PROVIDER_CLIENT_ID: ci-demo
+          SMS_PROVIDER_CLIENT_SECRET: ci-demo
+          SMS_PROVIDER_SENDER_ID: RTSTest
+          SMS_PROVIDER_ENDPOINT: http://127.0.0.1:4312/v1/messages/send
         run: |
           npm run start &
           for i in $(seq 1 40); do
@@ -101,6 +112,24 @@ jobs:
           TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/demo.mjs
+
+      # The single sign-on flow, driven against a stand-in identity provider
+      # that runs on the machine: the PKCE challenge, the state, the token
+      # exchange and the session are all checked.
+      - name: Single sign-on flow test
+        env:
+          TEST_SESSION_ENABLED: "true"
+          TEST_SESSION_TOKEN: ci-smoke-token
+        run: node scripts/oidc-check.mjs
+
+      # A real message through a stand-in SMS gateway: the request, the
+      # provider's answer, the delivery status in the log, and a refusal
+      # recorded as a failure rather than as sent.
+      - name: Message delivery test
+        env:
+          TEST_SESSION_ENABLED: "true"
+          TEST_SESSION_TOKEN: ci-smoke-token
+        run: node scripts/delivery-check.mjs
 
       # The Server Action CSRF guard. A browser whose origin matches the host
       # is allowed; a rewritten host is allowed only when the public origin is

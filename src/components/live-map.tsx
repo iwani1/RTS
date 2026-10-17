@@ -2,6 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  BOUNDS,
+  planBasemap,
+  project,
+  type Viewport,
+} from "@/lib/map-geometry";
 
 export type MapPoint = {
   id: string;
@@ -17,9 +23,6 @@ export type MapPoint = {
   heading?: number;
 };
 
-/** Greater Accra service area. */
-const BOUNDS = { minLat: 5.45, maxLat: 5.8, minLng: -0.45, maxLng: 0.05 };
-
 /**
  * The map provider.
  *
@@ -32,80 +35,8 @@ const MAPBOX_TOKEN = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").trim();
 const MAP_STYLE = (process.env.NEXT_PUBLIC_MAP_STYLE ?? "mapbox/dark-v11").trim();
 const BASEMAP_READY = MAP_PROVIDER === "mapbox" && MAPBOX_TOKEN.length > 0;
 
-/** Web Mercator, the projection every map on earth uses. */
-function mercatorY(lat: number): number {
-  const rad = (lat * Math.PI) / 180;
-  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
-}
-
-type Viewport = {
-  minLat: number;
-  maxLat: number;
-  minLng: number;
-  maxLng: number;
-};
-
 /** The fixed service area, used when there is no basemap. */
 const DEFAULT_VIEWPORT: Viewport = BOUNDS;
-
-/**
- * The area a basemap of this size should cover.
- *
- * The vertical span is the service area; the horizontal span follows the
- * shape of the panel, so the map is never stretched. The image is requested
- * in coarse steps so the same few images are reused instead of one per
- * pixel of every resize.
- */
-function viewportFor(width: number, height: number): {
-  viewport: Viewport;
-  imageWidth: number;
-  imageHeight: number;
-} {
-  const imageWidth = Math.min(1280, Math.max(320, Math.round(width / 80) * 80));
-  const imageHeight = Math.min(1280, Math.max(240, Math.round(height / 80) * 80));
-
-  const top = mercatorY(BOUNDS.maxLat);
-  const bottom = mercatorY(BOUNDS.minLat);
-  const heightUnits = top - bottom;
-  const centreLng = (BOUNDS.minLng + BOUNDS.maxLng) / 2;
-  // The world is 360 degrees wide; the Mercator unit is the same on both axes.
-  const widthUnits = heightUnits * (imageWidth / imageHeight);
-  const halfDegrees = (widthUnits * 360) / 2;
-
-  return {
-    viewport: {
-      minLat: BOUNDS.minLat,
-      maxLat: BOUNDS.maxLat,
-      minLng: centreLng - halfDegrees,
-      maxLng: centreLng + halfDegrees,
-    },
-    imageWidth,
-    imageHeight,
-  };
-}
-
-function project(p: { lat: number; lng: number }, viewport: Viewport) {
-  const top = mercatorY(viewport.maxLat);
-  const bottom = mercatorY(viewport.minLat);
-  const x = ((p.lng - viewport.minLng) / (viewport.maxLng - viewport.minLng)) * 100;
-  const y = ((top - mercatorY(p.lat)) / (top - bottom)) * 100;
-  return { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) };
-}
-
-/** The Mapbox static image that covers exactly this area. */
-function basemapUrl(
-  viewport: Viewport,
-  imageWidth: number,
-  imageHeight: number,
-): string {
-  const bbox = `[${viewport.minLng},${viewport.minLat},${viewport.maxLng},${viewport.maxLat}]`;
-  const params = new URLSearchParams({
-    access_token: MAPBOX_TOKEN,
-    logo: "false",
-  });
-  return `https://api.mapbox.com/styles/v1/${MAP_STYLE}/static/${bbox}/${imageWidth}x${imageHeight}@2x?${params.toString()}`;
-}
-
 
 const MARKER_FILL: Record<string, string> = {
   teal: "var(--st-live)",
@@ -167,11 +98,13 @@ export function MapCanvas({
 
   const basemap = useMemo(() => {
     if (!BASEMAP_READY || !frame) return null;
-    const { viewport, imageWidth, imageHeight } = viewportFor(frame.width, frame.height);
-    return {
-      viewport,
-      url: basemapUrl(viewport, imageWidth, imageHeight),
-    };
+    const plan = planBasemap({
+      width: frame.width,
+      height: frame.height,
+      token: MAPBOX_TOKEN,
+      style: MAP_STYLE,
+    });
+    return { viewport: plan.viewport, url: plan.url };
   }, [frame]);
 
   const viewport = basemap?.viewport ?? DEFAULT_VIEWPORT;
@@ -194,7 +127,7 @@ export function MapCanvas({
         {/* the real basemap, when a map provider is configured */}
         {basemap ? (
           <image
-            href={basemap.url}
+            href={basemap.url ?? undefined}
             x="0"
             y="0"
             width="100"
