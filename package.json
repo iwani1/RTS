@@ -10,7 +10,7 @@
     "stop": "node scripts/stop.mjs",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --experimental-strip-types --test tests/domain.test.ts",
+    "test": "node --experimental-strip-types --import ./scripts/register-ts.mjs --test tests/domain.test.ts tests/providers.test.ts",
     "test:smoke": "node scripts/smoke.mjs",
     "audit:authz": "python3 scripts/audit-authz.py",
     "roles": "node scripts/role-matrix.mjs",

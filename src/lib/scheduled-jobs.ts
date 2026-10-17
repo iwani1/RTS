@@ -645,6 +645,33 @@ export const purgeExpiredData = defineJob({
   },
 });
 
+/* ------------------------------------------------------ message delivery */
+
+/**
+ * Hand the queued messages to their providers.
+ *
+ * `notify()` writes a row and marks it `queued`; this job is the part that
+ * actually sends it. It runs every minute, so a message leaves within a
+ * minute of being written, and the outcome of each attempt is written back
+ * to the row.
+ */
+export const deliverNotifications = defineJob({
+  name: "deliver-notifications",
+  description:
+    "Sends the queued SMS and email messages through the configured providers and records the outcome.",
+  everyMinutes: 1,
+  runOnBoot: true,
+  async run() {
+    const { deliverPending } = await import("@/lib/delivery");
+    const outcome = await deliverPending(100);
+    return {
+      claimed: outcome.claimed,
+      sent: outcome.sent,
+      failed: outcome.failed,
+    };
+  },
+});
+
 /* ------------------------------------------------------ database backup */
 
 /**
@@ -674,6 +701,7 @@ export const ALL_JOBS = [
   raiseScheduledInvoices,
   scheduleSafetyInspections,
   detectGeofenceArrivals,
+  deliverNotifications,
   purgeExpiredData,
   backupDatabase,
 ];

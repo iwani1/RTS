@@ -10,6 +10,7 @@
 import { db } from "@/db";
 import { notifications } from "@/db/schema";
 import { inArray } from "drizzle-orm";
+import { emailProviderReady, smsProviderReady } from "@/lib/providers";
 
 export type NotifyChannel = "in_app" | "sms" | "email" | "push";
 
@@ -32,14 +33,16 @@ export type NotifyResult = {
 
 /**
  * Which external channels actually have a provider behind them.
- * Read from the environment so a deployment can switch them on without a
- * code change; the app is honest when they are off.
+ *
+ * This asks the provider layer, not the environment: a key that is present
+ * but not a working provider does not count. The app is honest when a
+ * channel is off, and a message that could not leave is never marked as if
+ * it had.
  */
 export function configuredChannels(): NotifyChannel[] {
   const channels: NotifyChannel[] = ["in_app"];
-  if (process.env.SMS_PROVIDER_API_KEY) channels.push("sms");
-  if (process.env.EMAIL_PROVIDER_API_KEY) channels.push("email");
-  if (process.env.PUSH_PROVIDER_API_KEY) channels.push("push");
+  if (smsProviderReady()) channels.push("sms");
+  if (emailProviderReady()) channels.push("email");
   return channels;
 }
 

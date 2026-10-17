@@ -335,9 +335,10 @@ export async function requestPhoneOtpAction(
   if (issued.deliveredExternally) {
     return { ok: true, message: "A sign-in code has been sent to your phone." };
   }
+  const reason = issued.deliveryError ?? "no SMS provider is configured";
   return {
     ok: true,
-    message: `Demonstration delivery — no SMS provider is configured, so the code is shown here: ${issued.code} (valid for 10 minutes).`,
+    message: `The code could not be sent (${reason}), so it is shown here: ${issued.code} (valid for 10 minutes).`,
     data: { code: issued.code },
   };
 }

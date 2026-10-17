@@ -7,7 +7,8 @@
  */
 import { and, eq, isNull, gt } from "drizzle-orm";
 import { db } from "@/db";
-import { otpCodes } from "@/db/schema";
+import { otpCodes, users } from "@/db/schema";
+import { sendEmail, sendSms } from "@/lib/providers";
 
 /** The values the `otp_channel` and `otp_purpose` enums accept. */
 export type OtpChannel = "sms" | "email";
@@ -24,6 +25,8 @@ export type IssueOtpOptions = {
   purpose?: OtpPurpose;
   /** Overrides the generated code. Used by the demo delivery path. */
   code?: string;
+  /** Set to false to issue the code without sending it anywhere. */
+  deliver?: boolean;
 };
 
 export type IssuedOtp = {
@@ -33,6 +36,8 @@ export type IssuedOtp = {
   expiresAt: Date;
   /** Whether an external provider carried the message. */
   deliveredExternally: boolean;
+  /** Why the message did not leave, when it did not. */
+  deliveryError: string | null;
 };
 
 /**
@@ -69,18 +74,73 @@ export async function issueOtp(options: IssueOtpOptions): Promise<IssuedOtp | nu
     })
     .returning({ id: otpCodes.id });
 
-  const deliveredExternally =
-    channel === "sms"
-      ? Boolean(process.env.SMS_PROVIDER_API_KEY)
-      : channel === "email"
-        ? Boolean(process.env.EMAIL_PROVIDER_API_KEY)
-        : false;
+  const delivery = await deliverCode(options.userId, channel, purpose, code);
 
-  if (!deliveredExternally) {
-    log("info", "otp.issued.in_app_only", { userId: options.userId, purpose, channel });
+  if (!delivery.ok) {
+    log("info", "otp.issued.in_app_only", {
+      userId: options.userId,
+      purpose,
+      channel,
+      reason: delivery.error,
+    });
   }
 
-  return { id: row.id, code, expiresAt, deliveredExternally };
+  return {
+    id: row.id,
+    code,
+    expiresAt,
+    deliveredExternally: delivery.ok,
+    deliveryError: delivery.error,
+  };
+}
+
+/**
+ * Send the code through the provider that is configured.
+ *
+ * The code is only reported as delivered when the provider confirmed it. If
+ * there is no provider, or the provider refused, the caller is told why and
+ * the code stays on screen so the person can still sign in.
+ */
+async function deliverCode(
+  userId: number,
+  channel: OtpChannel,
+  purpose: OtpPurpose,
+  code: string,
+): Promise<{ ok: boolean; error: string | null }> {
+  const [user] = await db
+    .select({ phone: users.phone, email: users.email, fullName: users.fullName })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  if (!user) return { ok: false, error: "The account could not be found." };
+
+  const label: Record<OtpPurpose, string> = {
+    login: "sign-in",
+    password_reset: "password reset",
+    two_factor: "two-factor",
+    boarding: "boarding",
+  };
+
+  if (channel === "sms") {
+    if (!user.phone) {
+      return { ok: false, error: "There is no phone number on the account." };
+    }
+    const result = await sendSms(
+      user.phone,
+      `${user.fullName ?? "Hello"}, your ${label[purpose]} code for RTS is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.`,
+    );
+    return { ok: result.ok, error: result.error };
+  }
+
+  if (!user.email) {
+    return { ok: false, error: "There is no email address on the account." };
+  }
+  const result = await sendEmail(
+    user.email,
+    `Your RTS ${label[purpose]} code`,
+    `${user.fullName ?? "Hello"},\n\nYour ${label[purpose]} code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.\n\nIf you did not ask for this code, you can ignore this message.`,
+  );
+  return { ok: result.ok, error: result.error };
 }
 
 export type VerifyResult = { ok: true } | { ok: false; message: string };

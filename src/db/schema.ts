@@ -896,6 +896,8 @@ export const notifications = pgTable(
     deliveryStatus: varchar("delivery_status", { length: 20 }).notNull().default("delivered"),
     /** Provider message id, when a real provider accepted the message. */
     providerRef: varchar("provider_ref", { length: 80 }),
+    /** Why a delivery failed, in words an operator can act on. */
+    deliveryError: text("delivery_error"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("notifications_user_idx").on(t.userId, t.readAt)],
