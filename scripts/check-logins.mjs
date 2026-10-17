@@ -24,19 +24,47 @@ const ACCOUNTS = [
   ["Driver", "driver.kwesi@staffridegh.com", ""],
 ];
 
+/** A friendly answer when the server is not there at all. */
+function noServer(error) {
+  const cause = error?.cause ?? error;
+  const code = cause?.code ?? "";
+  console.log("");
+  console.log(`  The server is not answering at ${base}`);
+  if (code === "ECONNREFUSED") {
+    console.log("  (nothing is listening on that address)");
+  }
+  console.log("");
+  console.log("  Start it in another terminal, then run this again:");
+  console.log("    npm start");
+  console.log("");
+  console.log("  If it runs on another port:");
+  console.log(`    BASE_URL=http://127.0.0.1:3001 node scripts/check-logins.mjs`);
+  console.log("  If you reach it over the network instead of on this machine:");
+  console.log(`    BASE_URL=http://<your-lan-ip>:3000 node scripts/check-logins.mjs`);
+  console.log("  To see what is listening:");
+  console.log("    ss -lnt | grep 3000");
+  console.log("");
+  process.exit(1);
+}
+
 async function attempt(email, code) {
   const body = new URLSearchParams({ email, password });
   if (code) body.set("code", code);
 
-  const res = await fetch(`${base}/api/auth/login`, {
-    method: "POST",
-    redirect: "manual",
-    headers: {
-      origin: base,
-      "content-type": "application/x-www-form-urlencoded",
-    },
-    body,
-  });
+  let res;
+  try {
+    res = await fetch(`${base}/api/auth/login`, {
+      method: "POST",
+      redirect: "manual",
+      headers: {
+        origin: base,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body,
+    });
+  } catch (error) {
+    noServer(error);
+  }
 
   const location = res.headers.get("location") ?? "";
   if (res.status === 403) {
@@ -56,6 +84,16 @@ async function attempt(email, code) {
 console.log("");
 console.log(`  sign-in check · ${base}`);
 console.log("");
+
+try {
+  const health = await fetch(`${base}/api/health`, { signal: AbortSignal.timeout(5000) });
+  if (!health.ok) {
+    console.log(`  The server answered /api/health with ${health.status}.`);
+    console.log("");
+  }
+} catch (error) {
+  noServer(error);
+}
 
 let failed = 0;
 
