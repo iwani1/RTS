@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type MapPoint = {
@@ -20,11 +20,92 @@ export type MapPoint = {
 /** Greater Accra service area. */
 const BOUNDS = { minLat: 5.45, maxLat: 5.8, minLng: -0.45, maxLng: 0.05 };
 
-function project(p: { lat: number; lng: number }) {
-  const x = ((p.lng - BOUNDS.minLng) / (BOUNDS.maxLng - BOUNDS.minLng)) * 100;
-  const y = ((BOUNDS.maxLat - p.lat) / (BOUNDS.maxLat - BOUNDS.minLat)) * 100;
+/**
+ * The map provider.
+ *
+ * `NEXT_PUBLIC_MAP_PROVIDER=mapbox` with `NEXT_PUBLIC_MAPBOX_TOKEN` draws a
+ * real Mapbox basemap under the markers. Without them the map keeps the
+ * built-in corridor, and the caption says which one is on screen.
+ */
+const MAP_PROVIDER = (process.env.NEXT_PUBLIC_MAP_PROVIDER ?? "").trim().toLowerCase();
+const MAPBOX_TOKEN = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").trim();
+const MAP_STYLE = (process.env.NEXT_PUBLIC_MAP_STYLE ?? "mapbox/dark-v11").trim();
+const BASEMAP_READY = MAP_PROVIDER === "mapbox" && MAPBOX_TOKEN.length > 0;
+
+/** Web Mercator, the projection every map on earth uses. */
+function mercatorY(lat: number): number {
+  const rad = (lat * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
+}
+
+type Viewport = {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+};
+
+/** The fixed service area, used when there is no basemap. */
+const DEFAULT_VIEWPORT: Viewport = BOUNDS;
+
+/**
+ * The area a basemap of this size should cover.
+ *
+ * The vertical span is the service area; the horizontal span follows the
+ * shape of the panel, so the map is never stretched. The image is requested
+ * in coarse steps so the same few images are reused instead of one per
+ * pixel of every resize.
+ */
+function viewportFor(width: number, height: number): {
+  viewport: Viewport;
+  imageWidth: number;
+  imageHeight: number;
+} {
+  const imageWidth = Math.min(1280, Math.max(320, Math.round(width / 80) * 80));
+  const imageHeight = Math.min(1280, Math.max(240, Math.round(height / 80) * 80));
+
+  const top = mercatorY(BOUNDS.maxLat);
+  const bottom = mercatorY(BOUNDS.minLat);
+  const heightUnits = top - bottom;
+  const centreLng = (BOUNDS.minLng + BOUNDS.maxLng) / 2;
+  // The world is 360 degrees wide; the Mercator unit is the same on both axes.
+  const widthUnits = heightUnits * (imageWidth / imageHeight);
+  const halfDegrees = (widthUnits * 360) / 2;
+
+  return {
+    viewport: {
+      minLat: BOUNDS.minLat,
+      maxLat: BOUNDS.maxLat,
+      minLng: centreLng - halfDegrees,
+      maxLng: centreLng + halfDegrees,
+    },
+    imageWidth,
+    imageHeight,
+  };
+}
+
+function project(p: { lat: number; lng: number }, viewport: Viewport) {
+  const top = mercatorY(viewport.maxLat);
+  const bottom = mercatorY(viewport.minLat);
+  const x = ((p.lng - viewport.minLng) / (viewport.maxLng - viewport.minLng)) * 100;
+  const y = ((top - mercatorY(p.lat)) / (top - bottom)) * 100;
   return { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) };
 }
+
+/** The Mapbox static image that covers exactly this area. */
+function basemapUrl(
+  viewport: Viewport,
+  imageWidth: number,
+  imageHeight: number,
+): string {
+  const bbox = `[${viewport.minLng},${viewport.minLat},${viewport.maxLng},${viewport.maxLat}]`;
+  const params = new URLSearchParams({
+    access_token: MAPBOX_TOKEN,
+    logo: "false",
+  });
+  return `https://api.mapbox.com/styles/v1/${MAP_STYLE}/static/${bbox}/${imageWidth}x${imageHeight}@2x?${params.toString()}`;
+}
+
 
 const MARKER_FILL: Record<string, string> = {
   teal: "var(--st-live)",
@@ -35,11 +116,12 @@ const MARKER_FILL: Record<string, string> = {
 };
 
 /**
- * A lightweight vector map of the Greater Accra service area.
+ * A map of the Greater Accra service area.
  *
- * This is a *demo* renderer — a stylised lattice, not a survey-accurate
- * basemap. Set NEXT_PUBLIC_MAP_PROVIDER (mapbox | google) plus the matching
- * key to swap in a real provider; see docs/API.md.
+ * With a Mapbox token the map draws a real basemap under the markers, and
+ * the markers sit where the vehicles actually are. Without one it draws the
+ * built-in corridor — a stylised lattice, not a survey-accurate basemap —
+ * and the caption says so. See docs/API.md.
  */
 export function MapCanvas({
   points,
@@ -57,8 +139,46 @@ export function MapCanvas({
     [points],
   );
 
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const [frame, setFrame] = useState<{ width: number; height: number } | null>(null);
+
+  // The basemap has to be requested for the shape of the panel, so the panel
+  // is measured once it is on screen.
+  useEffect(() => {
+    if (!BASEMAP_READY) return;
+    const element = frameRef.current;
+    if (!element) return;
+    const measure = () => {
+      const rect = element.getBoundingClientRect();
+      if (rect.width < 40 || rect.height < 40) return;
+      setFrame((previous) =>
+        previous &&
+        Math.abs(previous.width - rect.width) < 4 &&
+        Math.abs(previous.height - rect.height) < 4
+          ? previous
+          : { width: rect.width, height: rect.height },
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const basemap = useMemo(() => {
+    if (!BASEMAP_READY || !frame) return null;
+    const { viewport, imageWidth, imageHeight } = viewportFor(frame.width, frame.height);
+    return {
+      viewport,
+      url: basemapUrl(viewport, imageWidth, imageHeight),
+    };
+  }, [frame]);
+
+  const viewport = basemap?.viewport ?? DEFAULT_VIEWPORT;
+
   return (
     <div
+      ref={frameRef}
       className={cn(
         "relative w-full overflow-hidden rounded-[8px] border border-line bg-surface-2",
         className,
@@ -71,14 +191,29 @@ export function MapCanvas({
         className="absolute inset-0 h-full w-full"
         aria-hidden
       >
+        {/* the real basemap, when a map provider is configured */}
+        {basemap ? (
+          <image
+            href={basemap.url}
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            preserveAspectRatio="none"
+            opacity="0.92"
+          />
+        ) : null}
+
         {/* water body */}
-        <path
-          d="M0,84 C12,78 22,86 34,80 C46,74 52,82 64,76 C76,70 88,78 100,72 L100,100 L0,100 Z"
-          fill="var(--surface-3)"
-          opacity="0.65"
-        />
+        {basemap ? null : (
+          <path
+            d="M0,84 C12,78 22,86 34,80 C46,74 52,82 64,76 C76,70 88,78 100,72 L100,100 L0,100 Z"
+            fill="var(--surface-3)"
+            opacity="0.65"
+          />
+        )}
         {/* arterial lattice */}
-        <g stroke="var(--line)" strokeWidth="0.4" opacity="0.9">
+        <g stroke="var(--line)" strokeWidth="0.4" opacity="0.9" visibility={basemap ? "hidden" : "visible"}>
           <line x1="0" y1="52" x2="100" y2="46" />
           <line x1="26" y1="0" x2="34" y2="100" />
           <line x1="62" y1="0" x2="58" y2="100" />
@@ -86,7 +221,7 @@ export function MapCanvas({
           <line x1="84" y1="0" x2="78" y2="100" />
         </g>
         {showGrid ? (
-          <g stroke="var(--line)" strokeWidth="0.22" opacity="0.45">
+          <g stroke="var(--line)" strokeWidth="0.22" opacity="0.45" visibility={basemap ? "hidden" : "visible"}>
             {Array.from({ length: 9 }, (_, i) => (
               <line key={`h${i}`} x1="0" x2="100" y1={i * 12.5} y2={i * 12.5} />
             ))}
@@ -102,7 +237,7 @@ export function MapCanvas({
             <polyline
               points={vehicles
                 .map((p) => {
-                  const a = project(p);
+                  const a = project(p, viewport);
                   return `${a.x},${a.y}`;
                 })
                 .join(" ")}
@@ -115,7 +250,7 @@ export function MapCanvas({
             <polyline
               points={vehicles
                 .map((p) => {
-                  const a = project(p);
+                  const a = project(p, viewport);
                   return `${a.x},${a.y}`;
                 })
                 .join(" ")}
@@ -130,7 +265,7 @@ export function MapCanvas({
 
         {/* markers */}
         {points.map((p) => {
-          const a = project(p);
+          const a = project(p, viewport);
           const fill = MARKER_FILL[p.tone ?? "teal"] ?? "var(--st-live)";
           const isVehicle = p.kind === "vehicle";
           return (
@@ -175,7 +310,7 @@ export function MapCanvas({
       {/* labels */}
       <div className="pointer-events-none absolute inset-0">
         {points.map((p) => {
-          const a = project(p);
+          const a = project(p, viewport);
           return (
             <div
               key={`lbl-${p.id}`}
@@ -194,7 +329,9 @@ export function MapCanvas({
       </div>
 
       <span className="numeric absolute bottom-2 right-2 rounded-[4px] border border-line bg-surface-1/92 px-2 py-0.5 text-[9.5px] text-ink-3">
-        Demo vector map · Greater Accra
+        {basemap
+          ? "Mapbox basemap \u00b7 Greater Accra"
+          : "Built-in corridor \u00b7 Greater Accra"}
       </span>
     </div>
   );

@@ -29,6 +29,7 @@ import {
   TR,
 } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/button";
+import { PaymentLinkButton } from "@/components/finance/payment-link-button";
 import { Field } from "@/components/ui/input";
 import {
   approveEarningsAction,
@@ -167,6 +168,7 @@ export default async function FinancePage() {
                 <TH align="right">Total</TH>
                 <TH align="right">Paid</TH>
                 <TH>Status</TH>
+                <TH align="right">Collect</TH>
                 <TH align="right">Export</TH>
               </TR>
             </THead>
@@ -193,6 +195,21 @@ export default async function FinancePage() {
                   <TD align="right">{money(i.invoice.amountPaid)}</TD>
                   <TD>
                     <StatusChip status={i.invoice.status} />
+                  </TD>
+                  <TD align="right">
+                    {i.invoice.status === "paid" ? (
+                      <span className="numeric text-[11.5px] text-ink-3">
+                        Settled
+                      </span>
+                    ) : (
+                      <PaymentLinkButton
+                        invoiceId={i.invoice.id}
+                        invoiceNo={i.invoice.invoiceNo}
+                        outstanding={
+                          Number(i.invoice.total) - Number(i.invoice.amountPaid)
+                        }
+                      />
+                    )}
                   </TD>
                   <TD align="right">
                     <a

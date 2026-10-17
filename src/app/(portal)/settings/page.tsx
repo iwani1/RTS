@@ -30,6 +30,7 @@ import {
 import { changeOwnPasswordAction } from "@/app/actions/auth";
 import { markNotificationsReadAction } from "@/app/actions/ops";
 import { requireUser } from "@/lib/auth";
+import { providerStatus } from "@/lib/providers";
 import { ROLE_LABELS, can, type Role } from "@/lib/rbac";
 import { dateTime, n } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ export default async function SettingsPage() {
   const user = await requireUser();
   const role = user.role as Role;
   const canManageUsers = can(role, "user.manage");
+  const providers = providerStatus();
 
   const userRows = await db
     .select({ user: users, company: companies.name })
@@ -172,6 +174,29 @@ export default async function SettingsPage() {
                     {notification.category} · {notification.channel} ·{" "}
                     {dateTime(notification.createdAt)}
                   </p>
+                  {notification.channel !== "in_app" ? (
+                    <p className="mt-0.5 text-[11.5px] text-ink-3">
+                      Delivery:{" "}
+                      <span
+                        className={
+                          notification.deliveryStatus === "sent"
+                            ? "text-st-ok"
+                            : notification.deliveryStatus === "failed"
+                              ? "text-st-critical"
+                              : "text-ink-3"
+                        }
+                      >
+                        {notification.deliveryStatus === "sent"
+                          ? "sent"
+                          : notification.deliveryStatus === "failed"
+                            ? "failed"
+                            : notification.deliveryStatus === "queued"
+                              ? "waiting to be sent"
+                              : "in-app only"}
+                      </span>
+                      {notification.deliveryError ? ` — ${notification.deliveryError}` : ""}
+                    </p>
+                  ) : null}
                 </div>
                 <StatusChip
                   tone={notification.readAt ? "idle" : "live"}
@@ -310,13 +335,20 @@ export default async function SettingsPage() {
             </p>
           </Panel>
         ) : (
-          <Panel title="Platform configuration" eyebrow="Environment">
+          <Panel
+            title="Platform configuration"
+            eyebrow="Environment"
+            subtitle="What is actually connected, read from the running configuration"
+          >
             <DefinitionList
               items={[
                 { label: "Currency", value: "GHS (Ghana Cedi)" },
                 { label: "Timezone", value: "Africa/Accra (GMT)" },
-                { label: "Mapping provider", value: "Demo vector map" },
-                { label: "Payment provider", value: "Interface only — no credentials" },
+                { label: "Mapping", value: providers.map.detail },
+                { label: "SMS", value: providers.sms.detail },
+                { label: "Email", value: providers.email.detail },
+                { label: "Single sign-on", value: providers.sso.detail },
+                { label: "Payments", value: providers.payments.detail },
                 { label: "Session lifetime", value: "7 days" },
                 { label: "GPS retention", value: "90 days" },
               ]}
