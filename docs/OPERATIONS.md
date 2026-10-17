@@ -255,6 +255,7 @@ its work, so a crash still leaves a `running` row behind — that is how a faile
 | `raise-scheduled-invoices` | 60 min | raises the invoice for an agreement on its billing day |
 | `schedule-safety-inspections` | 1440 min | generates the next inspection from its cycle |
 | `detect-geofence-arrivals` | 5 min | compares the last GPS fix with the stop and records the arrival and boarding |
+| `deliver-notifications` | 1 min | claims the queued messages and sends them through Hubtel (SMS) or SMTP (e-mail), writing back `sent` or `failed` |
 | `purge-expired-data` | 1440 min | removes expired sessions, one-time codes, GPS events and job runs |
 | `backup-database` | 1440 min | takes an archive and prunes to the retention window |
 
@@ -273,6 +274,8 @@ dedicated worker instead, which is a configuration change rather than a rewrite.
 ```bash
 npm run verify        # lint · typecheck · unit tests · schema drift
 npm run test:smoke   # route checks across all six roles (server running)
+npm run test:sso      # the OIDC sign-in flow, against a stand-in provider (server running)
+npm run test:delivery # a real message through a stand-in SMS gateway (server running)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
 npm run test:demo    # the live demo: 54 checks against a running server

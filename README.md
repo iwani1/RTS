@@ -191,9 +191,16 @@ npm run test:action    # the server-action transport
 npm run test:demo      # 54 checks: the live end-to-end demonstration
 npm run test:origin    # 5 checks: the Server Action origin guard
 npm run test:login     # can all eight demo accounts actually sign in?
+npm run test:sso       # the OIDC sign-in flow, against a stand-in identity provider
+npm run test:delivery  # a real message through a stand-in SMS gateway
 npm run roles          # what each role can reach, read from the permission matrix
 npm run verify         # lint · typecheck · unit tests · migration drift · role matrix
 ```
+
+The last two need the server started with the provider's address, for example
+`SMS_PROVIDER_ENDPOINT=http://127.0.0.1:4312/v1/messages/send` for the delivery check and
+`OIDC_ISSUER=http://127.0.0.1:4311` for the sign-on check. Both stand-ins run on the machine and are
+started by the script.
 
 `TEST_SESSION_TOKEN` is what the server expects on `POST /api/test/session`, and
 `TEST_SESSION_ENABLED=true` is what opens that route. The token signs in as **any** account with
