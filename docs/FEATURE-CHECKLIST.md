@@ -185,4 +185,4 @@ Legend: ● implemented · ◐ implemented with a stated, honest limitation ·
 | `scripts/auth-form.mjs` | 7/7 native sign-in checks |
 | `scripts/action-invoke.mjs` | 7/7 server-action transport checks |
 | `scripts/audit-authz.py` | 61 server actions, 61 guarded, 0 unvalidated |
-| `scripts/demo.mjs` | 54/54 live-demo checks against a running server |
+| `scripts/demo.mjs` | 55/55 live-demo checks against a running server |
