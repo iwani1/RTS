@@ -116,6 +116,21 @@ Two rules apply on a workstation:
   while it held the directory open.
 * **The data directory sits beside the project**, in `.data/pgdata`, not inside `.next/`, so a
   rebuild does not take the demonstration database with it.
+* **One port at a time.** The port is checked before the server starts. If it is busy, the app
+  says what is holding it and by which process — usually an earlier copy of the app that was
+  never stopped:
+
+  ```text
+  [rts] Port 3000 is already in use — the server cannot start.
+
+    An earlier copy of this app is still running on 0.0.0.0:3000 (process 4149).
+
+      kill 4149     # stop it, then run npm start again
+
+      PORT=3001 npm start    # or run on a different port
+  ```
+
+  `PORT` is honoured by `npm start` and `npm run dev`; `BIND_HOST` decides the address.
 
 To open the app from a phone or a second machine on the same network, bind to every interface:
 

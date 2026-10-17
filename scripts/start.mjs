@@ -10,11 +10,19 @@
  *   npm start                        # every interface (the default)
  *   BIND_HOST=127.0.0.1 npm start    # this machine only
  *   BIND_HOST=my-host.local npm start
+ *   PORT=3001 npm start              # a different port
  *
  * A `HOSTNAME` that already looks like an address is still honoured, so the
  * container image and any existing deployment keep working unchanged.
+ *
+ * The port is also checked before the server starts, because "address
+ * already in use" is the single most common way this fails on a developer's
+ * machine — usually a previous copy of the app that is still running. The
+ * check names the process holding the port and the three ways out.
  */
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
+import net from "node:net";
+import { readFileSync, readlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,17 +43,125 @@ function resolveBindHost() {
   return "0.0.0.0";
 }
 
+/** The port the standalone server will try to bind. */
+function resolvePort() {
+  const explicit = Number(process.env.PORT?.trim());
+  return Number.isInteger(explicit) && explicit > 0 && explicit < 65536 ? explicit : 3000;
+}
+
 const bindHost = resolveBindHost();
+const port = resolvePort();
+
 if (process.env.HOSTNAME && process.env.HOSTNAME !== bindHost) {
   console.log(
     `[rts] HOSTNAME=${process.env.HOSTNAME} is a machine name, not a bind address. Listening on ${bindHost} instead.`,
   );
 }
 
+/**
+ * Best effort: which process is holding the port? `lsof` is not installed
+ * everywhere and `ss` does not always show the process, so this is a
+ * convenience — never a reason to fail.
+ */
+function portOwner(port) {
+  const attempts = [
+    ["lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-Fpcu"]],
+    ["ss", ["-ltnp", `sport = :${port}`]],
+  ];
+  for (const [command, args] of attempts) {
+    try {
+      const output = execFileSync(command, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+      const pid = output.match(/(?:^|\n)pid=(\d+)/)?.[1] ?? output.match(/users:\(\("([^"]+)",pid=(\d+)/)?.[2];
+      const name = output.match(/users:\(\("([^"]+)"/)?.[1];
+      if (pid) return { pid, name, ours: isThisApp(pid) };
+    } catch {
+      // The tool is not installed, or it refused. Try the next one.
+    }
+  }
+  return null;
+}
+
+/**
+ * Is the process holding the port another copy of this app? On Linux the
+ * command line is readable from /proc, which turns "something is in the
+ * way" into "your own earlier copy is in the way".
+ */
+function isThisApp(pid) {
+  const mine = `${root}/.next/standalone`;
+  try {
+    const cmdline = readFileSync(`/proc/${pid}/cmdline`, "utf8").replace(/\0/g, " ");
+    if (cmdline.includes("standalone/server.js") || cmdline.includes(root)) return true;
+  } catch {
+    // No /proc, or it is not readable.
+  }
+  try {
+    // Next renames the worker process to "next-server", so the command line
+    // says nothing. Its working directory still does.
+    if (readlinkSync(`/proc/${pid}/cwd`).startsWith(mine)) return true;
+  } catch {
+    // Not readable on this platform.
+  }
+  return false;
+}
+
+function portIsFree() {
+  return new Promise((resolve) => {
+    const probe = net.createServer();
+    probe.once("error", (error) => resolve(error.code !== "EADDRINUSE"));
+    probe.once("listening", () => probe.close(() => resolve(true)));
+    probe.listen(port, bindHost === "0.0.0.0" ? undefined : bindHost);
+  });
+}
+
+function reportPortInUse() {
+  const owner = portOwner(port);
+  console.error("");
+  console.error(`[rts] Port ${port} is already in use — the server cannot start.`);
+  console.error("");
+  if (owner) {
+    if (owner.ours) {
+      console.error(`  An earlier copy of this app is still running on ${bindHost}:${port} (process ${owner.pid}).`);
+    } else {
+      const what = owner.name ? ` (${owner.name})` : "";
+      console.error(`  Something${what} is already listening on ${bindHost}:${port}, process ${owner.pid}.`);
+    }
+    console.error("");
+    console.error(`    kill ${owner.pid}     # stop it, then run npm start again`);
+  } else {
+    console.error(`  Something is already listening on ${bindHost}:${port}.`);
+    console.error("  Most often this is an earlier copy of this app that did not stop.");
+    console.error("");
+    console.error(`    ss -ltnp | grep :${port}    # find the process`);
+    console.error(`    lsof -i :${port}           # or, if lsof is installed`);
+  }
+  console.error("");
+  console.error(`    PORT=${port + 1} npm start    # or run on a different port`);
+  console.error("");
+}
+
+if (!(await portIsFree())) {
+  reportPortInUse();
+  process.exit(1);
+}
+
 const child = spawn(process.execPath, [server], {
   cwd: root,
-  stdio: "inherit",
-  env: { ...process.env, HOSTNAME: bindHost },
+  stdio: ["ignore", "inherit", "pipe"],
+  env: { ...process.env, HOSTNAME: bindHost, PORT: String(port) },
+});
+
+// Next writes its own start-up banner to stderr. It is piped so that an
+// "address already in use" can be turned into advice instead of a stack
+// trace, and everything else is passed straight through.
+let stderrTail = "";
+child.stderr.on("data", (chunk) => {
+  const text = chunk.toString();
+  stderrTail = (stderrTail + text).slice(-4000);
+  process.stderr.write(chunk);
+  if (text.includes("EADDRINUSE")) {
+    console.error("");
+    reportPortInUse();
+  }
 });
 
 child.on("exit", (code, signal) => {
