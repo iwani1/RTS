@@ -294,6 +294,8 @@ One morning run, seen from all sides. This is the fastest way to understand the 
 
 | | |
 | --- | --- |
+| `npm run roles` | Prints, for every role, the screens, sections and actions it can reach — read straight from the permission matrix, with no server and no database |
+| `npm run roles:check` | Fails if a role can reach a different number of screens than this guide claims |
 | `docs/OPERATIONS.md` | The daily standard operating procedures, the runbook, and the deployment notes |
 | `docs/API.md` | Every API route, with the permissions each one enforces |
 | `docs/ARCHITECTURE.md` | How the pieces fit, with the database diagram |

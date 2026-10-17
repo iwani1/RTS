@@ -252,6 +252,13 @@ Driver                   2 entries   duty, position, boarding, earnings`}</Code>
           in the life of one shuttle run, and the words the system uses — is
           in <code>docs/USER-GUIDE.md</code> in the project.
         </p>
+        <p>
+          None of those numbers are written by hand.{" "}
+          <code>npm run roles</code> prints the same table straight from the
+          permission matrix in <code>src/lib/rbac.ts</code>, and{" "}
+          <code>npm run roles:check</code> fails when a role can reach a
+          different number of screens than this page claims.
+        </p>
       </Section>
 
       <Section id="local" title="Run it on your own computer">

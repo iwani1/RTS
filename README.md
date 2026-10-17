@@ -149,7 +149,8 @@ npm run test:auth      # the native, no-JavaScript sign-in flow
 npm run test:action    # the server-action transport
 npm run test:demo      # 54 checks: the live end-to-end demonstration
 npm run test:origin    # 5 checks: the Server Action origin guard
-npm run verify         # lint · typecheck · unit tests · migration drift
+npm run roles          # what each role can reach, read from the permission matrix
+npm run verify         # lint · typecheck · unit tests · migration drift · role matrix
 ```
 
 `TEST_SESSION_TOKEN` is what the server expects on `POST /api/test/session`, and
@@ -341,6 +342,7 @@ audit, a production build and the route smoke test on every push, and builds the
 
 | Document | Contents |
 | --- | --- |
+| `docs/USER-GUIDE.md` | How to use the system, organised by role — what each of the eight roles sees, owns and does |
 | `docs/ARCHITECTURE.md` | Mermaid diagrams — system context, layers, request lifecycle, ERD, tenancy, auth, boot, interface, deployment |
 | `docs/API.md` | REST + server action reference, request/response shapes |
 | `docs/OPERATIONS.md` | SOPs, rollout plan, runbook, backup and recovery |
