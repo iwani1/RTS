@@ -231,6 +231,29 @@ Server actions (form posts, same authorisation model):
   auth.resetPasswordAction, auth.changeOwnPasswordAction, auth.logoutAction`}</Code>
       </Section>
 
+      <Section id="by-role" title="Guide by role">
+        <p>
+          The sidebar you see is exactly your job. Eight roles, each with
+          its own set of screens — and a corporate client only ever sees its
+          own company. Sign in as a different role to see the difference.
+        </p>
+        <Code>{`Super Administrator      20 entries   the platform, users, clients, audit
+Operations Manager      17 entries   clients, staff, routes, fleet, the plan
+Dispatcher              10 entries   live dispatch, trips, bookings, incidents
+Fleet Manager            7 entries   vehicles, drivers, compliance, fuel
+Finance Officer          7 entries   invoices, reports, currencies
+Corporate HR Admin      12 entries   own staff, own bookings, own invoice
+Employee / Passenger     2 entries   book a ride, track it, boarding code
+Driver                   2 entries   duty, position, boarding, earnings`}</Code>
+        <p>
+          The counts are sidebar entries; each list ends with the same
+          Documentation link. The full walkthrough — what each role is
+          responsible for, the day
+          in the life of one shuttle run, and the words the system uses — is
+          in <code>docs/USER-GUIDE.md</code> in the project.
+        </p>
+      </Section>
+
       <Section id="local" title="Run it on your own computer">
         <p>
           Two commands and the platform is running. The database is created,

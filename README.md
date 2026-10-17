@@ -9,6 +9,9 @@ button, form and dashboard action performs a real, authorised server operation.
 
 ---
 
+> **New here?** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) is a guide to the system **by role** — what
+> each of the eight roles sees, what they are responsible for, and the words the system uses.
+
 ## 1. Run it on your own computer
 
 ### What you need
