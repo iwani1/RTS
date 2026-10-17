@@ -129,6 +129,10 @@ jobs:
         env:
           TEST_SESSION_ENABLED: "true"
           TEST_SESSION_TOKEN: ci-smoke-token
+          # The same credentials the server was started with, so the check can
+          # prove the request was authenticated with them.
+          SMS_PROVIDER_CLIENT_ID: ci-demo
+          SMS_PROVIDER_CLIENT_SECRET: ci-demo
         run: node scripts/delivery-check.mjs
 
       # The Server Action CSRF guard. A browser whose origin matches the host

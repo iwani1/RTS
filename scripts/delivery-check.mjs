@@ -18,6 +18,10 @@
  *   SMS_PROVIDER_ENDPOINT=http://127.0.0.1:4312/v1/messages/send \
  *   npm start
  *
+ * The check reads SMS_PROVIDER_CLIENT_ID and SMS_PROVIDER_CLIENT_SECRET from
+ * the environment as well, so it can prove the request was authenticated with
+ * the credentials the server is using.
+ *
  * Usage: node scripts/delivery-check.mjs [baseUrl]
  */
 import http from "node:http";
@@ -25,6 +29,10 @@ import http from "node:http";
 const BASE = (process.argv[2] ?? process.env.BASE_URL ?? "http://127.0.0.1:3000").replace(/\/$/, "");
 const GATEWAY_PORT = Number(process.env.SMS_GATEWAY_PORT ?? 4312);
 const TOKEN = process.env.TEST_SESSION_TOKEN ?? "ci-smoke-token";
+// The credentials the server was started with, so the check can prove the
+// request was authenticated with them.
+const CLIENT_ID = process.env.SMS_PROVIDER_CLIENT_ID ?? "demo";
+const CLIENT_SECRET = process.env.SMS_PROVIDER_CLIENT_SECRET ?? "demo";
 
 let failures = 0;
 const received = [];
@@ -168,7 +176,7 @@ async function main() {
       check("the request went to the send endpoint", call.path.includes("/v1/messages/send"), call.path);
       check(
         "the request was authenticated",
-        call.authorization === `Basic ${Buffer.from("demo:demo").toString("base64")}`,
+        call.authorization === `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")}`,
         call.authorization ?? "",
       );
       const body = JSON.parse(call.body);
