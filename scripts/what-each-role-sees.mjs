@@ -11,14 +11,12 @@ const base = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const token = process.env.TEST_SESSION_TOKEN ?? "ci-smoke-token";
 
 const ACCOUNTS = [
-  ["admin@staffridegh.com", "Super Administrator"],
-  ["ops@staffridegh.com", "Operations Manager"],
-  ["dispatch@staffridegh.com", "Dispatcher"],
-  ["fleet@staffridegh.com", "Fleet Manager"],
-  ["finance@staffridegh.com", "Finance Officer"],
-  ["hr@sikamanfinancial.com", "Corporate HR Administrator"],
-  ["ama@sikamanfinancial.com", "Employee / Passenger"],
-  ["driver.kwesi@staffridegh.com", "Driver"],
+  ["admin@richietransportgh.com", "Super Administrator"],
+  ["ops@richietransportgh.com", "Operations Manager"],
+  ["dispatch@richietransportgh.com", "Dispatcher"],
+  ["fleet@richietransportgh.com", "Fleet Manager"],
+  ["finance@richietransportgh.com", "Finance Officer"],
+  ["driver.kwesi@richietransportgh.com", "Driver"],
 ];
 
 async function session(email) {
@@ -59,11 +57,7 @@ console.log(`\nwhat each role sees · ${base}\n`);
 
 for (const [email, role] of ACCOUNTS) {
   const cookie = await session(email);
-  const home = email.startsWith("ama@")
-    ? "/passenger"
-    : email.startsWith("driver.")
-      ? "/driver"
-      : "/dashboard";
+  const home = email.startsWith("driver.") ? "/driver" : "/dashboard";
   const res = await fetch(`${base}${home}`, { headers: { cookie } });
   const html = await res.text();
   const links = navLinks(html);

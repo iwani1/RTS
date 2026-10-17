@@ -14,7 +14,7 @@ const token = process.env.TEST_SESSION_TOKEN;
 const USERS = [
   {
     label: "super admin",
-    email: "admin@staffridegh.com",
+    email: "admin@richietransportgh.com",
     routes: [
       "/", "/docs", "/offline", "/register", "/forgot-password", "/reset-password",
       "/dashboard", "/dispatch", "/trips", "/bookings", "/fleet", "/employees",
@@ -24,7 +24,7 @@ const USERS = [
   },
   {
     label: "operations manager",
-    email: "ops@staffridegh.com",
+    email: "ops@richietransportgh.com",
     routes: [
       "/dashboard", "/dispatch", "/trips", "/bookings", "/employees", "/companies",
       "/routes", "/incidents", "/reports", "/settings",
@@ -32,32 +32,22 @@ const USERS = [
   },
   {
     label: "dispatcher",
-    email: "dispatch@staffridegh.com",
+    email: "dispatch@richietransportgh.com",
     routes: ["/dashboard", "/dispatch", "/trips", "/bookings", "/routes", "/incidents", "/settings"],
   },
   {
     label: "fleet manager",
-    email: "fleet@staffridegh.com",
+    email: "fleet@richietransportgh.com",
     routes: ["/dashboard", "/fleet", "/drivers", "/incidents", "/settings"],
   },
   {
     label: "finance officer",
-    email: "finance@staffridegh.com",
+    email: "finance@richietransportgh.com",
     routes: ["/dashboard", "/drivers", "/finance", "/reports", "/settings"],
   },
   {
-    label: "corporate HR",
-    email: "hr@sikamanfinancial.com",
-    routes: ["/dashboard", "/employees", "/routes", "/trips", "/bookings", "/finance", "/reports", "/incidents", "/settings", "/passenger"],
-  },
-  {
-    label: "employee",
-    email: "ama@sikamanfinancial.com",
-    routes: ["/passenger", "/passenger/trips", "/settings"],
-  },
-  {
     label: "driver",
-    email: "driver.kwesi@staffridegh.com",
+    email: "driver.kwesi@richietransportgh.com",
     routes: ["/driver", "/settings"],
   },
 ];
@@ -110,7 +100,7 @@ for (const user of USERS) {
   }
 
   // Dynamic detail pages, discovered from the list views.
-  if (user.email === "admin@staffridegh.com") {
+  if (user.email === "admin@richietransportgh.com") {
     const list = await (await fetch(`${base}/companies`, { headers: { cookie } })).text();
     const companyId = list.match(/\/companies\/(\d+)/)?.[1];
     if (companyId) {

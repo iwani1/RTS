@@ -133,8 +133,8 @@ Returns the Prometheus text exposition format.
 * `GET /api/metrics?format=json` returns the same data as a JSON snapshot: counters, latency percentiles
   and process uptime.
 
-Metric families: `staffride_uptime_seconds`, `staffride_http_<method>_<route>_total` (request counters, keyed
-by route shape so cardinality stays bounded), `staffride_http_<method>_<route>_duration_ms` (p95, count, sum),
+Metric families: `rts_uptime_seconds`, `rts_http_<method>_<route>_total` (request counters, keyed
+by route shape so cardinality stays bounded), `rts_http_<method>_<route>_duration_ms` (p95, count, sum),
 and one counter per named operation.
 
 ### `GET /api/jobs`

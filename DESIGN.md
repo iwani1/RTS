@@ -1,4 +1,4 @@
-# StaffRide — Design System Contract
+# Richie Transport Services — Design System Contract
 
 > The single source of truth for every pixel in this repository.
 > Derived from a research pass across Scrolltide, Navbar Gallery, Footer Design, CTA Gallery,
@@ -11,7 +11,7 @@
 
 **"Signal lights through dark lattice."**
 
-StaffRide is an operations instrument, not a marketing site. A dispatcher watches it for nine hours.
+Richie Transport Services is an operations instrument, not a marketing site. A dispatcher watches it for nine hours.
 An employee checks it on a bus in daylight. A finance officer reconciles it at month end.
 
 So the interface is **built like a machine, not a document**:

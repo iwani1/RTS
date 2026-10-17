@@ -53,12 +53,12 @@ export type JobOutcome = {
  * A global keeps one registry for the whole process.
  */
 const globalForRegistry = globalThis as typeof globalThis & {
-  __staffrideJobRegistry?: Map<string, JobDefinition>;
+  __rtsJobRegistry?: Map<string, JobDefinition>;
 };
 
 function registry(): Map<string, JobDefinition> {
-  globalForRegistry.__staffrideJobRegistry ??= new Map<string, JobDefinition>();
-  return globalForRegistry.__staffrideJobRegistry;
+  globalForRegistry.__rtsJobRegistry ??= new Map<string, JobDefinition>();
+  return globalForRegistry.__rtsJobRegistry;
 }
 
 /** Register a job. Call once per job at module load. */
@@ -145,17 +145,17 @@ export async function recentJobRuns(limit = 40) {
 /* ------------------------------------------------------------- the runner */
 
 const globalForJobs = globalThis as typeof globalThis & {
-  __staffrideJobTimer?: NodeJS.Timeout;
-  __staffrideJobsStarted?: boolean;
+  __rtsJobTimer?: NodeJS.Timeout;
+  __rtsJobsStarted?: boolean;
 };
 
 const globalForLastRun = globalThis as typeof globalThis & {
-  __staffrideJobLastRun?: Map<string, number>;
+  __rtsJobLastRun?: Map<string, number>;
 };
 
 function lastRun(): Map<string, number> {
-  globalForLastRun.__staffrideJobLastRun ??= new Map<string, number>();
-  return globalForLastRun.__staffrideJobLastRun;
+  globalForLastRun.__rtsJobLastRun ??= new Map<string, number>();
+  return globalForLastRun.__rtsJobLastRun;
 }
 
 /**
@@ -164,8 +164,8 @@ function lastRun(): Map<string, number> {
  * hot reload.
  */
 export function startJobRunner(): void {
-  if (globalForJobs.__staffrideJobsStarted) return;
-  globalForJobs.__staffrideJobsStarted = true;
+  if (globalForJobs.__rtsJobsStarted) return;
+  globalForJobs.__rtsJobsStarted = true;
 
   const tick = async () => {
     const now = Date.now();
@@ -180,12 +180,12 @@ export function startJobRunner(): void {
   };
 
   void tick();
-  globalForJobs.__staffrideJobTimer = setInterval(() => {
+  globalForJobs.__rtsJobTimer = setInterval(() => {
     void tick();
   }, 60_000);
 
   // Do not hold the process open on shutdown.
-  globalForJobs.__staffrideJobTimer.unref?.();
+  globalForJobs.__rtsJobTimer.unref?.();
 }
 
 /** Run every job that is marked `runOnBoot`. Used at server start. */
@@ -200,9 +200,9 @@ export async function runBootJobs(): Promise<JobOutcome[]> {
 
 /** Stop the scheduler. Used in tests and on graceful shutdown. */
 export function stopJobRunner(): void {
-  if (globalForJobs.__staffrideJobTimer) {
-    clearInterval(globalForJobs.__staffrideJobTimer);
-    globalForJobs.__staffrideJobTimer = undefined;
+  if (globalForJobs.__rtsJobTimer) {
+    clearInterval(globalForJobs.__rtsJobTimer);
+    globalForJobs.__rtsJobTimer = undefined;
   }
-  globalForJobs.__staffrideJobsStarted = false;
+  globalForJobs.__rtsJobsStarted = false;
 }

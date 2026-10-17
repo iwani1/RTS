@@ -300,7 +300,7 @@ export default async function SettingsPage() {
                     { value: "", label: "Platform (all clients)" },
                     ...companyOptions.map((c) => ({ value: String(c.id), label: c.name })),
                   ]}
-                  hint="Corporate HR and employee accounts must be scoped to a client."
+                  hint="Driver accounts must be scoped to a client."
                 />
               </div>
             </ActionForm>

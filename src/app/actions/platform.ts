@@ -192,95 +192,6 @@ async function createSafetyInspectionAction__impl(
   };
 }
 
-/* ------------------------------------------------------- live trip sharing */
-
-/**
- * Share a trip with other passengers of the same corridor.
- *
- * The sharer must have granted location consent, and the code is short-lived
- * and revocable. A passenger who has the code can see how full the vehicle is
- * and where it is — not who is on board.
- */
-async function shareTripAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  const tripId = num(fd, "tripId");
-  if (!tripId) return { ok: false, message: "Select a trip to share." };
-
-  const [employee] = await db
-    .select()
-    .from(employees)
-    .where(eq(employees.userId, user.id))
-    .limit(1);
-  if (!employee) {
-    return { ok: false, message: "No employee profile is linked to your account." };
-  }
-
-  const [trip] = await db.select().from(trips).where(eq(trips.id, tripId)).limit(1);
-  if (!trip) return { ok: false, message: "That trip does not exist." };
-
-  // Only a passenger booked onto the trip may share it.
-  const { bookings } = await import("@/db/schema");
-  const [booking] = await db
-    .select()
-    .from(bookings)
-    .where(and(eq(bookings.tripId, tripId), eq(bookings.employeeId, employee.id)))
-    .limit(1);
-  if (!booking) {
-    return { ok: false, message: "You can only share a trip you are booked on." };
-  }
-
-  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-  const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000);
-
-  const [row] = await db
-    .insert(trackingShares)
-    .values({ tripId, employeeId: employee.id, shareCode: code, expiresAt })
-    .returning({ id: trackingShares.id });
-
-  await logAudit({
-    user,
-    action: "passenger.trip_shared",
-    entity: "tracking_share",
-    entityId: row.id,
-    details: { tripId },
-  });
-  revalidatePath("/passenger/corridor");
-  return {
-    ok: true,
-    message: `Share code ${code} — it works for six hours.`,
-    data: { code, expiresAt: expiresAt.toISOString() },
-  };
-}
-
-async function revokeShareAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  const id = num(fd, "id");
-  if (!id) return { ok: false, message: "The share could not be identified." };
-
-  const [employee] = await db
-    .select()
-    .from(employees)
-    .where(eq(employees.userId, user.id))
-    .limit(1);
-
-  const rows = await db
-    .update(trackingShares)
-    .set({ revokedAt: new Date() })
-    .where(
-      and(
-        eq(trackingShares.id, id),
-        ...(employee ? [eq(trackingShares.employeeId, employee.id)] : []),
-      ),
-    )
-    .returning({ id: trackingShares.id });
-
-  if (rows.length === 0) {
-    return { ok: false, message: "That share is no longer active." };
-  }
-  revalidatePath("/passenger/corridor");
-  return { ok: true, message: "Share revoked." };
-}
-
 /* ------------------------------------------------------- exchange rates */
 
 async function updateExchangeRateAction__impl(
@@ -360,14 +271,6 @@ export async function createSafetyInspectionAction(
   fd: FormData,
 ): Promise<ActionState> {
   return withAction(createSafetyInspectionAction__impl)(_p, fd);
-}
-
-export async function shareTripAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(shareTripAction__impl)(_p, fd);
-}
-
-export async function revokeShareAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(revokeShareAction__impl)(_p, fd);
 }
 
 export async function updateExchangeRateAction(

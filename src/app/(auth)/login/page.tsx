@@ -12,14 +12,12 @@ import type { Role } from "@/lib/rbac";
 export const dynamic = "force-dynamic";
 
 const DEMO = [
-  { role: "Super Administrator", email: "admin@staffridegh.com", code: "246810" },
-  { role: "Operations Manager", email: "ops@staffridegh.com" },
-  { role: "Dispatcher", email: "dispatch@staffridegh.com" },
-  { role: "Fleet Manager", email: "fleet@staffridegh.com" },
-  { role: "Finance Officer", email: "finance@staffridegh.com" },
-  { role: "Corporate HR · Sikaman", email: "hr@sikamanfinancial.com" },
-  { role: "Employee · Sikaman", email: "ama@sikamanfinancial.com" },
-  { role: "Driver · Kwesi", email: "driver.kwesi@staffridegh.com" },
+  { role: "Super Administrator", email: "admin@richietransportgh.com", code: "246810" },
+  { role: "Operations Manager", email: "ops@richietransportgh.com" },
+  { role: "Dispatcher", email: "dispatch@richietransportgh.com" },
+  { role: "Fleet Manager", email: "fleet@richietransportgh.com" },
+  { role: "Finance Officer", email: "finance@richietransportgh.com" },
+  { role: "Driver · Kwesi", email: "driver.kwesi@richietransportgh.com" },
 ];
 
 export default async function LoginPage({
@@ -124,7 +122,7 @@ export default async function LoginPage({
 
       <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
         <p className="text-[11.5px] text-ink-3">
-          New to StaffRide?
+          New to Richie Transport Services?
         </p>
         <ButtonLink href="/register" variant="outline" size="sm">
           Request access

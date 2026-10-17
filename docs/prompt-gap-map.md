@@ -4,7 +4,7 @@ The master build prompt defines a TMS spec. This maps every numbered requirement
 the two supplied applications, verified against the actual source, and lists what is genuinely
 missing from the chosen base.
 
-**Verdict carried forward:** base = **App A (StaffRide)**, with **App B's schema and dependency
+**Verdict carried forward:** base = **App A (Richie Transport Services)**, with **App B's schema and dependency
 wins ported in** (App B's 29 tables are a 1:1 match to the prompt's §5 required-table list, which is
 why those specific tables are in scope).
 

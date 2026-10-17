@@ -84,7 +84,7 @@ async function invoke(cookie, path, actionId, args) {
 
 // 1. An idempotent action that ignores its payload: it must report success.
 {
-  const cookie = await openSession("admin@staffridegh.com");
+  const cookie = await openSession("admin@richietransportgh.com");
   check("QA session opened", cookie.includes("tms_session"), "");
 
   const html = await (
@@ -107,15 +107,15 @@ async function invoke(cookie, path, actionId, args) {
 // 2. An action that reads its payload: a missing field must produce a
 //    structured error, not a 500.
 {
-  const cookie = await openSession("ama@sikamanfinancial.com");
+  const cookie = await openSession("dispatch@richietransportgh.com");
   const html = await (
-    await fetch(`${base}/passenger/trips`, { headers: { cookie } })
+    await fetch(`${base}/bookings`, { headers: { cookie } })
   ).text();
-  const actionId = extractActionId(html, "rating");
+  const actionId = extractActionId(html, "Approve");
   check("second action reference rendered", Boolean(actionId), actionId ?? "");
 
   if (actionId) {
-    const { status, text } = await invoke(cookie, "/passenger/trips", actionId, [
+    const { status, text } = await invoke(cookie, "/bookings", actionId, [
       null,
       {},
     ]);

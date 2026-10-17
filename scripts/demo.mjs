@@ -1,7 +1,7 @@
 /**
  * Live demo.
  *
- * Drives a running StaffRide server the way a person would: it signs in
+ * Drives a running Richie Transport Services server the way a person would: it signs in
  * through the real login form, walks every screen, and exercises the
  * features that were added last — saved views, pagination, PDF export,
  * route optimisation, the scheduled job runner, live tracking and the
@@ -15,7 +15,7 @@
  * Environment:
  *   BASE_URL              default http://127.0.0.1:3000
  *   TEST_SESSION_TOKEN    the value the server expects on /api/test/session
- *   DEMO_EMAIL            default admin@staffridegh.com
+ *   DEMO_EMAIL            default admin@richietransportgh.com
  */
 import { parseArgs } from "node:util";
 
@@ -23,14 +23,13 @@ const { values } = parseArgs({
   options: {
     url: { type: "string", default: process.env.BASE_URL || "http://127.0.0.1:3000" },
     token: { type: "string", default: process.env.TEST_SESSION_TOKEN || "ci-smoke-token" },
-    email: { type: "string", default: process.env.DEMO_EMAIL || "admin@staffridegh.com" },
+    email: { type: "string", default: process.env.DEMO_EMAIL || "admin@richietransportgh.com" },
   },
 });
 
 const base = values.url.replace(/\/$/, "");
 const adminEmail = values.email;
-const employeeEmail = "ama@sikamanfinancial.com";
-const driverEmail = "driver.kwesi@staffridegh.com";
+const driverEmail = "driver.kwesi@richietransportgh.com";
 
 let failures = 0;
 let checks = 0;
@@ -200,7 +199,7 @@ const cookie = admin.cookie;
 
 /* --------------------------------------------------------- 2. core screens */
 
-heading("2 · The four interfaces");
+heading("2 · The interfaces");
 
 const SCREENS = [
   { path: "/dashboard", label: "Operations dashboard", needle: "Dashboard" },
@@ -230,22 +229,8 @@ for (const screen of SCREENS) {
   step(`${screen.label.padEnd(34)} ${screen.path}`, ok, `status=${res.status}`);
 }
 
-// The employee and driver applications.
+// The driver application.
 {
-  const employee = await harnessSession(employeeEmail);
-  const { res, body } = await text("/passenger", employee);
-  step(
-    "Passenger mobile web app",
-    res.status === 200 && body.includes("Passenger"),
-    `status=${res.status}`,
-  );
-  const corridor = await text("/passenger/corridor", employee);
-  step(
-    "Passenger live corridor & sharing",
-    corridor.res.status === 200,
-    `status=${corridor.res.status}`,
-  );
-
   const driver = await harnessSession(driverEmail);
   const duty = await text("/driver", driver);
   step("Driver mobile web app", duty.res.status === 200, `status=${duty.res.status}`);
@@ -423,15 +408,15 @@ heading("7 · Scheduled job runner");
   const metrics = await fetch(`${base}/api/metrics`, { headers: { cookie }, redirect: "manual" });
   const mText = await metrics.text();
   step("Prometheus metrics endpoint answers", metrics.status === 200, `${mText.length} bytes`);
-  const jobMetric = (mText.match(/^staffride_jobs_total\{[^}]*\}\s+\d+/m) ?? [])[0];
+  const jobMetric = (mText.match(/^rts_jobs_total\{[^}]*\}\s+\d+/m) ?? [])[0];
   if (jobMetric) note(jobMetric);
-  const httpMetric = countMatches(mText, /^staffride_http_/gm);
+  const httpMetric = countMatches(mText, /^rts_http_/gm);
   note(`http metric series: ${httpMetric}`);
 }
 
 /* ------------------------------------------------- 8. live tracking + share */
 
-heading("8 · Live tracking, geofence and passenger sharing");
+heading("8 · Live tracking and geofence");
 
 {
   const live = await fetch(`${base}/api/dispatch/live`, { headers: { cookie }, redirect: "manual" });
@@ -466,19 +451,12 @@ heading("8 · Live tracking, geofence and passenger sharing");
     }
   }
 
-  const employee = await harnessSession(employeeEmail);
-  const corridor = await text("/passenger/corridor", employee);
-  step("passenger corridor screen loads", corridor.res.status === 200);
+  const driver = await harnessSession(driverEmail);
+  const feed = await text("/api/dispatch/live", driver, { redirect: "manual" });
   step(
-    "the corridor screen offers a share code",
-    corridor.body.includes("share") || corridor.body.includes("Share"),
-  );
-
-  const share = await text("/api/dispatch/live", employee, { redirect: "manual" });
-  step(
-    "a passenger session is refused the dispatch feed",
-    share.res.status === 401 || share.res.status === 403,
-    `status=${share.res.status}`,
+    "a driver session is refused the dispatch feed",
+    feed.res.status === 401 || feed.res.status === 403,
+    `status=${feed.res.status}`,
   );
 }
 
@@ -506,11 +484,11 @@ heading("10 · Observability");
 
   const metrics = await fetch(`${base}/api/metrics`, { headers: { cookie }, redirect: "manual" });
   const text_ = await metrics.text();
-  const families = [...new Set((text_.match(/^staffride_[a-z_]+/gm) ?? []))];
+  const families = [...new Set((text_.match(/^rts_[a-z_]+/gm) ?? []))];
   step("metrics expose several families", families.length >= 3, families.join(", "));
-  const httpSeries = countMatches(text_, /^staffride_http_/gm);
+  const httpSeries = countMatches(text_, /^rts_http_/gm);
   step("http request counters are recorded", httpSeries > 0, `${httpSeries} series`);
-  const p95 = (text_.match(/^staffride_http_[^\n]*duration_ms\{quantile="0.95"\}\s+([\d.]+)/m) ?? [])[1];
+  const p95 = (text_.match(/^rts_http_[^\n]*duration_ms\{quantile="0.95"\}\s+([\d.]+)/m) ?? [])[1];
   if (p95) note(`sample p95: ${p95} ms`);
 
   const denied = await fetch(`${base}/api/metrics`, { redirect: "manual" });

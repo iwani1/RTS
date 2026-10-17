@@ -12,13 +12,14 @@ export default async function RegisterPage({
   const { error } = await searchParams;
   return (
     <div>
-      <p className="eyebrow">Employee self registration</p>
+      <p className="eyebrow">Driver self registration</p>
       <h1 className="mt-2 font-display text-[26px] font-semibold tracking-[-0.02em] text-ink">
         Create your account
       </h1>
       <p className="mt-1.5 text-[13.5px] text-ink-2">
-        If your work email is already registered by your HR team, the account is
-        activated the moment you sign in.
+        If your work email is already in the driver register, the account is
+        activated the moment you sign in. Everyone else waits for an
+        administrator.
       </p>
 
       <AuthForm

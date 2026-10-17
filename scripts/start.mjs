@@ -38,7 +38,7 @@ function resolveBindHost() {
 const bindHost = resolveBindHost();
 if (process.env.HOSTNAME && process.env.HOSTNAME !== bindHost) {
   console.log(
-    `[staffride] HOSTNAME=${process.env.HOSTNAME} is a machine name, not a bind address. Listening on ${bindHost} instead.`,
+    `[rts] HOSTNAME=${process.env.HOSTNAME} is a machine name, not a bind address. Listening on ${bindHost} instead.`,
   );
 }
 

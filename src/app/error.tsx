@@ -25,7 +25,7 @@ export default function Error({
 
   useEffect(() => {
     // The same line the server writes, so a report carries the reference.
-    console.error("[staffride] unhandled render error:", message);
+    console.error("[rts] unhandled render error:", message);
   }, [message]);
 
   return (

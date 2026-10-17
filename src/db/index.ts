@@ -59,10 +59,10 @@ function resolveMigrationsFolder(): string {
 }
 
 const globalForDb = globalThis as typeof globalThis & {
-  __staffridePool?: Pool;
-  __staffridePglite?: PGlite;
-  __staffrideDb?: Database;
-  __staffrideMigrated?: Promise<void>;
+  __rtsPool?: Pool;
+  __rtsPglite?: PGlite;
+  __rtsDb?: Database;
+  __rtsMigrated?: Promise<void>;
 };
 
 export const isLocalFallback = !process.env.DATABASE_URL;
@@ -85,29 +85,29 @@ function createDatabase(): Database {
     const dataDir = pgliteDataDir();
     // PGlite's file-backed mode requires the directory to already exist.
     fs.mkdirSync(dataDir, { recursive: true });
-    const pglite = globalForDb.__staffridePglite ?? new PGlite(dataDir);
-    globalForDb.__staffridePglite = pglite;
+    const pglite = globalForDb.__rtsPglite ?? new PGlite(dataDir);
+    globalForDb.__rtsPglite = pglite;
     return drizzlePglite(pglite, { schema }) as unknown as Database;
   }
 
   const created =
-    globalForDb.__staffridePool ??
+    globalForDb.__rtsPool ??
     new Pool({
       connectionString: process.env.DATABASE_URL,
       max: Number(process.env.DATABASE_POOL_MAX ?? 10),
     });
   if (process.env.NODE_ENV !== "production") {
-    globalForDb.__staffridePool = created;
+    globalForDb.__rtsPool = created;
   }
   pool = created;
   return drizzlePg(created, { schema }) as unknown as Database;
 }
 
 function resolveDatabase(): Database {
-  if (!globalForDb.__staffrideDb) {
-    globalForDb.__staffrideDb = createDatabase();
+  if (!globalForDb.__rtsDb) {
+    globalForDb.__rtsDb = createDatabase();
   }
-  return globalForDb.__staffrideDb;
+  return globalForDb.__rtsDb;
 }
 
 /**
@@ -135,8 +135,8 @@ export { pool };
  * Next's dev-mode module reloading does not re-apply them.
  */
 export async function runMigrations(): Promise<void> {
-  if (!globalForDb.__staffrideMigrated) {
-    globalForDb.__staffrideMigrated = (async () => {
+  if (!globalForDb.__rtsMigrated) {
+    globalForDb.__rtsMigrated = (async () => {
       const handle = resolveDatabase();
       const migrationsFolder = resolveMigrationsFolder();
       if (isLocalFallback) {
@@ -146,10 +146,10 @@ export async function runMigrations(): Promise<void> {
       }
     })();
   }
-  await globalForDb.__staffrideMigrated;
+  await globalForDb.__rtsMigrated;
 }
 
 /** True once migrations have been applied in this process. */
 export function isMigrated(): boolean {
-  return Boolean(globalForDb.__staffrideMigrated);
+  return Boolean(globalForDb.__rtsMigrated);
 }

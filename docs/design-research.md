@@ -180,7 +180,7 @@ Audited both supplied zips. These are the concrete tells, with fixes.
 
 Two zips were supplied. Decision: **zip 1 (`staff-transportation-management-system.zip`) is the base.**
 
-| | Zip 1 — StaffRide | Zip 2 — "TMS" |
+| | Zip 1 — Richie Transport Services | Zip 2 — "TMS" |
 | --- | --- | --- |
 | Schema | 28 tables, real FKs, tenant scoping, indexes on hot paths | 8 tables, partial |
 | Backend | Server actions, session auth, scrypt, 2FA, RBAC matrix, audit log on every mutation | API routes only, JWT, no audit |

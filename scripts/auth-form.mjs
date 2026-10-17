@@ -13,7 +13,7 @@ import { parseArgs } from "node:util";
 const { values } = parseArgs({
   options: {
     url: { type: "string", default: "http://127.0.0.1:3000" },
-    email: { type: "string", default: "admin@staffridegh.com" },
+    email: { type: "string", default: "admin@richietransportgh.com" },
     password: { type: "string", default: "Password123!" },
     code: { type: "string", default: "246810" },
   },
@@ -45,7 +45,7 @@ function sessionCookie(response) {
 // of the browser session the operator is using.
 {
   const body = new URLSearchParams({
-    email: `failed-probe-${Date.now()}@staffridegh.com`,
+    email: `failed-probe-${Date.now()}@richietransportgh.com`,
     password: "definitely-not-the-password",
     code: values.code,
   });

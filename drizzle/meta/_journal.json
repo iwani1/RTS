@@ -36,6 +36,20 @@
       "when": 1792153178702,
       "tag": "0004_platform_features",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792153238702,
+      "tag": "0005_retire_employee_and_corporate_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792202982864,
+      "tag": "0006_retire_employee_default_role",
+      "breakpoints": true
     }
   ]
 }

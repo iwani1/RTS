@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Update a local copy of StaffRide to the latest push.
+# Update a local copy of Richie Transport Services to the latest push.
 #
 #   ./scripts/pull-latest.sh
 #

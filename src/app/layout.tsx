@@ -6,14 +6,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "StaffRide — Staff Transportation Management",
-    template: "%s · StaffRide",
+    default: "Richie Transport Services Management System",
+    template: "%s · Richie Transport Services",
   },
   description:
     "Run daily staff transportation for every corporate client from one command centre: bookings, shift-aware routing, dispatch, fleet compliance, live tracking, boarding verification and billing in Ghana Cedis.",
-  applicationName: "StaffRide",
+  applicationName: "Richie Transport Services",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "StaffRide", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Richie Transport Services", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {

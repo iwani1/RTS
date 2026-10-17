@@ -460,9 +460,6 @@ async function decideBookingAction__impl(_p: ActionState, fd: FormData): Promise
     .where(eq(bookings.id, bookingId))
     .limit(1);
   if (!row) return { ok: false, message: "Booking not found." };
-  if (user.role === "corporate_admin" && row.booking.companyId !== user.companyId) {
-    return { ok: false, message: "You can only manage bookings for your own company." };
-  }
 
   if (decision === "approve" || decision === "waitlist" || decision === "reject") {
     const status = decision === "approve" ? "approved" : decision === "waitlist" ? "waitlisted" : "rejected";
@@ -616,149 +613,6 @@ async function updateIncidentAction__impl(_p: ActionState, fd: FormData): Promis
   return { ok: true, message: `Incident marked ${status}.` };
 }
 
-/* --------------------------------------------------------- employee side */
-
-async function createBookingAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  if (!can(user.role as Role, "booking.own")) return { ok: false, message: "Not permitted." };
-
-  const [employee] = await db
-    .select()
-    .from(employees)
-    .where(user.role === "employee" ? eq(employees.userId, user.id) : eq(employees.companyId, user.companyId ?? -1))
-    .limit(1);
-  if (!employee) return { ok: false, message: "No employee record is linked to your account yet. Ask HR to register you." };
-
-  const bookingDate = str(fd, "bookingDate") || todayISO();
-  const direction = (str(fd, "direction") || "home_to_office") as
-    | "home_to_office"
-    | "office_to_home"
-    | "inter_office"
-    | "ad_hoc";
-  const seats = 1;
-
-  const existing = await db
-    .select({ employeeId: bookings.employeeId, direction: bookings.direction, bookingDate: bookings.bookingDate, status: bookings.status })
-    .from(bookings)
-    .where(eq(bookings.employeeId, employee.id));
-  const validation = validateBooking({ employeeId: employee.id, direction, bookingDate, seats, existing });
-  if (!validation.ok) return { ok: false, message: validation.reason };
-
-  const [agreement] = await db
-    .select()
-    .from(serviceAgreements)
-    .where(eq(serviceAgreements.companyId, employee.companyId))
-    .limit(1);
-
-  const autoApprove = agreement ? agreement.cancellationPolicyHours !== undefined : true;
-  const reference = ref("BKG");
-  const [created] = await db
-    .insert(bookings)
-    .values({
-      reference,
-      companyId: employee.companyId,
-      employeeId: employee.id,
-      routeId: num(fd, "routeId"),
-      direction,
-      bookingDate,
-      pickupAddress: direction === "home_to_office" ? employee.homeAddress : str(fd, "pickupAddress") || "Office",
-      dropoffAddress: direction === "office_to_home" ? employee.homeAddress : str(fd, "dropoffAddress") || "Office",
-      requestedTime: str(fd, "requestedTime") || null,
-      seats,
-      status: autoApprove ? "approved" : "pending",
-      recurring: (str(fd, "recurring") || "none") as "none",
-      otpCode: generateOtp(),
-      vip: employee.vip,
-      notes: str(fd, "notes") || null,
-    })
-    .returning({ id: bookings.id, reference: bookings.reference });
-
-  if (employee.userId) {
-    await notify(
-      [employee.userId],
-      `Booking ${created.reference} received`,
-      autoApprove ? "Approved and queued for route planning. You will receive your pickup time shortly." : "Submitted for approval by your transport coordinator.",
-      "booking",
-      created.id,
-    );
-  }
-  await logAudit({ user, action: "booking.create", entity: "booking", entityId: created.id, companyId: employee.companyId, details: { direction, bookingDate } });
-  revalidatePath("/passenger");
-  revalidatePath("/bookings");
-  return { ok: true, message: `Booking ${created.reference} created. Your boarding code will be shown under My trips.` };
-}
-
-async function cancelOwnBookingAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  const bookingId = num(fd, "bookingId");
-  if (!bookingId) return { ok: false, message: "Missing booking." };
-  const [booking] = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
-  if (!booking) return { ok: false, message: "Booking not found." };
-
-  const [employee] = await db.select().from(employees).where(eq(employees.userId, user.id)).limit(1);
-  const isOwner = employee && booking.employeeId === employee.id;
-  const isCompanyAdmin = user.role === "corporate_admin" && booking.companyId === user.companyId;
-  if (!isOwner && !isCompanyAdmin && !can(user.role as Role, "booking.approve")) {
-    return { ok: false, message: "You cannot cancel this booking." };
-  }
-  if (["completed", "cancelled", "no_show"].includes(booking.status)) {
-    return { ok: false, message: `This booking is already ${booking.status.replace("_", " ")}.` };
-  }
-
-  await db
-    .update(bookings)
-    .set({ status: "cancelled", cancelledAt: new Date(), cancelReason: str(fd, "reason") || "Cancelled by passenger" })
-    .where(eq(bookings.id, bookingId));
-  if (booking.tripId) {
-    await db
-      .update(trips)
-      .set({ bookedSeats: sql`greatest(0, ${trips.bookedSeats} - ${booking.seats})` })
-      .where(eq(trips.id, booking.tripId));
-  }
-  await logAudit({ user, action: "booking.cancel", entity: "booking", entityId: bookingId, companyId: booking.companyId });
-  revalidatePath("/passenger");
-  revalidatePath("/bookings");
-  return { ok: true, message: "Booking cancelled." };
-}
-
-async function submitFeedbackAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  const comments = str(fd, "comments");
-  const rating = num(fd, "rating");
-  if (!comments) return { ok: false, message: "Please add a comment." };
-  const [employee] = await db.select().from(employees).where(eq(employees.userId, user.id)).limit(1);
-  await db.insert(feedback).values({
-    companyId: employee?.companyId ?? user.companyId ?? null,
-    employeeId: employee?.id ?? null,
-    tripId: num(fd, "tripId"),
-    category: str(fd, "category") || "feedback",
-    rating,
-    comments,
-    status: "new",
-  });
-  await logAudit({ user, action: "feedback.create", entity: "feedback", details: { rating } });
-  revalidatePath("/passenger");
-  return { ok: true, message: "Thank you — your feedback was submitted to the transport team." };
-}
-
-async function updateHomeAddressAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireUser();
-  const [employee] = await db.select().from(employees).where(eq(employees.userId, user.id)).limit(1);
-  if (!employee) return { ok: false, message: "No employee profile linked to this account." };
-  await db
-    .update(employees)
-    .set({
-      homeAddress: str(fd, "homeAddress") || employee.homeAddress,
-      homeLat: num(fd, "homeLat") ?? employee.homeLat,
-      homeLng: num(fd, "homeLng") ?? employee.homeLng,
-      zone: str(fd, "zone") || employee.zone,
-    })
-    .where(eq(employees.id, employee.id));
-  await logAudit({ user, action: "employee.update_address", entity: "employee", entityId: employee.id, companyId: employee.companyId });
-  revalidatePath("/passenger");
-  return { ok: true, message: "Saved address updated." };
-}
-
 /* --------------------------------------------------------- driver actions */
 
 async function setAvailabilityAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
@@ -808,7 +662,6 @@ async function confirmBoardingAction__impl(_p: ActionState, fd: FormData): Promi
   await db.update(bookings).set({ status: "in_progress" }).where(eq(bookings.id, bookingId));
   await logAudit({ user, action: "boarding.confirm", entity: "booking", entityId: bookingId, companyId: booking.companyId, details: { otpVerified: true } });
   revalidatePath(`/driver/trip/${trip.id}`);
-  revalidatePath("/passenger");
   return { ok: true, message: "Boarding confirmed." };
 }
 
@@ -953,22 +806,6 @@ export async function createIncidentAction(_p: ActionState, fd: FormData): Promi
 
 export async function updateIncidentAction(_p: ActionState, fd: FormData): Promise<ActionState> {
   return withAction(updateIncidentAction__impl)(_p, fd);
-}
-
-export async function createBookingAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(createBookingAction__impl)(_p, fd);
-}
-
-export async function cancelOwnBookingAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(cancelOwnBookingAction__impl)(_p, fd);
-}
-
-export async function submitFeedbackAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(submitFeedbackAction__impl)(_p, fd);
-}
-
-export async function updateHomeAddressAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return withAction(updateHomeAddressAction__impl)(_p, fd);
 }
 
 export async function setAvailabilityAction(_p: ActionState, fd: FormData): Promise<ActionState> {

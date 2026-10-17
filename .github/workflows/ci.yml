@@ -129,6 +129,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: staffride:${{ github.sha }}
+          tags: rts:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

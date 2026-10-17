@@ -212,12 +212,9 @@ async function createAgreementAction__impl(_p: ActionState, fd: FormData): Promi
 
 async function createEmployeeAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
   const user = await requireUser();
-  const scopeCompanyId = user.role === "corporate_admin" ? user.companyId : num(fd, "companyId");
+  const scopeCompanyId = num(fd, "companyId");
   if (!scopeCompanyId) return { ok: false, message: "Select the company this employee belongs to." };
-  if (user.role === "corporate_admin" && user.companyId !== scopeCompanyId) {
-    return { ok: false, message: "You can only register employees for your own company." };
-  }
-  if (user.role !== "corporate_admin" && !can(user.role as Role, "employee.manage")) {
+  if (!can(user.role as Role, "employee.manage")) {
     return { ok: false, message: "Not permitted." };
   }
   const fullName = str(fd, "fullName");
@@ -261,9 +258,9 @@ async function createEmployeeAction__impl(_p: ActionState, fd: FormData): Promis
 
 async function importEmployeesAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
   const user = await requireUser();
-  const companyId = user.role === "corporate_admin" ? user.companyId : num(fd, "companyId");
+  const companyId = num(fd, "companyId");
   if (!companyId) return { ok: false, message: "Select a company for the import." };
-  if (user.role !== "corporate_admin" && !can(user.role as Role, "employee.manage")) {
+  if (!can(user.role as Role, "employee.manage")) {
     return { ok: false, message: "Not permitted." };
   }
   const csv = String(fd.get("csv") ?? "");
@@ -315,8 +312,8 @@ async function toggleEmployeeAction__impl(_p: ActionState, fd: FormData): Promis
   const active = str(fd, "active") === "true";
   if (!id) return { ok: false, message: "Missing employee." };
 
-  // Tenant isolation: a corporate administrator may only act on employees of
-  // their own company. Platform staff may act on any employee.
+  // Tenant isolation: the caller's company scope decides which employees
+  // they may act on. Platform staff have no scope and may act on any.
   const [target] = await db
     .select({ id: employees.id, companyId: employees.companyId })
     .from(employees)
@@ -342,7 +339,7 @@ async function toggleEmployeeAction__impl(_p: ActionState, fd: FormData): Promis
 
 async function createShiftAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
   const user = await guard("employee.manage");
-  const companyId = user.role === "corporate_admin" ? user.companyId : num(fd, "companyId");
+  const companyId = num(fd, "companyId");
   const name = str(fd, "name");
   const startTime = str(fd, "startTime");
   const endTime = str(fd, "endTime");
@@ -571,7 +568,7 @@ async function updateDriverAction__impl(_p: ActionState, fd: FormData): Promise<
 
 async function createStopAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
   const user = await guard("route.manage");
-  const companyId = user.role === "corporate_admin" ? user.companyId : num(fd, "companyId");
+  const companyId = num(fd, "companyId");
   const name = str(fd, "name");
   if (!companyId || !name) return { ok: false, message: "Company and stop name are required." };
   const [created] = await db
@@ -592,7 +589,7 @@ async function createStopAction__impl(_p: ActionState, fd: FormData): Promise<Ac
 
 async function createRouteAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
   const user = await guard("route.manage");
-  const companyId = user.role === "corporate_admin" ? user.companyId : num(fd, "companyId");
+  const companyId = num(fd, "companyId");
   const name = str(fd, "name");
   if (!companyId || !name) return { ok: false, message: "Company and route name are required." };
   const stopIds = fd.getAll("stopIds").map((v) => Number(v)).filter(Boolean);
@@ -651,7 +648,7 @@ async function inviteUserAction__impl(_p: ActionState, fd: FormData): Promise<Ac
   if (scope != null && targetCompany != null && targetCompany !== scope) {
     return { ok: false, message: "You can only create users for your own company." };
   }
-  if (scope != null && role !== "corporate_admin" && role !== "employee" && role !== "driver") {
+  if (scope != null && role !== "driver") {
     return { ok: false, message: "That role is reserved for platform administrators." };
   }
 

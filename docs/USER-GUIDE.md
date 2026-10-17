@@ -1,26 +1,17 @@
-# StaffRide — Guide by role
+# RTS — Guide by role
 
-**For:** anyone signing in for the first time and finding the system bigger than expected.
-**How to use this page:** find your role below. Each section says what you will see, what you are
-responsible for, and the three or four things you actually do in it.
-
-The navigation described here was read out of the running application by
-`scripts/what-each-role-sees.mjs`, so it is what the software does — not what a specification
-promised.
-
----
+> Richie Transport Services Management System (RTS). A guide to the system **by role**: what each
+> of the six roles sees, what it is responsible for, and the words the system uses.
 
 ## Start here: the 60-second orientation
 
-**One system, four front doors.** The same application serves four audiences, and your role decides
+**One system, two front doors.** The same application serves two audiences, and your role decides
 which door you walk through:
 
 | Front door | Who uses it | What it is for |
 | --- | --- | --- |
-| The operations console | Super Administrator, Operations Manager, Dispatcher, Fleet Manager, Finance Officer, Corporate HR | Running the service: planning, dispatching, billing, governing |
-| The passenger app | Employee / Passenger | Booking a ride and tracking it |
+| The operations console | Super Administrator, Operations Manager, Dispatcher, Fleet Manager, Finance Officer | Running the service: planning, dispatching, billing, governing |
 | The driver app | Driver | Today's duty, boarding, position |
-| The corporate client portal | Corporate HR Administrator | Your own staff, your own bill, nothing else |
 
 **The counts below are sidebar entries**, read out of the running application. Each role's list ends
 with the same *Documentation* link.
@@ -38,6 +29,11 @@ sidebar is therefore a truthful picture of your job, not a subset of a bigger pr
 - **The top bar** carries the breadcrumb, the live trip ticker, the theme switch and your
   notifications. On the wide screen the rail on the left collapses to icons.
 
+> **Retired for now.** The Employee/Passenger role and the Corporate HR role have been switched
+> off. Their logins are refused, their screens are gone, and their data — clients, branches, the
+> staff register, trips, bookings and invoices — is untouched, so either can be brought back with a
+> change to the permission matrix.
+
 ---
 
 ## What do I want to do? Find it here
@@ -46,8 +42,8 @@ sidebar is therefore a truthful picture of your job, not a subset of a bigger pr
 | --- | --- | --- |
 | See whether the morning run is on time | **Live Dispatch** | Dispatcher |
 | Assign a driver and a vehicle to a trip | **Live Dispatch** → open a trip | Dispatcher |
-| Approve a passenger's ride request | **Bookings** | Dispatcher, Corporate HR |
-| Add a new employee to a client | **Employees** | Corporate HR, Operations Manager |
+| Approve a passenger's ride request | **Bookings** | Dispatcher |
+| Add a new employee to a client | **Employees** | Operations Manager |
 | Set up a client and their contract | **Corporate Clients** | Operations Manager, Super Admin |
 | Plan the route for a corridor | **Routes & Stops** | Operations Manager, Dispatcher |
 | Work out the best vehicle order | **Route Optimisation** | Operations Manager, Dispatcher |
@@ -60,14 +56,13 @@ sidebar is therefore a truthful picture of your job, not a subset of a bigger pr
 | See who changed what | **Audit Trail** | Super Administrator only |
 | Add or suspend a user | **Settings & Users** | Super Administrator, Operations Manager |
 | Run a scheduled job by hand | **Operations** | Operations Manager, Super Admin |
-| Book my own ride | **My Transport** | Employee / Passenger |
 | Start my journey, board a passenger | **Driver App** | Driver |
 
 ---
 
 ## The role walkthroughs
 
-### Super Administrator — `admin@staffridegh.com` · 2FA code `246810`
+### Super Administrator — `admin@richietransportgh.com` · 2FA code `246810`
 
 Lands on **Dashboard**. Twenty sidebar entries — the only role that sees all of them.
 
@@ -88,7 +83,7 @@ when someone asks a question about who did what.
 
 ---
 
-### Operations Manager — `ops@staffridegh.com`
+### Operations Manager — `ops@richietransportgh.com`
 
 Lands on **Dashboard**. Seventeen sidebar entries. The broadest operational role.
 
@@ -96,7 +91,8 @@ Lands on **Dashboard**. Seventeen sidebar entries. The broadest operational role
 and the money, and the plan for tomorrow.
 
 - **Corporate Clients** — onboard a client, add a branch, agree a service agreement.
-- **Employees** — the staff register for every client. CSV import for a bulk upload.
+- **Employees** — the staff register for every client. CSV import for a bulk upload. This is the
+  screen that took over from the client's own HR team.
 - **Routes & Stops** and **Route Optimisation** — the corridors and the solver that orders the
   stops for you.
 - **Compliance** — vehicle readiness across the fleet.
@@ -105,12 +101,12 @@ and the money, and the plan for tomorrow.
 - **Everything except** Audit Trail, Currencies and the Finance screens, which belong to Finance
   and the Administrator.
 
-*Your daily use:* plan tomorrow's trips, check the fleet is compliant, keep the client contracts
-current.
+*Your daily use:* plan tomorrow's trips, keep the staff register current, check the fleet is
+compliant, keep the client contracts current.
 
 ---
 
-### Dispatcher — `dispatch@staffridegh.com`
+### Dispatcher — `dispatch@richietransportgh.com`
 
 Lands on **Dashboard**. **Ten sidebar entries — the most focused role in the system, and the one to
 start with if the system feels big.**
@@ -122,7 +118,8 @@ start with if the system feels big.**
   spend your shift.
 - **Trips** → open a trip to assign a driver and a vehicle, or move a passenger between trips.
 - **Bookings** — approve, reject, and move waitlisted passengers onto a trip. There is an
-  *Approve all eligible requests* button for the morning rush.
+  *Approve all eligible requests* button for the morning rush. This is where the ride requests the
+  client's HR team used to raise now land.
 - **Schedule** — the month and week calendar of trips and shifts.
 - **Safety & Incidents** — log a breakdown, an accident or an SOS.
 
@@ -138,7 +135,7 @@ Currencies, Audit Trail or Operations. They are not your job.
 
 ---
 
-### Fleet Manager — `fleet@staffridegh.com`
+### Fleet Manager — `fleet@richietransportgh.com`
 
 Lands on **Dashboard**. **Seven sidebar entries.**
 
@@ -159,7 +156,7 @@ shifts are assigned, log yesterday's fuel, keep the inspection dates current.
 
 ---
 
-### Finance Officer — `finance@staffridegh.com`
+### Finance Officer — `finance@richietransportgh.com`
 
 Lands on **Dashboard**. **Seven sidebar entries.**
 
@@ -176,46 +173,7 @@ report.
 
 ---
 
-### Corporate HR Administrator — `hr@sikamanfinancial.com`
-
-Lands on **Dashboard**. Twelve sidebar entries, and **every one of them is scoped to your own
-company.**
-You cannot see another client's staff, trips or invoices — not because the menu hides them, but
-because the query filters on your company id.
-
-*You are responsible for:* your own organisation's transport.
-
-- **Employees** — your staff register. Add a person, set their shift and pick-up zone, import a
-  CSV. This is the screen you will use most.
-- **Bookings** — your staff's ride requests. Approve, reject, and manage the waiting list. You can
-  also plan trips for approved bookings.
-- **Trips** and **Routes & Stops** — the runs your staff are on.
-- **Billing & Payroll** — your company's invoice.
-- **Reports** — your service performance.
-- **My Transport** — you are also a passenger, and you can book your own ride.
-
-*Your daily use:* a new joiner needs transport → add them to **Employees**, set their shift and
-zone. A ride request comes in → approve it in **Bookings**. Monthly → check the invoice in
-**Billing & Payroll**.
-
----
-
-### Employee / Passenger — `ama@sikamanfinancial.com`
-
-Lands on **My Transport**. **Two sidebar entries** — this is the simplest role in the system, and
-the right one to start with if you are only evaluating it.
-
-- **My Transport** — request transport, and manage your home address. The request is
-  home-to-office, office-to-home, or ad-hoc.
-- **My trips & boarding code** — your upcoming rides, and the boarding code you show the driver.
-- **Live corridor** — where your vehicle is, and a share code so a colleague on the same run can
-  see it too.
-
-*Your daily use:* book the ride once, then on the morning you just show the boarding code.
-
----
-
-### Driver — `driver.kwesi@staffridegh.com`
+### Driver — `driver.kwesi@richietransportgh.com`
 
 Lands on **Driver App**. **Two sidebar entries.** The app is built for a phone in a vehicle, so it
 is large-target, single-column and works offline.
@@ -243,14 +201,13 @@ One morning run, seen from all sides. This is the fastest way to understand the 
 
 | Time | Who | What happens |
 | --- | --- | --- |
-| Previous week | Corporate HR | Adds joiners to **Employees**, sets shifts and pick-up zones. Sends a CSV for a bulk upload. |
-| Previous week | Operations Manager | Plans the corridor in **Routes & Stops**, runs **Route Optimisation** to order the stops, and agrees the client's service agreement. |
+| Previous week | Operations Manager | Adds joiners to **Employees**, sets shifts and pick-up zones, and agrees the client's service agreement. |
+| Previous week | Operations Manager | Plans the corridor in **Routes & Stops**, runs **Route Optimisation** to order the stops. |
 | The evening before | Dispatcher | Approves the ride requests in **Bookings**, moves waitlisted passengers onto trips, and confirms a driver and vehicle for each run. |
 | 05:00 | Fleet Manager | Checks the vehicles are compliant and records the fuel. |
 | 06:00 | Driver | **Start journey**, then **Share position** on the way in. |
 | 06:15 | Dispatcher | Watches **Live Dispatch**. One bus is behind; opens the trip and reassigns. |
 | 06:20 | Driver | At the first stop, takes a boarding code and marks the passenger aboard. |
-| 06:30 | Passenger | Sees the vehicle on **Live corridor** and shows the boarding code. |
 | 09:00 | Dispatcher | Closes the trip; any incident is logged in **Safety & Incidents**. |
 | Month end | Finance Officer | The invoice is raised automatically on the billing day, reviewed in **Billing & Payroll**, and the report is exported from **Reports**. |
 | Any time | Super Administrator | **Audit Trail** answers "who did that, and when". |
@@ -287,6 +244,7 @@ One morning run, seen from all sides. This is the fastest way to understand the 
 | The 2FA field asks for a code | The account is privileged. | `246810` for the seeded administrator. |
 | The map is empty | The vehicles have not departed, or no driver has shared a position yet. | Only trips with a position appear. |
 | The app shows stale data | The connection dropped. | The driver app queues and replays automatically. |
+| A retired account cannot sign in | The Employee/Passenger and Corporate HR roles are switched off for now. | Use one of the six roles above. |
 
 ---
 

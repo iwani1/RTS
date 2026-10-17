@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     companyScope(user) ?? (Number.isFinite(Number(requested)) && requested ? Number(requested) : null);
   const currencies = await listCurrencies();
 
-  let title = "StaffRide report";
+  let title = "Richie Transport Services report";
   let subtitle = `${from} to ${to}`;
   let sections: PdfSection[] = [];
 
@@ -211,7 +211,7 @@ export async function GET(request: Request) {
       ["Scope", scope ? `Client ${scope}` : "All clients"],
     ],
     sections,
-    footer: "StaffRide — Staff Transportation Management",
+    footer: "Richie Transport Services Management System",
   });
 
   return new Response(new Uint8Array(pdf), {

@@ -1,14 +1,18 @@
 {
-  "name": "StaffRide — Staff Transportation Management",
-  "short_name": "StaffRide",
-  "description": "Enterprise staff transportation: dispatch, fleet, driver and passenger operations in one platform.",
+  "name": "Richie Transport Services Management System",
+  "short_name": "RTS",
+  "description": "Enterprise staff transportation: dispatch, fleet, driver and finance operations in one platform.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#04070A",
   "theme_color": "#04070A",
-  "categories": ["business", "productivity", "navigation"],
+  "categories": [
+    "business",
+    "productivity",
+    "navigation"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -41,12 +45,6 @@
       "short_name": "Driver",
       "url": "/driver",
       "description": "Today's duties and trip actions"
-    },
-    {
-      "name": "My trips",
-      "short_name": "Passenger",
-      "url": "/passenger/trips",
-      "description": "Bookings and journey status"
     }
   ]
 }

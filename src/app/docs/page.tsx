@@ -36,9 +36,9 @@ export default function DocsPage() {
       <nav className="flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-signal font-display text-[13px] font-bold text-signal-ink">
-            SR
+            RTS
           </span>
-          <span className="font-display text-[15px] font-semibold text-ink">StaffRide</span>
+          <span className="font-display text-[15px] font-semibold text-ink">Richie Transport Services</span>
         </Link>
         <Link
           href="/login"
@@ -69,7 +69,7 @@ export default function DocsPage() {
     (auth)/          login, register, password recovery
     (portal)/        role aware workspace (dashboard, dispatch, trips, bookings,
                      routes, employees, companies, fleet, drivers, incidents,
-                     finance, reports, audit, settings, passenger, driver)
+                     finance, reports, audit, settings, driver)
     actions/         server actions (admin, ops, auth) — authorisation enforced
     api/             REST endpoints: health, dispatch/live, driver/sync,
                      reports/export, auth/logout, search
@@ -114,10 +114,6 @@ tests/               node:test unit tests for booking/capacity/billing rules`}</
             decisions, incident handling.
           </li>
           <li>
-            <strong>Corporate HR Administrator</strong> — own company only:
-            employees, bookings, trips, invoices, reports.
-          </li>
-          <li>
             <strong>Fleet Manager</strong> — vehicles, maintenance, drivers,
             incidents.
           </li>
@@ -128,10 +124,6 @@ tests/               node:test unit tests for booking/capacity/billing rules`}</
           <li>
             <strong>Driver</strong> — own assignments, manifests, boarding
             verification, incident reporting.
-          </li>
-          <li>
-            <strong>Employee / Passenger</strong> — own bookings, boarding codes,
-            tracking, feedback.
           </li>
         </ul>
         <p>
@@ -226,24 +218,21 @@ Server actions (form posts, same authorisation model):
   ops.updateTripStatusAction, ops.decideBookingAction, ops.moveBookingAction,
   ops.createIncidentAction, ops.confirmBoardingAction, ops.markNoShowAction,
   ops.driverTripAction, ops.setAvailabilityAction,
-  ops.createBookingAction, ops.cancelOwnBookingAction, ops.submitFeedbackAction
   auth.loginAction, auth.registerAction, auth.requestPasswordResetAction,
   auth.resetPasswordAction, auth.changeOwnPasswordAction, auth.logoutAction`}</Code>
       </Section>
 
       <Section id="by-role" title="Guide by role">
         <p>
-          The sidebar you see is exactly your job. Eight roles, each with
-          its own set of screens — and a corporate client only ever sees its
-          own company. Sign in as a different role to see the difference.
+          The sidebar you see is exactly your job. Six roles, each with
+          its own set of screens. Sign in as a different role to see the
+          difference.
         </p>
         <Code>{`Super Administrator      20 entries   the platform, users, clients, audit
 Operations Manager      17 entries   clients, staff, routes, fleet, the plan
 Dispatcher              10 entries   live dispatch, trips, bookings, incidents
 Fleet Manager            7 entries   vehicles, drivers, compliance, fuel
 Finance Officer          7 entries   invoices, reports, currencies
-Corporate HR Admin      12 entries   own staff, own bookings, own invoice
-Employee / Passenger     2 entries   book a ride, track it, boarding code
 Driver                   2 entries   duty, position, boarding, earnings`}</Code>
         <p>
           The counts are sidebar entries; each list ends with the same
@@ -276,8 +265,8 @@ npm start                      # http://localhost:3000`}</Code>
           Use <code>npm run dev</code> for the development server with hot
           reload, and <code>npm run dev:lan</code> to bind to every interface
           so a phone or a second machine on the same network can reach it at
-          <code>http://&lt;your-lan-ip&gt;:3000</code>. The driver and
-          passenger apps are installable PWAs. Every seeded account uses the
+          <code>http://&lt;your-lan-ip&gt;:3000</code>. The driver app is
+          an installable PWA. Every seeded account uses the
           password <code>Password123!</code>; the administrator also needs the
           one-time code <code>246810</code>.
         </p>

@@ -141,19 +141,17 @@ async function runSeed(): Promise<void> {
   const userRows = await db
     .insert(users)
     .values([
-      { email: "admin@staffridegh.com", fullName: "Nana Kojo Admin", role: "super_admin" as const, passwordHash: pw, phone: "+233 24 111 0001", twoFactorEnabled: true, twoFactorCode: "246810" },
-      { email: "ops@staffridegh.com", fullName: "Comfort Baffour", role: "ops_manager" as const, passwordHash: pw, phone: "+233 24 111 0002" },
-      { email: "dispatch@staffridegh.com", fullName: "Ekow Mensah", role: "dispatcher" as const, passwordHash: pw, phone: "+233 24 111 0003" },
-      { email: "fleet@staffridegh.com", fullName: "Yaw Ofori-Attah", role: "fleet_manager" as const, passwordHash: pw, phone: "+233 24 111 0004" },
-      { email: "finance@staffridegh.com", fullName: "Esther Nyarko", role: "finance_officer" as const, passwordHash: pw, phone: "+233 24 111 0005" },
-      { email: "hr@sikamanfinancial.com", fullName: "Gifty Asamoah", role: "corporate_admin" as const, passwordHash: pw, companyId: cSikaman.id, phone: "+233 20 555 1010" },
-      { email: "ops@accratechhub.com", fullName: "Daniel Tetteh", role: "corporate_admin" as const, passwordHash: pw, companyId: cTech.id, phone: "+233 20 555 2020" },
-      { email: "transport@voltafoods.com", fullName: "Henrietta Doe", role: "corporate_admin" as const, passwordHash: pw, companyId: cVolta.id, phone: "+233 20 555 3030" },
-      { email: "ama@sikamanfinancial.com", fullName: "Ama Serwaa", role: "employee" as const, passwordHash: pw, companyId: cSikaman.id, phone: "+233 24 777 0001" },
-      { email: "kwame@sikamanfinancial.com", fullName: "Kwame Boateng", role: "employee" as const, passwordHash: pw, companyId: cSikaman.id, phone: "+233 24 777 0002" },
-      { email: "kojo@accratechhub.com", fullName: "Kojo Nkrumah", role: "employee" as const, passwordHash: pw, companyId: cTech.id, phone: "+233 24 777 0003" },
-      { email: "driver.kwesi@staffridegh.com", fullName: "Kwesi Appiah", role: "driver" as const, passwordHash: pw, phone: "+233 24 888 0001" },
-      { email: "driver.abena@staffridegh.com", fullName: "Abena Darko", role: "driver" as const, passwordHash: pw, phone: "+233 24 888 0002" },
+      { email: "admin@richietransportgh.com", fullName: "Nana Kojo Admin", role: "super_admin" as const, passwordHash: pw, phone: "+233 24 111 0001", twoFactorEnabled: true, twoFactorCode: "246810" },
+      { email: "ops@richietransportgh.com", fullName: "Comfort Baffour", role: "ops_manager" as const, passwordHash: pw, phone: "+233 24 111 0002" },
+      { email: "dispatch@richietransportgh.com", fullName: "Ekow Mensah", role: "dispatcher" as const, passwordHash: pw, phone: "+233 24 111 0003" },
+      { email: "fleet@richietransportgh.com", fullName: "Yaw Ofori-Attah", role: "fleet_manager" as const, passwordHash: pw, phone: "+233 24 111 0004" },
+      { email: "finance@richietransportgh.com", fullName: "Esther Nyarko", role: "finance_officer" as const, passwordHash: pw, phone: "+233 24 111 0005" },
+      // The Employee/Passenger and Corporate HR roles are retired for now:
+      // their logins are refused and their screens are gone. The client
+      // companies, their branches and the staff register stay — they are the
+      // data the service runs on, not a role.
+      { email: "driver.kwesi@richietransportgh.com", fullName: "Kwesi Appiah", role: "driver" as const, passwordHash: pw, phone: "+233 24 888 0001" },
+      { email: "driver.abena@richietransportgh.com", fullName: "Abena Darko", role: "driver" as const, passwordHash: pw, phone: "+233 24 888 0002" },
     ])
     .returning({ id: users.id, email: users.email, role: users.role, companyId: users.companyId });
 
@@ -176,11 +174,6 @@ async function runSeed(): Promise<void> {
   /* ----------------------------------------------------------- employees */
   type EmpSeed = typeof employees.$inferInsert;
   const employeeSeeds: EmpSeed[] = [];
-  const employeeUserIds: Record<string, number> = {
-    "ama@sikamanfinancial.com": userBy("ama@sikamanfinancial.com").id,
-    "kwame@sikamanfinancial.com": userBy("kwame@sikamanfinancial.com").id,
-    "kojo@accratechhub.com": userBy("kojo@accratechhub.com").id,
-  };
 
   let empCounter = 1000;
   const companyPlan = [
@@ -196,12 +189,11 @@ async function runSeed(): Promise<void> {
       const first = FIRST[(i * 3 + ci) % FIRST.length];
       const last = LAST[(i * 5 + ci) % LAST.length];
       const email = `${first.toLowerCase()}.${last.toLowerCase()}${i}${ci}@${plan.company.name.split(" ")[0].toLowerCase()}.com`;
-      const isLinked = i === 0 && ci === 0 ? "ama@sikamanfinancial.com" : i === 1 && ci === 0 ? "kwame@sikamanfinancial.com" : i === 0 && ci === 1 ? "kojo@accratechhub.com" : null;
       empCounter += 1;
       employeeSeeds.push({
         companyId: plan.company.id,
         branchId: hq(plan.company.id).id,
-        userId: isLinked ? employeeUserIds[isLinked] : null,
+        userId: null,
         shiftId: companyShifts[i % companyShifts.length].id,
         employeeCode: `${plan.prefix}-${empCounter}`,
         fullName: `${first} ${last}`,
@@ -301,8 +293,8 @@ async function runSeed(): Promise<void> {
 
   /* -------------------------------------------------------------- drivers */
   const driverSpecs = [
-    ["Kwesi Appiah", "+233 24 888 0001", "driver.kwesi@staffridegh.com", "B/ACC/019283", "D", 4.8],
-    ["Abena Darko", "+233 24 888 0002", "driver.abena@staffridegh.com", "B/ACC/028374", "D", 4.6],
+    ["Kwesi Appiah", "+233 24 888 0001", "driver.kwesi@richietransportgh.com", "B/ACC/019283", "D", 4.8],
+    ["Abena Darko", "+233 24 888 0002", "driver.abena@richietransportgh.com", "B/ACC/028374", "D", 4.6],
     ["Yaw Frimpong", "+233 20 411 2233", null, "B/ACC/038475", "C", 4.4],
     ["Kojo Anim", "+233 20 411 3344", null, "B/ACC/048576", "D", 4.9],
     ["Mavis Tetteh", "+233 20 411 4455", null, "B/ACC/058677", "D", 4.2],
@@ -319,7 +311,7 @@ async function runSeed(): Promise<void> {
         userId: d[2] ? userBy(d[2] as string).id : null,
         fullName: d[0] as string,
         phone: d[1] as string,
-        email: (d[2] as string | null) ?? `${(d[0] as string).split(" ")[0].toLowerCase()}.${(d[0] as string).split(" ")[1].toLowerCase()}@staffridegh.com`,
+        email: (d[2] as string | null) ?? `${(d[0] as string).split(" ")[0].toLowerCase()}.${(d[0] as string).split(" ")[1].toLowerCase()}@richietransportgh.com`,
         licenseNo: d[3] as string,
         licenseClass: d[4] as string,
         licenseExpiry: dayIso(40 + i * 45),
@@ -409,7 +401,7 @@ async function runSeed(): Promise<void> {
           capacity: busVehicle.capacity,
           bookedSeats: passengers.length,
           plannedKm: route.estimatedKm ?? 20,
-          createdById: userBy("dispatch@staffridegh.com").id,
+          createdById: userBy("dispatch@richietransportgh.com").id,
         });
         manifest.push({ tripIndex: tripInserts.length - 1, employeeIds: passengers.map((p) => p.id) });
       });
@@ -444,7 +436,7 @@ async function runSeed(): Promise<void> {
         recurring: "daily" as const,
         otpCode: String(100000 + ((trip.id * 7 + i * 13) % 899999)),
         vip: employee.vip,
-        approvedById: userBy("dispatch@staffridegh.com").id,
+        approvedById: userBy("dispatch@richietransportgh.com").id,
       });
       bookingMeta.push({ employeeId, tripId: trip.id, status, date: trip.tripDate, direction: trip.direction });
     });
@@ -556,8 +548,8 @@ async function runSeed(): Promise<void> {
   );
 
   await db.insert(payments).values([
-    { companyId: cSikaman.id, invoiceId: invoiceRows[0].id, amount: "21390.00", method: "bank_transfer" as const, reference: "TRF-9912001", status: "successful" as const, paidAt: at(dayIso(-10), 11, 30), recordedById: userBy("finance@staffridegh.com").id },
-    { companyId: cTech.id, invoiceId: invoiceRows[1].id, amount: "8000.00", method: "mobile_money" as const, reference: "MOMO-77213", status: "successful" as const, paidAt: at(dayIso(-8), 14, 5), recordedById: userBy("finance@staffridegh.com").id },
+    { companyId: cSikaman.id, invoiceId: invoiceRows[0].id, amount: "21390.00", method: "bank_transfer" as const, reference: "TRF-9912001", status: "successful" as const, paidAt: at(dayIso(-10), 11, 30), recordedById: userBy("finance@richietransportgh.com").id },
+    { companyId: cTech.id, invoiceId: invoiceRows[1].id, amount: "8000.00", method: "mobile_money" as const, reference: "MOMO-77213", status: "successful" as const, paidAt: at(dayIso(-8), 14, 5), recordedById: userBy("finance@richietransportgh.com").id },
   ]);
 
   const completedTrips = tripRows.filter((t) => t.status === "completed");
@@ -582,10 +574,10 @@ async function runSeed(): Promise<void> {
 
   /* ---------------------------------------------------------- incidents */
   await db.insert(incidents).values([
-    { companyId: cSikaman.id, tripId: tripRows[0]?.id ?? null, vehicleId: vehicleRows[0].id, driverId: driverRows[0].id, reportedById: userBy("driver.kwesi@staffridegh.com").id, type: "breakdown" as const, severity: "high" as const, status: "resolved" as const, description: "Alternator failure on Ring Road, vehicle could not restart.", actionTaken: "Replacement vehicle GR-7742-22 dispatched within 18 minutes, passengers transferred.", location: "Ring Road East", resolvedAt: at(dayIso(-4), 8, 15) },
-    { companyId: cTech.id, vehicleId: vehicleRows[6].id, driverId: driverRows[6].id, reportedById: userBy("dispatch@staffridegh.com").id, type: "delay" as const, severity: "medium" as const, status: "acknowledged" as const, description: "Heavy traffic on Spintex road, pickup running 25 minutes late.", location: "Spintex Road" },
-    { companyId: cVolta.id, vehicleId: vehicleRows[9].id, driverId: driverRows[8].id, reportedById: userBy("dispatch@staffridegh.com").id, type: "accident" as const, severity: "critical" as const, status: "open" as const, description: "Minor collision with a motorcycle at Ashaiman roundabout. No staff injuries.", location: "Ashaiman Roundabout" },
-    { companyId: cSikaman.id, tripId: tripRows[1]?.id ?? null, driverId: driverRows[1].id, reportedById: userBy("dispatch@staffridegh.com").id, type: "no_show" as const, severity: "low" as const, status: "resolved" as const, description: "Passenger not present at Dansoman junction pickup point.", actionTaken: "Driver waited 5 minutes then continued route; passenger informed of policy." },
+    { companyId: cSikaman.id, tripId: tripRows[0]?.id ?? null, vehicleId: vehicleRows[0].id, driverId: driverRows[0].id, reportedById: userBy("driver.kwesi@richietransportgh.com").id, type: "breakdown" as const, severity: "high" as const, status: "resolved" as const, description: "Alternator failure on Ring Road, vehicle could not restart.", actionTaken: "Replacement vehicle GR-7742-22 dispatched within 18 minutes, passengers transferred.", location: "Ring Road East", resolvedAt: at(dayIso(-4), 8, 15) },
+    { companyId: cTech.id, vehicleId: vehicleRows[6].id, driverId: driverRows[6].id, reportedById: userBy("dispatch@richietransportgh.com").id, type: "delay" as const, severity: "medium" as const, status: "acknowledged" as const, description: "Heavy traffic on Spintex road, pickup running 25 minutes late.", location: "Spintex Road" },
+    { companyId: cVolta.id, vehicleId: vehicleRows[9].id, driverId: driverRows[8].id, reportedById: userBy("dispatch@richietransportgh.com").id, type: "accident" as const, severity: "critical" as const, status: "open" as const, description: "Minor collision with a motorcycle at Ashaiman roundabout. No staff injuries.", location: "Ashaiman Roundabout" },
+    { companyId: cSikaman.id, tripId: tripRows[1]?.id ?? null, driverId: driverRows[1].id, reportedById: userBy("dispatch@richietransportgh.com").id, type: "no_show" as const, severity: "low" as const, status: "resolved" as const, description: "Passenger not present at Dansoman junction pickup point.", actionTaken: "Driver waited 5 minutes then continued route; passenger informed of policy." },
   ]);
 
   await db.insert(feedback).values([
@@ -595,15 +587,15 @@ async function runSeed(): Promise<void> {
   ]);
 
   await db.insert(notifications).values([
-    { userId: userBy("ama@sikamanfinancial.com").id, companyId: cSikaman.id, channel: "in_app", category: "booking", title: "Pickup confirmed for tomorrow 05:45", body: "Vehicle Toyota Hiace GR-4521-24, driver Kwesi Appiah.", tripId: runningTrips[0]?.id ?? null },
-    { userId: userBy("dispatch@staffridegh.com").id, channel: "in_app", category: "incident", title: "Critical: accident reported at Ashaiman", body: "Volta Foods night trip affected. Review incident record." },
-    { userId: userBy("hr@sikamanfinancial.com").id, companyId: cSikaman.id, channel: "in_app", category: "invoice", title: "Invoice INV-2026-0001 settled", body: "Payment of GHS 21,390.00 received by bank transfer." },
+    { userId: userBy("dispatch@richietransportgh.com").id, companyId: cSikaman.id, channel: "in_app", category: "booking", title: "Pickup confirmed for tomorrow 05:45", body: "Vehicle Toyota Hiace GR-4521-24, driver Kwesi Appiah.", tripId: runningTrips[0]?.id ?? null },
+    { userId: userBy("dispatch@richietransportgh.com").id, channel: "in_app", category: "incident", title: "Critical: accident reported at Ashaiman", body: "Volta Foods night trip affected. Review incident record." },
+    { userId: userBy("finance@richietransportgh.com").id, companyId: cSikaman.id, channel: "in_app", category: "invoice", title: "Invoice INV-2026-0001 settled", body: "Payment of GHS 21,390.00 received by bank transfer." },
   ]);
 
   await db.insert(auditLogs).values([
-    { userId: userBy("admin@staffridegh.com").id, actorEmail: "admin@staffridegh.com", action: "seed.demo_data", entity: "system", details: { companies: companyRows.length, employees: employeeRows.length, trips: tripRows.length } },
-    { userId: userBy("ops@staffridegh.com").id, actorEmail: "ops@staffridegh.com", action: "trip.dispatch", entity: "trip", entityId: String(tripRows[0]?.id ?? ""), companyId: cSikaman.id, details: { vehicle: vehicleRows[0].registrationNo, driver: driverRows[0].fullName } },
-    { userId: userBy("fleet@staffridegh.com").id, actorEmail: "fleet@staffridegh.com", action: "maintenance.create", entity: "vehicle", entityId: String(vehicleRows[10].id), details: { type: "repair" } },
+    { userId: userBy("admin@richietransportgh.com").id, actorEmail: "admin@richietransportgh.com", action: "seed.demo_data", entity: "system", details: { companies: companyRows.length, employees: employeeRows.length, trips: tripRows.length } },
+    { userId: userBy("ops@richietransportgh.com").id, actorEmail: "ops@richietransportgh.com", action: "trip.dispatch", entity: "trip", entityId: String(tripRows[0]?.id ?? ""), companyId: cSikaman.id, details: { vehicle: vehicleRows[0].registrationNo, driver: driverRows[0].fullName } },
+    { userId: userBy("fleet@richietransportgh.com").id, actorEmail: "fleet@richietransportgh.com", action: "maintenance.create", entity: "vehicle", entityId: String(vehicleRows[10].id), details: { type: "repair" } },
   ]);
 
   /* ------------------------------- normalised roles, addresses, assignments */

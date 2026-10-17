@@ -9,7 +9,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 4 0 R >>
 endobj
 4 0 obj
-<< /Length 2255 >>
+<< /Length 2266 >>
 stream
 q
 0.016 0.027 0.039 rg
@@ -70,7 +70,7 @@ BT
 1.000 0.388 0.078 rg
 /F2 8.4 Tf
 1 0 0 1 46.00 737.89 Tm
-(STAFFRIDE · ENTERPRISE STAFF TRANSPORTATION MANAGEMENT) Tj
+(RICHIE TRANSPORT SERVICES MANAGEMENT SYSTEM \(RTS\)) Tj
 ET
 BT
 0.969 0.965 0.949 rg
@@ -82,7 +82,7 @@ BT
 0.969 0.965 0.949 rg
 /F2 30 Tf
 1 0 0 1 46.00 673.89 Tm
-(StaffRide) Tj
+(Richie Transport Services) Tj
 ET
 BT
 0.680 0.700 0.720 rg
@@ -112,7 +112,7 @@ BT
 0.820 0.830 0.840 rg
 /F1 9.4 Tf
 1 0 0 1 325.64 543.89 Tm
-(The eight roles and what each one owns) Tj
+(The six roles and what each one owns) Tj
 ET
 BT
 0.820 0.830 0.840 rg
@@ -174,7 +174,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 6 0 R >>
 endobj
 6 0 obj
-<< /Length 4285 >>
+<< /Length 3280 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -183,52 +183,32 @@ f
 Q
 q
 0.970 0.960 0.950 rg
-46.00 604.89 244.64 92.00 re
+46.00 589.89 244.64 92.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-46.00 604.89 244.64 2.40 re
+46.00 589.89 244.64 2.40 re
 f
 Q
 q
 0.970 0.960 0.950 rg
-304.64 604.89 244.64 92.00 re
+304.64 589.89 244.64 92.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-304.64 604.89 244.64 2.40 re
+304.64 589.89 244.64 2.40 re
 f
 Q
 q
 0.970 0.960 0.950 rg
-46.00 498.89 244.64 92.00 re
+46.00 496.89 503.28 75.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-46.00 498.89 244.64 2.40 re
-f
-Q
-q
-0.970 0.960 0.950 rg
-304.64 498.89 244.64 92.00 re
-f
-Q
-q
-1.000 0.388 0.078 rg
-304.64 498.89 244.64 2.40 re
-f
-Q
-q
-0.970 0.960 0.950 rg
-46.00 405.89 503.28 75.00 re
-f
-Q
-q
-1.000 0.388 0.078 rg
-46.00 405.89 2.40 75.00 re
+46.00 496.89 2.40 75.00 re
 f
 Q
 q
@@ -246,163 +226,121 @@ BT
 0.420 0.450 0.480 rg
 /F1 11 Tf
 1 0 0 1 46.00 730.89 Tm
-(StaffRide runs the company shuttle service: one platform for planning routes, dispatching vehicles,) Tj
+(Richie Transport Services runs the company shuttle service: one platform for planning routes,) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 11 Tf
 1 0 0 1 46.00 715.89 Tm
-(carrying staff safely, and billing every client correctly. Four interfaces, one database, one set of rules.) Tj
+(dispatching vehicles, carrying staff safely, and billing every client correctly. Two interfaces, one) Tj
+ET
+BT
+0.420 0.450 0.480 rg
+/F1 11 Tf
+1 0 0 1 46.00 700.89 Tm
+(database, one set of rules.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F2 10 Tf
-1 0 0 1 58.00 676.89 Tm
+1 0 0 1 58.00 661.89 Tm
 (Operations console) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 660.89 Tm
+1 0 0 1 58.00 645.89 Tm
 (Where the service is run: the dispatch command centre,) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 649.39 Tm
+1 0 0 1 58.00 634.39 Tm
 (the trip board, the live map, the roster, the vehicles, the) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 637.89 Tm
-(money. Six of the eight roles work here.) Tj
+1 0 0 1 58.00 622.89 Tm
+(money. Five of the six roles work here.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F2 10 Tf
-1 0 0 1 316.64 676.89 Tm
-(Passenger app) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 660.89 Tm
-(What staff use on their phone: request a ride, see which) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 649.39 Tm
-(bus is coming, get a boarding code, check their own trips) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 637.89 Tm
-(and their own invoice.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F2 10 Tf
-1 0 0 1 58.00 570.89 Tm
+1 0 0 1 316.64 661.89 Tm
 (Driver app) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 554.89 Tm
+1 0 0 1 316.64 645.89 Tm
 (What the driver uses in the vehicle: today's duty, the) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 543.39 Tm
+1 0 0 1 316.64 634.39 Tm
 (manifest, share position, board a passenger, report a) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
-1 0 0 1 58.00 531.89 Tm
+1 0 0 1 316.64 622.89 Tm
 (problem. Built for a phone on a dashboard.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F2 10 Tf
-1 0 0 1 316.64 570.89 Tm
-(Client portal) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 554.89 Tm
-(What the client's own HR team uses: its staff, its shifts, its) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 543.39 Tm
-(ride requests and its bill. It never sees another company,) Tj
-ET
-BT
-0.420 0.450 0.480 rg
-/F1 8.6 Tf
-1 0 0 1 316.64 531.89 Tm
-(enforced on the server.) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F2 7.6 Tf
-1 0 0 1 62.00 462.89 Tm
+1 0 0 1 62.00 553.89 Tm
 (THE ONE RULE THAT EXPLAINS THE SYSTEM) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 449.89 Tm
+1 0 0 1 62.00 540.89 Tm
 (You only see what your role allows, and a corporate client only ever sees its own company. That is enforced by) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 436.89 Tm
+1 0 0 1 62.00 527.89 Tm
 (the server, not hidden in the menu — a role that cannot reach a screen is refused even if it types the address.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 423.89 Tm
+1 0 0 1 62.00 514.89 Tm
 (The navigation is therefore a truthful picture of the job, not a smaller version of a bigger product.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 397.89 Tm
+1 0 0 1 46.00 488.89 Tm
 (Nothing in the service depends on a phone call or a spreadsheet. A request becomes a booking, a booking becomes a trip,) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 384.49 Tm
+1 0 0 1 46.00 475.49 Tm
 (a trip becomes a manifest, and a manifest becomes an invoice line. Every step is recorded, so the company can always) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 371.09 Tm
+1 0 0 1 46.00 462.09 Tm
 (answer who was carried, by which vehicle, under which agreement, and at what price.) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -416,7 +354,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 8 0 R >>
 endobj
 8 0 obj
-<< /Length 7022 >>
+<< /Length 5912 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -459,23 +397,13 @@ q
 f
 Q
 q
-0.850 0.860 0.870 rg
-46.00 372.69 503.28 0.60 re
-f
-Q
-q
-0.850 0.860 0.870 rg
-46.00 336.89 503.28 0.60 re
-f
-Q
-q
 0.970 0.960 0.950 rg
-46.00 236.89 503.28 62.00 re
+46.00 308.49 503.28 62.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-46.00 236.89 2.40 62.00 re
+46.00 308.49 2.40 62.00 re
 f
 Q
 q
@@ -487,19 +415,19 @@ BT
 0.060 0.070 0.080 rg
 /F2 14 Tf
 1 0 0 1 46.00 755.89 Tm
-(The eight roles and what each one owns) Tj
+(The six roles and what each one owns) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 11 Tf
 1 0 0 1 46.00 730.89 Tm
-(The same code serves eight roles. Each one opens the system on the screens that are actually their) Tj
+(The same code serves six roles. Each one opens the system on the screens that are actually their work) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 11 Tf
 1 0 0 1 46.00 715.89 Tm
-(work — nothing more, nothing less.) Tj
+(— nothing more, nothing less.) Tj
 ET
 BT
 0.969 0.965 0.949 rg
@@ -721,127 +649,67 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 431.29 Tm
-(Corporate HR \(12\)) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 170.14 431.29 Tm
-(The client's own staff, and only its own staff:) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 170.14 417.89 Tm
-(joiners, shifts, ride requests and the bill.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 371.45 431.29 Tm
-(Employees, bookings, trips, routes, its) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 371.45 417.89 Tm
-(own billing and reports.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 395.49 Tm
-(Employee / Passenger) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 382.09 Tm
-(\(2\)) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 170.14 395.49 Tm
-(Their own commute: request a ride, track it,) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 170.14 382.09 Tm
-(board with a code.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 371.45 395.49 Tm
-(My transport, and the live corridor.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 359.69 Tm
 (Driver \(2\)) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 170.14 359.69 Tm
+1 0 0 1 170.14 431.29 Tm
 (Today's duty: start the journey, share the) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 170.14 346.29 Tm
+1 0 0 1 170.14 417.89 Tm
 (position, board the passenger, close the trip.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 371.45 359.69 Tm
+1 0 0 1 371.45 431.29 Tm
 (The driver app, and the boarding list.) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8 Tf
-1 0 0 1 46.00 324.89 Tm
+1 0 0 1 46.00 396.49 Tm
 (The screen counts are read out of the running application, not typed by hand: a check in the build fails if a role can reach a different number of) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8 Tf
-1 0 0 1 46.00 313.89 Tm
+1 0 0 1 46.00 385.49 Tm
 (screens than this document says.) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F2 7.6 Tf
-1 0 0 1 62.00 280.89 Tm
+1 0 0 1 62.00 352.49 Tm
 (FOR THE OWNER) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 267.89 Tm
-(You do not need to learn eight systems. You need one screen for the morning — the dashboard — and one) Tj
+1 0 0 1 62.00 339.49 Tm
+(You do not need to learn six systems. You need one screen for the morning — the dashboard — and one report) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 254.89 Tm
-(report at the end of the month. Everything else in between belongs to the operations team and runs without you.) Tj
+1 0 0 1 62.00 326.49 Tm
+(at the end of the month. Everything else in between belongs to the operations team and runs without you.) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -855,7 +723,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 10 0 R >>
 endobj
 10 0 obj
-<< /Length 6030 >>
+<< /Length 6025 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -983,7 +851,7 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 143.29 663.89 Tm
-(Corporate HR) Tj
+(Operations Manager) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -1235,13 +1103,13 @@ BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -1255,7 +1123,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 12 0 R >>
 endobj
 12 0 obj
-<< /Length 6643 >>
+<< /Length 6314 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -1340,11 +1208,6 @@ Q
 q
 0.850 0.860 0.870 rg
 46.00 355.89 503.28 0.60 re
-f
-Q
-q
-0.850 0.860 0.870 rg
-46.00 333.49 503.28 0.60 re
 f
 Q
 q
@@ -1434,7 +1297,7 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 417.02 634.09 Tm
-(Dispatcher, Corporate HR) Tj
+(Dispatcher) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -1452,7 +1315,7 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 417.02 611.69 Tm
-(Corporate HR, Operations) Tj
+(Operations, Admin) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -1638,67 +1501,49 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 365.29 Tm
-(Book my own ride) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 268.51 365.29 Tm
-(My Transport) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 417.02 365.29 Tm
-(Employee) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 342.89 Tm
 (Start my journey, board a passenger) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 268.51 342.89 Tm
+1 0 0 1 268.51 365.29 Tm
 (Driver App) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 417.02 342.89 Tm
+1 0 0 1 417.02 365.29 Tm
 (Driver) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 321.49 Tm
+1 0 0 1 46.00 343.89 Tm
 (Two shortcuts make it fast on day one. The command palette \(Ctrl+K or ?K\) searches every screen and the live data —) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 308.09 Tm
+1 0 0 1 46.00 330.49 Tm
 (trips, bookings, vehicles, drivers, employees — and only offers results the signed-in role is allowed to see. And the top bar) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 294.69 Tm
+1 0 0 1 46.00 317.09 Tm
 (carries the live trip ticker, the notifications and the theme switch, so the state of the service is always one glance away.) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -1712,7 +1557,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 14 0 R >>
 endobj
 14 0 obj
-<< /Length 5939 >>
+<< /Length 5928 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2052,13 +1897,13 @@ BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -2072,7 +1917,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 16 0 R >>
 endobj
 16 0 obj
-<< /Length 5618 >>
+<< /Length 5607 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2413,13 +2258,13 @@ BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -2433,7 +2278,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 18 0 R >>
 endobj
 18 0 obj
-<< /Length 4395 >>
+<< /Length 4384 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2680,13 +2525,13 @@ BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -2700,7 +2545,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 20 0 R >>
 endobj
 20 0 obj
-<< /Length 3588 >>
+<< /Length 3556 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2839,31 +2684,31 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 46.00 471.89 Tm
-(StaffRide — Enterprise Staff Transportation Management System. Eight roles, four interfaces, 42 database tables, live) Tj
+(Richie Transport Services Management System. Six roles, two interfaces, 42 database tables, live dispatch, automated) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 46.00 458.49 Tm
-(dispatch, automated billing and a full audit trail. This document describes how the system is used; the technical detail is in) Tj
+(billing and a full audit trail. This document describes how the system is used; the technical detail is in the project) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 46.00 445.09 Tm
-(the project documentation.) Tj
+(documentation.) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F2 7 Tf
 1 0 0 1 46.00 809.89 Tm
-(STAFFRIDE — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
+(RTS — HOW YOUR PEOPLE WILL USE THE SYSTEM) Tj
 ET
 BT
 0.720 0.740 0.760 rg
 /F1 7.4 Tf
 1 0 0 1 46.00 42.00 Tm
-(StaffRide — enterprise staff transportation management) Tj
+(RTS — Richie Transport Services Management System) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -2889,27 +2734,27 @@ xref
 0000000058 00000 n 
 0000000168 00000 n 
 0000000323 00000 n 
-0000002630 00000 n 
-0000002785 00000 n 
-0000007122 00000 n 
-0000007277 00000 n 
-0000014351 00000 n 
-0000014507 00000 n 
-0000020590 00000 n 
-0000020747 00000 n 
-0000027443 00000 n 
-0000027600 00000 n 
-0000033592 00000 n 
-0000033749 00000 n 
-0000039420 00000 n 
-0000039577 00000 n 
-0000044025 00000 n 
-0000044182 00000 n 
-0000047823 00000 n 
-0000047921 00000 n 
-0000048024 00000 n 
+0000002641 00000 n 
+0000002796 00000 n 
+0000006128 00000 n 
+0000006283 00000 n 
+0000012247 00000 n 
+0000012403 00000 n 
+0000018481 00000 n 
+0000018638 00000 n 
+0000025005 00000 n 
+0000025162 00000 n 
+0000031143 00000 n 
+0000031300 00000 n 
+0000036960 00000 n 
+0000037117 00000 n 
+0000041554 00000 n 
+0000041711 00000 n 
+0000045320 00000 n 
+0000045418 00000 n 
+0000045521 00000 n 
 trailer
 << /Size 24 /Root 1 0 R >>
 startxref
-48130
+45627
 %%EOF

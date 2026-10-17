@@ -214,13 +214,6 @@ export const NAV_GROUPS: NavGroup[] = [
 /** Surfaces that are not part of the operations console. */
 export const STANDALONE_NAV: NavEntry[] = [
   {
-    href: "/passenger",
-    label: "My Transport",
-    section: "passenger",
-    icon: "headset",
-    hint: "Book a ride and track it",
-  },
-  {
     href: "/driver",
     label: "Driver App",
     section: "driverapp",

@@ -99,7 +99,7 @@ export function verifyTotp(
 export function otpauthUri(
   secret: string,
   account: string,
-  issuer = "StaffRide",
+  issuer = "Richie Transport Services",
 ): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
   return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
@@ -115,7 +115,7 @@ export function generateOtpCode(): string {
 
 /** Hash a one-time code for storage. The plaintext is never persisted. */
 export function hashOtpCode(code: string): string {
-  return createHash("sha256").update(`${code}:staffride`).digest("hex");
+  return createHash("sha256").update(`${code}:rts`).digest("hex");
 }
 
 /** Constant-time comparison of two strings of the same length. */

@@ -48,7 +48,7 @@ export function claimDatabaseLock(): void {
     console.error(
       [
         "",
-        "[staffride] Another process is already using the local database.",
+        "[rts] Another process is already using the local database.",
         `  Process ${owner} holds ${lockFile.replace(/\.lock$/, "")}.`,
         "",
         "  PGlite is single-process, so this server will fail to read it.",

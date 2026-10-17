@@ -21,23 +21,23 @@ type Bucket = {
 };
 
 const globalForMetrics = globalThis as typeof globalThis & {
-  __staffrideMetrics?: Map<string, Bucket>;
-  __staffrideCounters?: Map<string, number>;
-  __staffrideStartedAt?: number;
+  __rtsMetrics?: Map<string, Bucket>;
+  __rtsCounters?: Map<string, number>;
+  __rtsStartedAt?: number;
 };
 
 function buckets(): Map<string, Bucket> {
-  globalForMetrics.__staffrideMetrics ??= new Map();
-  return globalForMetrics.__staffrideMetrics;
+  globalForMetrics.__rtsMetrics ??= new Map();
+  return globalForMetrics.__rtsMetrics;
 }
 
 function counters(): Map<string, number> {
-  globalForMetrics.__staffrideCounters ??= new Map();
-  return globalForMetrics.__staffrideCounters;
+  globalForMetrics.__rtsCounters ??= new Map();
+  return globalForMetrics.__rtsCounters;
 }
 
-if (!globalForMetrics.__staffrideStartedAt) {
-  globalForMetrics.__staffrideStartedAt = Date.now();
+if (!globalForMetrics.__rtsStartedAt) {
+  globalForMetrics.__rtsStartedAt = Date.now();
 }
 
 /** Increment a named counter. */
@@ -125,9 +125,9 @@ export function metricsSnapshot() {
     };
   }
   return {
-    startedAt: new Date(globalForMetrics.__staffrideStartedAt ?? Date.now()).toISOString(),
+    startedAt: new Date(globalForMetrics.__rtsStartedAt ?? Date.now()).toISOString(),
     uptimeSeconds: Math.round(
-      (Date.now() - (globalForMetrics.__staffrideStartedAt ?? Date.now())) / 1000,
+      (Date.now() - (globalForMetrics.__rtsStartedAt ?? Date.now())) / 1000,
     ),
     counters: Object.fromEntries(counters()),
     timings,
@@ -138,22 +138,22 @@ export function metricsSnapshot() {
 export function prometheusMetrics(): string {
   const lines: string[] = [];
   const snapshot = metricsSnapshot();
-  lines.push("# HELP staffride_uptime_seconds Process uptime in seconds.");
-  lines.push("# TYPE staffride_uptime_seconds gauge");
-  lines.push(`staffride_uptime_seconds ${snapshot.uptimeSeconds}`);
+  lines.push("# HELP rts_uptime_seconds Process uptime in seconds.");
+  lines.push("# TYPE rts_uptime_seconds gauge");
+  lines.push(`rts_uptime_seconds ${snapshot.uptimeSeconds}`);
 
   for (const [name, value] of Object.entries(snapshot.counters)) {
     const safe = name.replace(/[^a-zA-Z0-9_]/g, "_");
-    lines.push(`# TYPE staffride_${safe}_total counter`);
-    lines.push(`staffride_${safe}_total ${value}`);
+    lines.push(`# TYPE rts_${safe}_total counter`);
+    lines.push(`rts_${safe}_total ${value}`);
   }
 
   for (const [name, timing] of Object.entries(snapshot.timings)) {
     const safe = name.replace(/[^a-zA-Z0-9_]/g, "_");
-    lines.push(`# TYPE staffride_${safe}_duration_ms summary`);
-    lines.push(`staffride_${safe}_duration_ms{quantile="0.95"} ${timing.p95Ms}`);
-    lines.push(`staffride_${safe}_duration_ms_count ${timing.count}`);
-    lines.push(`staffride_${safe}_duration_ms_sum ${Math.round(timing.avgMs * timing.count)}`);
+    lines.push(`# TYPE rts_${safe}_duration_ms summary`);
+    lines.push(`rts_${safe}_duration_ms{quantile="0.95"} ${timing.p95Ms}`);
+    lines.push(`rts_${safe}_duration_ms_count ${timing.count}`);
+    lines.push(`rts_${safe}_duration_ms_sum ${Math.round(timing.avgMs * timing.count)}`);
   }
 
   return `${lines.join("\n")}\n`;

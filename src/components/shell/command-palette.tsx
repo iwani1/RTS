@@ -160,7 +160,7 @@ function PaletteBody({ onClose }: { onClose: () => void }) {
             <span className="numeric">↑↓</span> navigate ·{" "}
             <span className="numeric">↵</span> open
           </p>
-          <p className="numeric text-[11px] text-ink-3">STAFFRIDE</p>
+          <p className="numeric text-[11px] text-ink-3">RTS</p>
         </div>
       </Command>
     </div>

@@ -1,4 +1,4 @@
-# StaffRide — Architecture
+# Richie Transport Services — Architecture
 
 > Mermaid diagrams render on GitHub, in VS Code and in most Markdown viewers.
 > Every diagram below describes code that exists in this repository.
@@ -10,22 +10,18 @@
 ```mermaid
 flowchart LR
     subgraph Clients
-        A[Super Admin<br/>Dashboard]
-        B[Corporate Client<br/>Portal]
+        A[Operations Console<br/>5 platform roles]
         C[Driver<br/>Mobile PWA]
-        D[Employee / Passenger<br/>Mobile PWA]
     end
 
-    E[StaffRide<br/>Next.js 16 · Node runtime]
+    E[Richie Transport Services<br/>Next.js 16 · Node runtime]
     F[(PostgreSQL<br/>or PGlite)]
     G[Map provider<br/>Mapbox / Google]
     H[SMS · Email · Push]
     I[Payment gateway<br/>Paystack / Flutterwave]
 
     A --> E
-    B --> E
     C --> E
-    D --> E
     E --> F
     E -. optional .-> G
     E -. optional .-> H
@@ -267,15 +263,11 @@ pending in `docs/FEATURE-CHECKLIST.md`.
 ```mermaid
 flowchart LR
     U[Signed-in user] --> S{role}
-    S -->|super_admin · ops_manager<br/>dispatcher · fleet_manager<br/>finance_officer| P[companyScope → null<br/>ALL companies]
-    S -->|corporate_admin<br/>employee| T[companyScope → user.companyId<br/>ONE company]
+    S -->|super_admin · ops_manager<br/>dispatcher · fleet_manager<br/>finance_officer · driver| P[companyScope → null<br/>ALL companies]
 
     P --> Q[Read / write any tenant]
-    T --> R[Read / write own tenant only]
 
-    classDef scoped fill:#0f1214,stroke:#5b76ff,color:#f0f5fa
     classDef platform fill:#0f1214,stroke:#ff6314,color:#f0f5fa
-    class T scoped
     class P platform
 ```
 
@@ -427,7 +419,7 @@ src/
     schema.ts          42 tables
   lib/
     auth.ts            sessions · guards · throttling · audit · scope
-    rbac.ts            8 roles · 20 sections · 15 permissions
+    rbac.ts            6 roles · 19 sections · 14 permissions
     domain.ts          pure rules — routing, capacity, pricing, transitions
     queries.ts         9 analytics aggregations
     validation.ts      zod schemas and bounded form readers

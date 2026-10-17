@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 /**
- * Registers the service worker that makes the driver and passenger apps
+ * Registers the service worker that makes the driver app
  * installable and usable with a flaky connection.
  *
  * It only runs in production builds — a worker active in development would

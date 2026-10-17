@@ -34,7 +34,7 @@ export async function register() {
     console.error(
       [
         "",
-        "[staffride] Database migration failed.",
+        "[rts] Database migration failed.",
         `  ${message}`,
         "",
         "  If you are running without DATABASE_URL, the local PGlite data directory",
@@ -55,7 +55,7 @@ export async function register() {
     } catch (error) {
       // A seeding failure must not stop the server — the app still runs, it
       // just starts with an empty dataset.
-      console.error("[staffride] seed failed:", (error as Error).message);
+      console.error("[rts] seed failed:", (error as Error).message);
     }
   }
 
@@ -68,13 +68,13 @@ export async function register() {
       const outcomes = await runBootJobs();
       for (const outcome of outcomes) {
         console.log(
-          `[staffride] job ${outcome.name}: ${outcome.status} (${outcome.durationMs}ms)`,
+          `[rts] job ${outcome.name}: ${outcome.status} (${outcome.durationMs}ms)`,
         );
       }
       startJobRunner();
     }
   } catch (error) {
     // The job runner is not a reason to refuse to serve traffic.
-    console.error("[staffride] job runner failed to start:", (error as Error).message);
+    console.error("[rts] job runner failed to start:", (error as Error).message);
   }
 }

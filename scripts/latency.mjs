@@ -14,7 +14,7 @@ async function cookie() {
   const res = await fetch(`${base}/api/test/session`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-test-token": token },
-    body: JSON.stringify({ email: "admin@staffridegh.com" }),
+    body: JSON.stringify({ email: "admin@richietransportgh.com" }),
   });
   return (res.headers.getSetCookie?.() ?? []).map((c) => c.split(";")[0]).join("; ");
 }

@@ -83,7 +83,7 @@ async function formSignIn(email, password, code) {
 }
 
 const { status, cookie } = await formSignIn(
-  "admin@staffridegh.com",
+  "admin@richietransportgh.com",
   "Password123!",
   "246810",
 );

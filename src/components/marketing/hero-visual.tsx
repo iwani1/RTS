@@ -45,7 +45,7 @@ export function HeroVisual() {
           <span className="h-2 w-2 rounded-full bg-st-idle" />
           <span className="h-2 w-2 rounded-full bg-st-idle" />
           <span className="numeric ml-2 text-[10.5px] text-ink-3">
-            staffride / dispatch
+            rts / dispatch
           </span>
           <span className="ml-auto inline-flex items-center gap-1.5">
             <span className="h-[6px] w-[6px] rounded-full bg-st-live pulse-live" />

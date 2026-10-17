@@ -75,11 +75,11 @@ auto-promotion, notification fan-out, scheduled invoicing, pagination, saved vie
 ### Container
 
 ```bash
-docker build -t staffride .
+docker build -t rts .
 docker run -p 3000:3000 \
-  -e DATABASE_URL=postgresql://user:pass@host:5432/staffride \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/rts \
   -e SEED_ON_BOOT=false \
-  staffride
+  rts
 ```
 
 * The image is a three-stage build (deps → build → runtime), runs as a non-root user and carries a
@@ -228,7 +228,7 @@ dedicated worker instead, which is a configuration change rather than a rewrite.
 
 ```bash
 npm run verify        # lint · typecheck · unit tests · schema drift
-npm run test:smoke   # 67 route checks across all eight roles (server running)
+npm run test:smoke   # route checks across all six roles (server running)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
 npm run test:demo    # the live demo: 54 checks against a running server

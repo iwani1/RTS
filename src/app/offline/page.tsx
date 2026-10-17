@@ -2,8 +2,8 @@ import Link from "next/link";
 import { WifiOff } from "lucide-react";
 
 export const metadata = {
-  title: "Offline — StaffRide",
-  description: "You are offline. StaffRide will reconnect automatically.",
+  title: "Offline — Richie Transport Services",
+  description: "You are offline. Richie Transport Services will reconnect automatically.",
 };
 
 /**
@@ -22,7 +22,7 @@ export default function OfflinePage() {
           You are offline
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-ink-2">
-          StaffRide could not reach the server. Anything you already loaded
+          Richie Transport Services could not reach the server. Anything you already loaded
           stays available, and anything you submit from a driver duty screen is
           queued and sent the moment the connection returns.
         </p>

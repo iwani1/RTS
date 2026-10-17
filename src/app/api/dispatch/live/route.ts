@@ -14,7 +14,7 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const scope = user.role === "corporate_admin" ? user.companyId : null;
+  const scope = null;
   const live = await getLiveTrips(scope);
   const positions = await getLatestPositions(live.map((l) => l.trip.id));
 

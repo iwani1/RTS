@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  *   TEST_SESSION_ENABLED=true TEST_SESSION_TOKEN=secret npm start
  *   node scripts/smoke.mjs
  *   TEST_SESSION_TOKEN=secret curl -H "x-test-token: secret" \
- *     -d "email=admin@staffridegh.com" http://127.0.0.1:3000/api/test/session
+ *     -d "email=admin@richietransportgh.com" http://127.0.0.1:3000/api/test/session
  */
 export async function POST(request: Request) {
   // The token bypasses the password and the second factor for any account,

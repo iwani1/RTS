@@ -1,5 +1,5 @@
 /**
- * The client-facing guide: "How your people will use StaffRide".
+ * The client-facing guide: "How your people will use Richie Transport Services".
  *
  * A pitch document, not a manual. It answers the question the owner of a
  * company actually asks — who touches the system, what they do, and what
@@ -7,7 +7,7 @@
  *
  *   node --experimental-strip-types scripts/make-user-guide-pdf.mts
  *
- * The output is written to docs/StaffRide-User-Guide.pdf.
+ * The output is written to docs/Richie Transport Services-User-Guide.pdf.
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { buildPdf, type PdfBlock } from "../src/lib/pdf.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = join(ROOT, "docs/StaffRide-User-Guide.pdf");
+const OUT = join(ROOT, "docs/RTS-User-Guide.pdf");
 
 const blocks: PdfBlock[] = [
   /* ------------------------------------------------------------------ */
@@ -23,9 +23,9 @@ const blocks: PdfBlock[] = [
   {
     type: "lead",
     text:
-      "StaffRide runs the company shuttle service: one platform for planning routes, " +
+      "Richie Transport Services runs the company shuttle service: one platform for planning routes, " +
       "dispatching vehicles, carrying staff safely, and billing every client correctly. " +
-      "Four interfaces, one database, one set of rules.",
+      "Two interfaces, one database, one set of rules.",
   },
   {
     type: "cards",
@@ -34,25 +34,13 @@ const blocks: PdfBlock[] = [
         title: "Operations console",
         text:
           "Where the service is run: the dispatch command centre, the trip board, the live map, " +
-          "the roster, the vehicles, the money. Six of the eight roles work here.",
-      },
-      {
-        title: "Passenger app",
-        text:
-          "What staff use on their phone: request a ride, see which bus is coming, get a boarding " +
-          "code, check their own trips and their own invoice.",
+          "the roster, the vehicles, the money. Five of the six roles work here.",
       },
       {
         title: "Driver app",
         text:
           "What the driver uses in the vehicle: today's duty, the manifest, share position, " +
           "board a passenger, report a problem. Built for a phone on a dashboard.",
-      },
-      {
-        title: "Client portal",
-        text:
-          "What the client's own HR team uses: its staff, its shifts, its ride requests and its " +
-          "bill. It never sees another company, enforced on the server.",
       },
     ],
   },
@@ -76,11 +64,11 @@ const blocks: PdfBlock[] = [
 
   /* ------------------------------------------------------------------ */
   { type: "pagebreak" },
-  { type: "heading", text: "The eight roles and what each one owns", level: 1 },
+  { type: "heading", text: "The six roles and what each one owns", level: 1 },
   {
     type: "lead",
     text:
-      "The same code serves eight roles. Each one opens the system on the screens that are " +
+      "The same code serves six roles. Each one opens the system on the screens that are " +
       "actually their work — nothing more, nothing less.",
   },
   {
@@ -117,16 +105,6 @@ const blocks: PdfBlock[] = [
         "Billing and payroll, reports, currencies, drivers for the cost base.",
       ],
       [
-        "Corporate HR\n(12)",
-        "The client's own staff, and only its own staff: joiners, shifts, ride requests and the bill.",
-        "Employees, bookings, trips, routes, its own billing and reports.",
-      ],
-      [
-        "Employee / Passenger\n(2)",
-        "Their own commute: request a ride, track it, board with a code.",
-        "My transport, and the live corridor.",
-      ],
-      [
         "Driver\n(2)",
         "Today's duty: start the journey, share the position, board the passenger, close the trip.",
         "The driver app, and the boarding list.",
@@ -140,7 +118,7 @@ const blocks: PdfBlock[] = [
     type: "callout",
     title: "For the owner",
     text:
-      "You do not need to learn eight systems. You need one screen for the morning — the " +
+      "You do not need to learn six systems. You need one screen for the morning — the " +
       "dashboard — and one report at the end of the month. Everything else in between belongs to " +
       "the operations team and runs without you.",
   },
@@ -162,7 +140,7 @@ const blocks: PdfBlock[] = [
       { label: "What happens", width: 3.6 },
     ],
     rows: [
-      ["Previous week", "Corporate HR", "Adds joiners to the employee register, sets their shifts and pick-up zones. Sends a list for bulk upload."],
+      ["Previous week", "Operations Manager", "Adds joiners to the employee register, sets their shifts and pick-up zones. Sends a list for bulk upload."],
       ["Previous week", "Operations Manager", "Plans the corridor, runs route optimisation to order the stops, and agrees the client's service agreement."],
       ["Evening before", "Dispatcher", "Approves the ride requests, moves waitlisted passengers onto trips, confirms a driver and a vehicle for every run."],
       ["05:00", "Fleet Manager", "Confirms the vehicles are compliant and records the fuel."],
@@ -200,8 +178,8 @@ const blocks: PdfBlock[] = [
     rows: [
       ["See whether the morning run is on time", "Live Dispatch", "Dispatcher"],
       ["Assign a driver and a vehicle to a trip", "Live Dispatch → the trip", "Dispatcher"],
-      ["Approve a passenger's ride request", "Bookings", "Dispatcher, Corporate HR"],
-      ["Add a new employee to a client", "Employees", "Corporate HR, Operations"],
+      ["Approve a passenger's ride request", "Bookings", "Dispatcher"],
+      ["Add a new employee to a client", "Employees", "Operations, Admin"],
       ["Set up a client and its contract", "Corporate Clients", "Operations, Admin"],
       ["Plan the route for a corridor", "Routes & Stops", "Operations, Dispatcher"],
       ["Choose the best order for the stops", "Route Optimisation", "Operations, Dispatcher"],
@@ -212,7 +190,6 @@ const blocks: PdfBlock[] = [
       ["Produce a report or a PDF", "Reports", "Finance, Operations"],
       ["See who changed what", "Audit Trail", "Super Administrator only"],
       ["Add or suspend a user", "Settings & Users", "Admin, Operations"],
-      ["Book my own ride", "My Transport", "Employee"],
       ["Start my journey, board a passenger", "Driver App", "Driver"],
     ],
   },
@@ -401,7 +378,7 @@ const blocks: PdfBlock[] = [
   {
     type: "paragraph",
     text:
-      "StaffRide — Enterprise Staff Transportation Management System. Eight roles, four " +
+      "Richie Transport Services Management System. Six roles, two " +
       "interfaces, 42 database tables, live dispatch, automated billing and a full audit trail. " +
       "This document describes how the system is used; the technical detail is in the project " +
       "documentation.",
@@ -409,16 +386,16 @@ const blocks: PdfBlock[] = [
 ];
 
 const pdf = buildPdf({
-  title: "StaffRide — how your people will use the system",
+  title: "RTS — how your people will use the system",
   cover: {
-    kicker: "StaffRide · Enterprise staff transportation management",
-    title: "How your people will use StaffRide",
+    kicker: "Richie Transport Services Management System (RTS)",
+    title: "How your people will use Richie Transport Services",
     subtitle:
       "Who touches the system, what they do on it, and what the company gets out of it — a " +
       "day-to-day guide for every role.",
     contents: [
       "What the system does",
-      "The eight roles and what each one owns",
+      "The six roles and what each one owns",
       "A day in the life of one shuttle run",
       "What people actually do, and where",
       "The controls that protect the company",
@@ -430,7 +407,7 @@ const pdf = buildPdf({
     date: "October 2026",
   },
   blocks,
-  footer: "StaffRide — enterprise staff transportation management",
+  footer: "RTS — Richie Transport Services Management System",
   pageNumbers: true,
 });
 

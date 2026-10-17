@@ -18,14 +18,12 @@ const base = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const password = process.env.DEMO_PASSWORD ?? "Password123!";
 
 const ACCOUNTS = [
-  ["Super Administrator", "admin@staffridegh.com", "246810"],
-  ["Operations Manager", "ops@staffridegh.com", ""],
-  ["Dispatcher", "dispatch@staffridegh.com", ""],
-  ["Fleet Manager", "fleet@staffridegh.com", ""],
-  ["Finance Officer", "finance@staffridegh.com", ""],
-  ["Corporate HR Administrator", "hr@sikamanfinancial.com", ""],
-  ["Employee / Passenger", "ama@sikamanfinancial.com", ""],
-  ["Driver", "driver.kwesi@staffridegh.com", ""],
+  ["Super Administrator", "admin@richietransportgh.com", "246810"],
+  ["Operations Manager", "ops@richietransportgh.com", ""],
+  ["Dispatcher", "dispatch@richietransportgh.com", ""],
+  ["Fleet Manager", "fleet@richietransportgh.com", ""],
+  ["Finance Officer", "finance@richietransportgh.com", ""],
+  ["Driver", "driver.kwesi@richietransportgh.com", ""],
 ];
 
 /** A friendly answer when the server is not there at all. */

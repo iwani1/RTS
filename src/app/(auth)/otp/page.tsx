@@ -101,11 +101,11 @@ export default async function OtpPage({
       >
         <ul className="divide-y divide-line">
           {[
-            ["Super Administrator", "admin@staffridegh.com"],
-            ["Operations Manager", "ops@staffridegh.com"],
-            ["Dispatcher", "dispatch@staffridegh.com"],
-            ["Fleet Manager", "fleet@staffridegh.com"],
-            ["Finance Officer", "finance@staffridegh.com"],
+            ["Super Administrator", "admin@richietransportgh.com"],
+            ["Operations Manager", "ops@richietransportgh.com"],
+            ["Dispatcher", "dispatch@richietransportgh.com"],
+            ["Fleet Manager", "fleet@richietransportgh.com"],
+            ["Finance Officer", "finance@richietransportgh.com"],
             ["Employee · Sikaman", "ama@sikamanfinancial.com"],
           ].map(([role, address]) => (
             <li

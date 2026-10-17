@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ###############################################################################
-# StaffRide — production image
+# Richie Transport Services — production image
 #
 # Three stages: dependencies, build, runtime. Migrations are NOT baked into
 # the image — they are applied at container start by src/instrumentation.ts, so

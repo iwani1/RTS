@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const PILLARS = [
   {
     title: "One tenant, one truth",
-    body: "Every record carries a company. A corporate HR administrator can only see and write their own client's employees, bookings, invoices and incidents — enforced on the server, not in the interface.",
+    body: "Every record carries a company. A client's staff, bookings, invoices and incidents stay their own — the scope is resolved on the server, not in the interface.",
   },
   {
     title: "Operations, not administration",
@@ -56,10 +56,10 @@ export default async function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-signal font-display text-[13px] font-bold text-signal-ink">
-              SR
+              RTS
             </span>
             <span className="font-display text-[15px] font-semibold tracking-[-0.01em]">
-              StaffRide
+              Richie Transport Services
             </span>
           </Link>
           <nav className="flex items-center gap-1.5">
@@ -180,7 +180,7 @@ export default async function LandingPage() {
           <div>
             <p className="eyebrow mb-3">Security &amp; tenancy</p>
             <h2 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]">
-              Eight roles. One permission matrix. No client sees another
+              Six roles. One permission matrix. No client sees another
               client.
             </h2>
             <p className="mt-4 max-w-lg text-[14px] leading-relaxed text-ink-2">
@@ -233,7 +233,7 @@ export default async function LandingPage() {
           <div className="grid gap-10 md:grid-cols-[1.4fr_2fr]">
             <div>
               <p className="font-display text-[13px] font-medium text-ink-2">
-                StaffRide
+                Richie Transport Services
               </p>
               <p className="mt-3 max-w-xs text-[12.5px] leading-relaxed text-ink-3">
                 An enterprise staff transportation platform for corporate
@@ -261,7 +261,7 @@ export default async function LandingPage() {
                   title: "Roles",
                   links: [
                     { label: "Driver app", href: "/driver" },
-                    { label: "Passenger app", href: "/passenger" },
+                    { label: "Live dispatch", href: "/dispatch" },
                     { label: "Audit trail", href: "/audit" },
                     { label: "Settings", href: "/settings" },
                   ],
@@ -301,10 +301,10 @@ export default async function LandingPage() {
 
           <div className="mt-12 border-t border-line pt-6">
             <p className="font-display text-[clamp(2.5rem,9vw,5.5rem)] font-semibold leading-[0.85] tracking-[-0.045em] text-ink">
-              StaffRide
+              Richie Transport Services
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-3">
-              <span>© {new Date().getFullYear()} StaffRide</span>
+              <span>© {new Date().getFullYear()} Richie Transport Services</span>
               <span aria-hidden>|</span>
               <span>Ghana Cedi (GHS)</span>
               <span aria-hidden>|</span>

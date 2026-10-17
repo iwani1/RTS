@@ -74,7 +74,7 @@ export async function GET(request: Request) {
         // A random, unusable password: this account signs in through the
         // identity provider only.
         passwordHash: `sso:${Math.random().toString(36).slice(2)}`,
-        role: "employee",
+        role: "driver",
         status: "pending",
         ssoProvider: new URL(config.issuer).host,
         ssoSubject: profile.subject,

@@ -1,25 +1,26 @@
 /**
  * Role based access control matrix.
  * Sections are the navigation / capability groups used across the app.
+ *
+ * Six roles run the service. The Employee/Passenger and the Corporate HR
+ * roles are retired for now: their logins are refused, their screens are
+ * gone, and the data they used — clients, branches, the staff register, trips
+ * and bookings — is untouched, so either can be switched back on.
  */
 export type Role =
   | "super_admin"
   | "ops_manager"
   | "dispatcher"
-  | "corporate_admin"
   | "fleet_manager"
   | "driver"
-  | "employee"
   | "finance_officer";
 
 export const ROLE_LABELS: Record<Role, string> = {
   super_admin: "Super Administrator",
   ops_manager: "Operations Manager",
   dispatcher: "Dispatcher",
-  corporate_admin: "Corporate HR Administrator",
   fleet_manager: "Fleet Manager",
   driver: "Driver",
-  employee: "Employee / Passenger",
   finance_officer: "Finance Officer",
 };
 
@@ -39,7 +40,6 @@ export type Section =
   | "incidents"
   | "audit"
   | "settings"
-  | "passenger"
   | "driverapp"
   | "calendar"
   | "compliance"
@@ -47,21 +47,20 @@ export type Section =
   | "currencies";
 
 export const MATRIX: Record<Section, Role[]> = {
-  dashboard: ["super_admin", "ops_manager", "dispatcher", "corporate_admin", "fleet_manager", "finance_officer"],
+  dashboard: ["super_admin", "ops_manager", "dispatcher", "fleet_manager", "finance_officer"],
   companies: ["super_admin", "ops_manager"],
-  employees: ["super_admin", "ops_manager", "corporate_admin"],
+  employees: ["super_admin", "ops_manager"],
   fleet: ["super_admin", "fleet_manager", "ops_manager"],
   drivers: ["super_admin", "fleet_manager", "ops_manager", "finance_officer"],
-  routes: ["super_admin", "ops_manager", "dispatcher", "corporate_admin"],
-  trips: ["super_admin", "ops_manager", "dispatcher", "corporate_admin"],
+  routes: ["super_admin", "ops_manager", "dispatcher"],
+  trips: ["super_admin", "ops_manager", "dispatcher"],
   dispatch: ["super_admin", "ops_manager", "dispatcher"],
-  bookings: ["super_admin", "ops_manager", "dispatcher", "corporate_admin"],
-  finance: ["super_admin", "finance_officer", "corporate_admin"],
-  reports: ["super_admin", "ops_manager", "finance_officer", "corporate_admin"],
-  incidents: ["super_admin", "ops_manager", "dispatcher", "fleet_manager", "corporate_admin"],
+  bookings: ["super_admin", "ops_manager", "dispatcher"],
+  finance: ["super_admin", "finance_officer"],
+  reports: ["super_admin", "ops_manager", "finance_officer"],
+  incidents: ["super_admin", "ops_manager", "dispatcher", "fleet_manager"],
   audit: ["super_admin"],
-  settings: ["super_admin", "ops_manager", "dispatcher", "corporate_admin", "fleet_manager", "finance_officer", "driver", "employee"],
-  passenger: ["employee", "corporate_admin"],
+  settings: ["super_admin", "ops_manager", "dispatcher", "fleet_manager", "finance_officer", "driver"],
   driverapp: ["driver"],
   calendar: ["super_admin", "ops_manager", "dispatcher"],
   compliance: ["super_admin", "ops_manager", "fleet_manager"],
@@ -83,7 +82,6 @@ export type Permission =
   | "trip.manage"
   | "trip.dispatch"
   | "booking.approve"
-  | "booking.own"
   | "finance.manage"
   | "incident.manage"
   | "incident.report"
@@ -93,17 +91,16 @@ export type Permission =
 
 export const PERMISSIONS: Record<Permission, Role[]> = {
   "company.manage": ["super_admin", "ops_manager"],
-  "employee.manage": ["super_admin", "ops_manager", "corporate_admin"],
+  "employee.manage": ["super_admin", "ops_manager"],
   "vehicle.manage": ["super_admin", "fleet_manager"],
   "driver.manage": ["super_admin", "fleet_manager"],
   "route.manage": ["super_admin", "ops_manager", "dispatcher"],
   "trip.manage": ["super_admin", "ops_manager", "dispatcher"],
   "trip.dispatch": ["super_admin", "ops_manager", "dispatcher"],
-  "booking.approve": ["super_admin", "ops_manager", "dispatcher", "corporate_admin"],
-  "booking.own": ["employee", "corporate_admin"],
+  "booking.approve": ["super_admin", "ops_manager", "dispatcher"],
   "finance.manage": ["super_admin", "finance_officer"],
   "incident.manage": ["super_admin", "ops_manager", "dispatcher", "fleet_manager"],
-  "incident.report": ["super_admin", "ops_manager", "dispatcher", "fleet_manager", "driver", "employee"],
+  "incident.report": ["super_admin", "ops_manager", "dispatcher", "fleet_manager", "driver"],
   "audit.view": ["super_admin"],
   "user.manage": ["super_admin", "ops_manager"],
   "driver.duty": ["driver"],
@@ -118,7 +115,6 @@ export const ADMIN_ROLES: Role[] = [
   "super_admin",
   "ops_manager",
   "dispatcher",
-  "corporate_admin",
   "fleet_manager",
   "finance_officer",
 ];

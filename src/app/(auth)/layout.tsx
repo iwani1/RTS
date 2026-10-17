@@ -23,7 +23,7 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
           <BrandMark />
           <span>
             <span className="block font-display text-[14px] font-semibold tracking-[-0.01em] text-ink">
-              StaffRide
+              Richie Transport Services
             </span>
             <span className="block text-[11.5px] text-ink-3">
               Staff Transportation Management
@@ -64,7 +64,7 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
           >
             <BrandMark />
             <span className="font-display text-[14px] font-semibold text-ink">
-              StaffRide
+              Richie Transport Services
             </span>
           </Link>
           {children}

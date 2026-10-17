@@ -1,4 +1,4 @@
-# StaffRide — Enterprise Staff Transportation Management System
+# Richie Transport Services Management System
 
 A production-oriented, multi-client transportation management system (TMS) for a company running
 daily home-to-office / office-to-home staff shuttle operations. Built with **Next.js 16 (App Router) +
@@ -10,7 +10,7 @@ button, form and dashboard action performs a real, authorised server operation.
 ---
 
 > **New here?** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) is a guide to the system **by role** — what
-> each of the eight roles sees, what they are responsible for, and the words the system uses.
+> each of the six roles sees, what they are responsible for, and the words the system uses.
 
 ## 1. Run it on your own computer
 
@@ -98,8 +98,8 @@ npm run dev               # http://localhost:3000
 **Option C — the container.**
 
 ```bash
-docker build -t staffride .
-docker run --rm -p 3000:3000 staffride
+docker build -t rts .
+docker run --rm -p 3000:3000 rts
 ```
 
 ### Step 3 — sign in
@@ -112,7 +112,7 @@ migrated and seeded **at server start** — you never run a migration command by
 | | |
 | --- | --- |
 | **Embedded (default)** | Leave `DATABASE_URL` empty. The app runs on **PGlite** — a real PostgreSQL engine compiled to WebAssembly, executing the same migration files in-process. The data lives in `.data/pgdata` next to the project. |
-| **A real PostgreSQL** | `cp .env.example .env`, set `DATABASE_URL=postgresql://user:pass@host:5432/staffride`, then start the app. The schema and the seed are applied to it the same way. |
+| **A real PostgreSQL** | `cp .env.example .env`, set `DATABASE_URL=postgresql://user:pass@host:5432/rts`, then start the app. The schema and the seed are applied to it the same way. |
 
 > **PGlite is single-process.** Only one process may open `.data/pgdata` at a time. Stop the server
 > before running a second one, and if the server is ever killed uncleanly, reset the directory and
@@ -178,7 +178,7 @@ With the server running in another terminal:
 
 ```bash
 export TEST_SESSION_TOKEN=local-qa-token     # the server must be started with the same value
-npm run test:smoke     # 67 route checks across all eight roles
+npm run test:smoke     # route checks across all six roles
 npm run test:auth      # the native, no-JavaScript sign-in flow
 npm run test:action    # the server-action transport
 npm run test:demo      # 54 checks: the live end-to-end demonstration
@@ -203,14 +203,14 @@ that has never opted in.
 
 | Role | Email | Notes |
 | --- | --- | --- |
-| Super Administrator | `admin@staffridegh.com` | 2FA code `246810` |
-| Operations Manager | `ops@staffridegh.com` | |
-| Dispatcher | `dispatch@staffridegh.com` | |
-| Fleet Manager | `fleet@staffridegh.com` | |
-| Finance Officer | `finance@staffridegh.com` | |
+| Super Administrator | `admin@richietransportgh.com` | 2FA code `246810` |
+| Operations Manager | `ops@richietransportgh.com` | |
+| Dispatcher | `dispatch@richietransportgh.com` | |
+| Fleet Manager | `fleet@richietransportgh.com` | |
+| Finance Officer | `finance@richietransportgh.com` | |
 | Corporate HR (Sikaman) | `hr@sikamanfinancial.com` | sees only its own client |
 | Employee (Sikaman) | `ama@sikamanfinancial.com` | passenger app |
-| Driver | `driver.kwesi@staffridegh.com` | driver app |
+| Driver | `driver.kwesi@richietransportgh.com` | driver app |
 
 The seeded dataset holds 3 corporate clients, ~36 employees, 12 vehicles, 10 drivers, routes, trips,
 bookings, invoices, incidents, maintenance records and audit entries.
@@ -242,7 +242,7 @@ that authentication never depends on a script bundle loading.
 `scripts/action-invoke.mjs` replays the browser's server-action request shape and asserts that an action
 resolves, runs, and returns a guarded result rather than a crash.
 
-`scripts/smoke.mjs` signs in as each of the eight roles and requests every route each role can reach —
+`scripts/smoke.mjs` signs in as each of the six roles and requests every route each role can reach —
 67 checks covering the portal, the mobile apps, the detail pages and the API.
 
 `scripts/demo.mjs` is the live demonstration: 54 checks that sign in through the real login form, walk
@@ -301,7 +301,7 @@ components/         UI primitives, app shell, SVG charts, vector map, dispatch c
 db/                 Drizzle schema (42 tables) + lazily initialised driver
 lib/
   auth.ts           hashed sessions, scrypt, throttling, guards, audit, tenant scope
-  rbac.ts           8 roles · 20 sections · 15 permissions
+  rbac.ts           6 roles · 19 sections · 14 permissions
   domain.ts         pure business rules (no framework imports → unit testable)
   queries.ts        analytics aggregations
   validation.ts     zod schemas and bounded form readers
@@ -360,8 +360,8 @@ migrations during a compile. Migrations now run at server start instead.
 ## 6. Container & CI
 
 ```bash
-docker build -t staffride .
-docker run -p 3000:3000 -e DATABASE_URL=postgresql://… staffride
+docker build -t rts .
+docker run -p 3000:3000 -e DATABASE_URL=postgresql://… rts
 ```
 
 The image is a three-stage build (deps → build → runtime) and runs as a non-root user with a health
@@ -377,8 +377,8 @@ audit, a production build and the route smoke test on every push, and builds the
 
 | Document | Contents |
 | --- | --- |
-| `docs/StaffRide-User-Guide.pdf` | The client-facing guide — how every role uses the system, in one pitchable document (regenerate with `npm run docs:pdf`) |
-| `docs/USER-GUIDE.md` | How to use the system, organised by role — what each of the eight roles sees, owns and does |
+| `docs/RTS-User-Guide.pdf` | The client-facing guide — how every role uses the system, in one pitchable document (regenerate with `npm run docs:pdf`) |
+| `docs/USER-GUIDE.md` | How to use the system, organised by role — what each of the six roles sees, owns and does |
 | `docs/ARCHITECTURE.md` | Mermaid diagrams — system context, layers, request lifecycle, ERD, tenancy, auth, boot, interface, deployment |
 | `docs/API.md` | REST + server action reference, request/response shapes |
 | `docs/OPERATIONS.md` | SOPs, rollout plan, runbook, backup and recovery |

@@ -6,7 +6,7 @@ one actually implements, so any feature prompt can be mapped onto it line by lin
 
 | | **App A** — `staff-transportation-management-system.zip` | **App B** — `staff-transportation-management-system (1).zip` |
 | --- | --- | --- |
-| Internal name | **StaffRide TMS** | "TMS" |
+| Internal name | **Richie Transport Services TMS** | "TMS" |
 | Source lines | **10,429** | 6,277 |
 | Tables | 27 | **29** |
 | Server actions | **39** (all authorized + audited) | **0** |
@@ -28,7 +28,7 @@ one actually implements, so any feature prompt can be mapped onto it line by lin
 | Auth: 2FA for privileged roles | ● | ◐ | B has `twoFactorEnabled`/`twoFactorSecret` columns and **no login flow that uses them** |
 | Auth: password reset | ● (hashed token, DB table) | ◐ | B stores the reset token **in plaintext** on the users row and `console.log`s it |
 | RBAC: section/role matrix | ● (hardcoded in `rbac.ts`) | ● (DB tables) | **B is better here — see §3** |
-| RBAC: fine-grained `resource.action` | ● (15 permissions) | ● (DB-driven) | A: TS const. B: `permissions` + `role_permissions` tables |
+| RBAC: fine-grained `resource.action` | ● (14 permissions) | ● (DB-driven) | A: TS const. B: `permissions` + `role_permissions` tables |
 | RBAC: multi-role users | ○ | ● | B has `user_roles` join; A has a single `role` column |
 | RBAC: runtime role management | ○ | ● | B's matrix is data, so it can be edited without a deploy |
 | Audit trail on every mutation | ● | ○ | **B has an `audit_logs` table that nothing ever writes to** |
@@ -145,7 +145,7 @@ costs nothing and skips a round of installs.
 
 ## 4. Verdict
 
-**Build on App A (StaffRide).**
+**Build on App A (Richie Transport Services).**
 
 App A is the product. App B is a UI prototype that happens to have a nicer schema in six places.
 

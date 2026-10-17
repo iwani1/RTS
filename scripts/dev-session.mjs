@@ -2,7 +2,7 @@
  * Local QA helper — signs in through the real login form and prints the
  * session cookie.
  *
- *   node scripts/dev-session.mjs admin@staffridegh.com "Password123!" 246810
+ *   node scripts/dev-session.mjs admin@richietransportgh.com "Password123!" 246810
  *   curl -H "Cookie: tms_session=<token>" http://127.0.0.1:3000/dashboard
  *
  * It drives the actual React Server Action over HTTP — the same request a
@@ -11,7 +11,7 @@
  */
 const base = process.env.BASE_URL || "http://127.0.0.1:3000";
 
-const email = process.argv[2] || "admin@staffridegh.com";
+const email = process.argv[2] || "admin@richietransportgh.com";
 const password = process.argv[3] || "Password123!";
 const code = process.argv[4] || "";
 

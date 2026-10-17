@@ -205,7 +205,7 @@ if (has("--role")) {
 /* ----------------------------------------------------------- the table */
 
 console.log("");
-console.log("  STAFFRIDE — WHAT EACH ROLE CAN REACH");
+console.log("  RTS — WHAT EACH ROLE CAN REACH");
 console.log("  ======================================");
 console.log("");
 

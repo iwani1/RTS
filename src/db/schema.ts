@@ -31,6 +31,15 @@ import {
 
 /* ------------------------------------------------------------------ enums */
 
+/**
+ * The roles a person can sign in with.
+ *
+ * "employee" (the passenger) and "corporate_admin" (the client portal) are
+ * retired for now: they are out of the permission matrix, out of the
+ * navigation and out of the seed, and migration 0005 removes their accounts.
+ * The values stay in the enum, dormant, so that switching either role back
+ * on is a change to the matrix rather than a change to the schema.
+ */
 export const userRoleEnum = pgEnum("user_role", [
   "super_admin",
   "ops_manager",
@@ -264,7 +273,7 @@ export const users = pgTable(
     phone: varchar("phone", { length: 40 }),
     fullName: varchar("full_name", { length: 140 }).notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: userRoleEnum("role").notNull().default("employee"),
+    role: userRoleEnum("role").notNull().default("driver"),
     status: userStatusEnum("status").notNull().default("active"),
     companyId: integer("company_id").references(() => companies.id, {
       onDelete: "set null",

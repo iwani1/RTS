@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /**
- * StaffRide service worker.
+ * Richie Transport Services service worker.
  *
  * Scope is deliberately narrow. The app is multi-tenant and every portal
  * screen is authenticated, so this worker never caches an HTML response or an
@@ -13,7 +13,7 @@
  *     instead of showing a browser error
  */
 
-const VERSION = "staffride-v1";
+const VERSION = "rts-v1";
 const STATIC_CACHE = `${VERSION}-static`;
 const SHELL_CACHE = `${VERSION}-shell`;
 

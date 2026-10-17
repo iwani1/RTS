@@ -62,7 +62,7 @@ export async function AppShell({
       <div className="min-h-screen bg-canvas text-ink">
         <div className="lg:pl-[var(--rail-w)]">
           <TopBar
-            breadcrumb={[{ label: "StaffRide" }, { label: title }]}
+            breadcrumb={[{ label: "RTS" }, { label: title }]}
             events={events}
             userName={user.fullName}
             roleLabel={ROLE_LABELS[role]}
@@ -76,7 +76,7 @@ export async function AppShell({
         <Sidebar
           groups={groups}
           standalone={standalone}
-          brand="StaffRide"
+          brand="RTS"
           roleLabel={ROLE_LABELS[role]}
           userName={user.fullName}
         />

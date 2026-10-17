@@ -46,7 +46,7 @@ async function prune(): Promise<number> {
   } catch {
     return 0;
   }
-  const files = entries.filter((name) => name.startsWith("staffride-")).sort();
+  const files = entries.filter((name) => name.startsWith("rts-")).sort();
   const excess = files.length - retainCount();
   if (excess <= 0) return 0;
   for (const file of files.slice(0, excess)) {
@@ -61,7 +61,7 @@ async function prune(): Promise<number> {
 export async function runBackup(): Promise<Record<string, unknown>> {
   const dir = backupDir();
   await fs.mkdir(dir, { recursive: true });
-  const name = `staffride-${stamp()}`;
+  const name = `rts-${stamp()}`;
 
   const databaseUrl = process.env.DATABASE_URL;
 

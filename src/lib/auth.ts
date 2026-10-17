@@ -193,7 +193,6 @@ export async function requirePermission(permission: Permission): Promise<Session
 
 export function homeFor(role: Role): string {
   if (role === "driver") return "/driver";
-  if (role === "employee") return "/passenger";
   return "/dashboard";
 }
 

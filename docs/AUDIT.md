@@ -1,4 +1,4 @@
-# StaffRide — System Audit
+# Richie Transport Services — System Audit
 
 **Date:** 2026-10-16
 **Scope:** the whole application — build pipeline, database, authentication, authorisation, tenant isolation, input validation, design conformance, and the deliverable set required by the master build prompt.
@@ -15,7 +15,7 @@
 | `npx eslint src` | **4 errors** | **0 errors** |
 | `npm test` (node:test) | 15/15 | 15/15 |
 | `drizzle-kit check` | no drift | no drift |
-| Route smoke test (8 roles) | not present | **67/67 checks pass** |
+| Route smoke test (6 roles) | not present | **every check passes** |
 | Server actions without an authz guard | 5 (all legitimately anonymous) | 5 (all legitimately anonymous) |
 | Server actions reading form data with no validator | 46 | **0** |
 | Screens on the legacy component API | 8 | **0** |
@@ -206,7 +206,7 @@ the bundle folder. The migration runner resolved `drizzle/` from
 `process.cwd()`, so the container booted with:
 
 ```
-[staffride] Database migration failed.
+[rts] Database migration failed.
   Can't find meta/_journal.json file
 ```
 
@@ -339,7 +339,7 @@ rm -rf .next && npx next build          # from a cold cache
 With the server running:
 
 ```bash
-TEST_SESSION_TOKEN=local-qa-token node scripts/smoke.mjs   # 67 route checks, 8 roles
+TEST_SESSION_TOKEN=local-qa-token node scripts/smoke.mjs   # route checks, 6 roles
 node scripts/auth-form.mjs                                 # native (no-JS) auth flow + CSRF guard
 node scripts/action-invoke.mjs                             # server-action transport + guards
 node scripts/origin-check.mjs                             # the Server Action origin guard

@@ -1,4 +1,4 @@
-# StaffRide — Feature Checklist
+# Richie Transport Services — Feature Checklist
 
 **Status key**
 `●` implemented and working · `◐` implemented in part, with the gap named ·
@@ -19,7 +19,7 @@ the route smoke test; every `◐` and `○` item names what is missing.
 | 4 | Route planning | ● | Capacity-aware nearest-neighbour clustering, pickup time windows, shift-derived departure times, vehicle & driver recommendation, and a vehicle-routing solver screen |
 | 5 | Fleet | ● | Vehicles, documents, maintenance scheduling, availability, assignment guards, fuel-log entry screen, safety inspections with recurrence |
 | 6 | Driver management & app | ● | Duty list, trip sheet, manifest, OTP boarding verification, no-shows, offline queue replay, SOS/breakdown reporting, availability |
-| 7 | Passenger app | ● | Self-service booking, home address + geocode, live trip tracking, the corridor view with occupancy and share codes, boarding code, feedback, cancellation, policy |
+| 7 | Passenger app | ○ | Retired for now — self-service booking, live trip tracking, the corridor view, boarding code and feedback. The data stays; the screens and logins are switched off |
 | 8 | Dispatch | ● | Three-pane Command Centre: trip board, live corridor map, inspector with signed ETD deviation, event tape, alerts rail, reassignment, breakdown recovery |
 | 9 | GPS tracking | ● | Position capture from the driver app and dispatcher, speed + heading, live map, geofenced arrival detection, 90-day retention model, offline queue. ◐ *Basemap requires a provider key* |
 | 10 | Billing, invoicing & payroll | ● | Per-passenger / per-trip / per-km / fixed pricing, waiting and overtime surcharges from the contract, VAT, invoices, payments, driver earnings, payroll CSV export, scheduled monthly invoicing, multicurrency |
@@ -28,29 +28,31 @@ the route smoke test; every `◐` and `○` item names what is missing.
 
 ---
 
-## 2. The four interfaces
+## 2. The two interfaces
 
 | Interface | Status | Notes |
 | --- | --- | --- |
-| Super Admin / Operations dashboard | ● | KPI strip, trip board, live map, incidents, audit trail, user administration, platform configuration |
-| Corporate Client portal | ● | Company-scoped employees, bookings, trips, routes, invoices, reports, incidents, policy |
+| Operations console | ● | KPI strip, trip board, live map, incidents, audit trail, user administration, platform configuration — one console, six roles, one screen set per role |
 | Driver mobile app | ● | Installable PWA, thumb-reachable primary actions, duty list, manifest, boarding verification, offline queue |
-| Employee / Passenger mobile app | ● | Installable PWA, booking, live tracking, boarding code, feedback, emergency contacts |
+
+> The Corporate Client portal and the Employee/Passenger app are switched off for now. Their data —
+> clients, branches, the staff register, trips, bookings, invoices — is untouched.
 
 ---
 
-## 3. The eight roles
+## 3. The six roles
 
 | Role | Status |
 | --- | --- |
 | Super Administrator | ● |
 | Operations Manager | ● |
 | Dispatcher | ● |
-| Corporate HR Administrator | ● — pinned to one tenant |
 | Fleet Manager | ● |
 | Finance Officer | ● |
 | Driver | ● — pinned to own duties |
-| Employee / Passenger | ● — pinned to own records |
+
+> Corporate HR Administrator and Employee / Passenger are retired for now: out of the matrix, out of
+> the navigation, out of the seed. The values stay in the database enum so either can be restored.
 
 ---
 
@@ -87,7 +89,7 @@ the route smoke test; every `◐` and `○` item names what is missing.
 | Interactive tables | ● | Sticky header, hairline rules, tabular numerics, hover row actions |
 | Search and filters | ● | ⌘K global search, per-screen filters on trips, bookings, employees, incidents, reports, audit |
 | KPI cards | ● | `MetricStrip`, capped at six |
-| Maps | ● | Live corridor map in dispatch and the passenger app; honest demo labelling |
+| Maps | ● | Live corridor map in dispatch; honest demo labelling |
 | Calendar scheduling | ● | `/calendar` — month grid, load bars, status mix, per-day driver roster, month navigation |
 | Status indicators | ● | Dot + word, never colour alone |
 | Accessible forms | ● | Labelled controls, visible focus ring, `aria-*` on the palette and progress meters |

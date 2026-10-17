@@ -542,7 +542,7 @@ class Layout {
         this.rule(PAGE_HEIGHT - MARGIN + 6, LINE);
       }
 
-      const footer = this.document.footer ?? "StaffRide";
+      const footer = this.document.footer ?? "Richie Transport Services";
       if (index > 0 || !this.document.cover) {
         this.text(footer, MARGIN, MARGIN - 4, 7.4, false, FAINT);
       }

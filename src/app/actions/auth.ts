@@ -3,7 +3,7 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { employees, passwordResets, users } from "@/db/schema";
+import { drivers, passwordResets, users } from "@/db/schema";
 import {
   assertLoginAllowed,
   createSession,
@@ -122,9 +122,10 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
   if (existing) return { ok: false, message: "An account with this email already exists." };
 
-  // If HR already registered this person as an employee, activate immediately.
-  const [employee] = await db.select().from(employees).where(eq(employees.email, email)).limit(1);
-  const autoApprove = Boolean(employee);
+  // If the fleet manager already registered this person as a driver, activate
+  // the account immediately. Everyone else waits for an administrator.
+  const [driver] = await db.select().from(drivers).where(eq(drivers.email, email)).limit(1);
+  const autoApprove = Boolean(driver);
 
   const [created] = await db
     .insert(users)
@@ -133,28 +134,28 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
       email,
       phone: phoneRaw || null,
       passwordHash: await hashPassword(password),
-      role: "employee",
+      role: "driver",
       status: autoApprove ? "active" : "pending",
-      companyId: employee?.companyId ?? null,
+      companyId: driver?.companyId ?? null,
     })
     .returning({ id: users.id, status: users.status });
 
-  if (employee) {
-    await db.update(employees).set({ userId: created.id }).where(eq(employees.id, employee.id));
+  if (driver) {
+    await db.update(drivers).set({ userId: created.id }).where(eq(drivers.id, driver.id));
   }
 
   await logAudit({
     action: "auth.register",
     entity: "user",
     entityId: created.id,
-    companyId: employee?.companyId ?? null,
+    companyId: driver?.companyId ?? null,
     details: { email, autoApprove },
   });
 
   return {
     ok: true,
     message: autoApprove
-      ? "Account activated — your work email matched an employee record. You can sign in now."
+      ? "Account activated — your work email matched a driver record. You can sign in now."
       : "Registration received. An administrator must approve the account before you can sign in.",
   };
 }
