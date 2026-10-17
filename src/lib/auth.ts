@@ -79,6 +79,29 @@ export function hashToken(token: string): string {
 
 /* ------------------------------------------------------------ sessions */
 
+/**
+ * Should the session cookie carry the `Secure` attribute?
+ *
+ * A browser only keeps a Secure cookie from a trusted origin — https, or
+ * plain http on localhost. Marking the cookie Secure because the build was a
+ * production build meant that serving it over plain http on a network
+ * address (the usual way to try it from a second device) had the browser
+ * silently drop the cookie, so the sign-in appeared to do nothing and the
+ * app sent the user back to the sign-in page.
+ *
+ * The attribute now follows the request: https (or a proxy that reports
+ * `x-forwarded-proto: https`) gets it, plain http does not. Set
+ * `SESSION_COOKIE_SECURE=true` to force it on, or `false` to force it off.
+ */
+function secureCookie(hdrs: Headers): boolean {
+  const explicit = process.env.SESSION_COOKIE_SECURE?.toLowerCase();
+  if (explicit === "true") return true;
+  if (explicit === "false") return false;
+  const forwarded = hdrs.get("x-forwarded-proto");
+  if (forwarded) return forwarded.split(",")[0]?.trim() === "https";
+  return false;
+}
+
 export async function createSession(userId: number) {
   const token = generateToken(48);
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
@@ -95,7 +118,7 @@ export async function createSession(userId: number) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookie(hdrs),
     expires: expiresAt,
   });
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, userId));

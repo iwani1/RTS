@@ -152,6 +152,11 @@ Two things to know:
   SERVER_ACTION_ALLOWED_ORIGINS=192.168.1.42 npm run build
   ```
 
+- **The session cookie follows the connection, not the build.** It is marked `Secure` when the
+  request arrived over https, and left unmarked over plain http — a browser only keeps a `Secure`
+  cookie on a trusted origin, so marking it over plain http on a LAN address made the sign-in
+  appear to do nothing. Set `SESSION_COOKIE_SECURE=false` to force it off, `true` to force it on.
+
 ### If something goes wrong
 
 | Symptom | What it means | What to do |
@@ -161,6 +166,7 @@ Two things to know:
 | A server action returns "Invalid Server Actions request" | The browser's origin does not match the host the request arrived on. | Browse to the same address you typed, or list the public origin in `SERVER_ACTION_ALLOWED_ORIGINS` |
 | `npm run test:smoke` says the session route is missing | The server was started without `TEST_SESSION_ENABLED=true` and a `TEST_SESSION_TOKEN`. | Start the server with both: `TEST_SESSION_ENABLED=true TEST_SESSION_TOKEN=local-qa-token npm start` |
 | "Too many failed attempts. Try again in 15 minutes." | The sign-in throttle saw five failed attempts for that account in fifteen minutes. | Wait for the window to pass, or reset the local database with `rm -rf .data/pgdata` |
+| Signing in from another device bounces back to the sign-in page | The browser dropped the session cookie. On a LAN address over plain http that means the cookie was marked `Secure`. | Update the code (`git pull origin arena/1ef49b8d-rts`), rebuild, and set `SESSION_COOKIE_SECURE=false` if it persists |
 | The dev server is slow or is killed | The dev server compiles on demand and uses a lot of memory. | Use the production build: `npm run build && npm start` |
 | Port 3000 is already in use | Another application is on that port. | `PORT=3100 npm start`, then open `http://localhost:3100` |
 | `getaddrinfo ENOTFOUND <your-machine-name>` | An old build bound to the shell's `HOSTNAME`, which bash sets to the machine's name. | `HOSTNAME=0.0.0.0 npm start` — or pull the latest, where the bind address is decided by the app |
