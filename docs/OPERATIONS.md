@@ -280,7 +280,7 @@ npm run test:sso      # the OIDC sign-in flow, against a stand-in provider (serv
 npm run test:delivery # a real message through a stand-in SMS gateway (server running)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
-npm run test:demo    # the live demo: 54 checks against a running server
+npm run test:demo    # the live demo: 55 checks against a running server
 npm run test:origin  # the Server Action origin guard: 5 checks
 npm run build         # production build, no database required
 npm run audit:authz   # server-action authorisation and validation audit

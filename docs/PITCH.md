@@ -14,7 +14,7 @@ The server comes up on <http://localhost:3000> and listens on every network inte
 projector, a laptop or a phone on the same Wi-Fi can open it. To check it:
 
 ```bash
-npm run demo:check     # 54 checks: signs in through the real login form and walks every screen
+npm run demo:check     # 55 checks: signs in through the real login form and walks every screen
 ```
 
 `demo:reset` never touches a real database — it refuses to run when `DATABASE_URL` is set.
@@ -60,7 +60,7 @@ The sign-in page has a **Try a role** panel, so you can switch roles without typ
 8. **Close with the proof.** On your laptop, not the slides:
 
 ```bash
-npm run demo:check        # 54 checks, every figure read back from the running server
+npm run demo:check        # 55 checks, every figure read back from the running server
 npm run test:sso          # the single sign-on flow, end to end
 npm run test:delivery     # a real message through a stand-in SMS gateway
 ```

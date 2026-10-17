@@ -17,7 +17,7 @@ const DEMO = [
   { role: "Dispatcher", email: "dispatch@richietransportgh.com" },
   { role: "Fleet Manager", email: "fleet@richietransportgh.com" },
   { role: "Finance Officer", email: "finance@richietransportgh.com" },
-  { role: "Driver · Kwesi", email: "driver.kwesi@richietransportgh.com" },
+  { role: "Driver · Abena", email: "driver.abena@richietransportgh.com" },
 ];
 
 export default async function LoginPage({

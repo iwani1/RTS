@@ -29,8 +29,9 @@ const { values } = parseArgs({
 
 const base = values.url.replace(/\/$/, "");
 const adminEmail = values.email;
-const driverEmail = "driver.kwesi@richietransportgh.com";
-const driverAbenaEmail = "driver.abena@richietransportgh.com";
+// The driver whose duty is on the road today, so the driver screens show a
+// trip that is genuinely running.
+const driverEmail = "driver.abena@richietransportgh.com";
 
 let failures = 0;
 let checks = 0;
@@ -463,7 +464,7 @@ heading("8 · Live tracking and geofence");
   // The tracking chain, end to end: the phone posts a fix, the server keeps
   // it, the dispatcher sees it on the live feed, a replay is ignored, and a
   // driver cannot post for someone else's trip.
-  const abena = await harnessSession(driverAbenaEmail);
+  const abena = await harnessSession(driverEmail);
   const liveForDispatcher = await fetch(`${base}/api/dispatch/live`, {
     headers: { cookie },
     redirect: "manual",

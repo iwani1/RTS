@@ -188,7 +188,7 @@ export TEST_SESSION_TOKEN=local-qa-token     # the server must be started with t
 npm run test:smoke     # route checks across all six roles
 npm run test:auth      # the native, no-JavaScript sign-in flow
 npm run test:action    # the server-action transport
-npm run test:demo      # 54 checks: the live end-to-end demonstration
+npm run test:demo      # 55 checks: the live end-to-end demonstration
 npm run test:origin    # 5 checks: the Server Action origin guard
 npm run test:login     # can all eight demo accounts actually sign in?
 npm run test:sso       # the OIDC sign-in flow, against a stand-in identity provider
@@ -224,7 +224,7 @@ that has never opted in.
 | Finance Officer | `finance@richietransportgh.com` | |
 | Corporate HR (Sikaman) | `hr@sikamanfinancial.com` | sees only its own client |
 | Employee (Sikaman) | `ama@sikamanfinancial.com` | passenger app |
-| Driver | `driver.kwesi@richietransportgh.com` | driver app |
+| Driver | `driver.abena@richietransportgh.com` | driver app |
 
 The seeded dataset holds 3 corporate clients, ~36 employees, 12 vehicles, 10 drivers, routes, trips,
 bookings, invoices, incidents, maintenance records and audit entries.
@@ -259,7 +259,7 @@ resolves, runs, and returns a guarded result rather than a crash.
 `scripts/smoke.mjs` signs in as each of the six roles and requests every route each role can reach —
 67 checks covering the portal, the mobile apps, the detail pages and the API.
 
-`scripts/demo.mjs` is the live demonstration: 54 checks that sign in through the real login form, walk
+`scripts/demo.mjs` is the live demonstration: 55 checks that sign in through the real login form, walk
 every screen, and exercise saved views, pagination, PDF export, the route-optimisation solver, the job
 runner, live tracking, multicurrency and the observability stack. Its form submissions take the same
 multipart path a browser without JavaScript would take, so the no-JavaScript behaviour is tested rather
@@ -274,7 +274,7 @@ one line for each likely question, and the two commands that prove it while the 
 
 ```bash
 npm run demo:reset      # fresh demonstration data, then start the server
-npm run demo:check     # 54 checks: the whole walkthrough, re-read from the running server
+npm run demo:check     # 55 checks: the whole walkthrough, re-read from the running server
 ```
 
 ---
