@@ -43,6 +43,13 @@ export default async function SettingsPage() {
   const canManageUsers = can(role, "user.manage");
   const providers = providerStatus();
 
+  // The gateway check always writes to the operator's own contact details.
+  const [me] = await db
+    .select({ phone: users.phone, email: users.email })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
   const userRows = await db
     .select({ user: users, company: companies.name })
     .from(users)
@@ -196,6 +203,9 @@ export default async function SettingsPage() {
                               : "in-app only"}
                       </span>
                       {notification.deliveryError ? ` — ${notification.deliveryError}` : ""}
+                      {notification.deliveryAttempts > 0
+                        ? ` (attempt ${notification.deliveryAttempts} of 3)`
+                        : ""}
                     </p>
                   ) : null}
                 </div>
@@ -361,7 +371,9 @@ export default async function SettingsPage() {
                   label="Send to"
                   name="to"
                   type="text"
-                  hint="Leave empty to send it to yourself."
+                  disabled
+                  defaultValue={me?.phone || me?.email || "your own contact details"}
+                  hint="The check always goes to your own contact details."
                 />
               </div>
               <div className="mt-3">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -31,8 +32,16 @@ export async function POST(request: Request) {
   if (process.env.TEST_SESSION_ENABLED !== "true") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const expected = process.env.TEST_SESSION_TOKEN;
-  if (!expected || request.headers.get("x-test-token") !== expected) {
+  const expected = process.env.TEST_SESSION_TOKEN ?? "";
+  const presented = request.headers.get("x-test-token") ?? "";
+  // The token is a master key, so it is compared in constant time: a plain
+  // `!==` leaks the length and the first differing character through the
+  // time the answer takes.
+  const matches =
+    expected.length > 0 &&
+    presented.length === expected.length &&
+    timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  if (!matches) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

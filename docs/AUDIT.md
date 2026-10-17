@@ -344,6 +344,14 @@ node scripts/auth-form.mjs                                 # native (no-JS) auth
 node scripts/action-invoke.mjs                             # server-action transport + guards
 node scripts/origin-check.mjs                             # the Server Action origin guard
 node scripts/latency.mjs                                   # p50 / p95 for the read paths
+node scripts/demo.mjs                                      # the live demonstration, 55 checks
+```
+
+Two of the checks start their own instance of the application, so they need nothing running:
+
+```bash
+npm run test:payment-audit   # the payment path against a stand-in provider, 27 checks
+npm run test:delivery        # a real message through a stand-in SMS gateway, 16 checks
 ```
 
 The harness signs in as any account, so the server must be started with it explicitly enabled:
@@ -441,7 +449,215 @@ The build now completes with no warnings at all.
 
 ---
 
-## 7. Tracking the remaining work
+## 7. Third audit — the full pass
+
+**Date:** 2026-10-17
+**Method:** the application was read as a running system, not as a source tree. Every finding
+below was reproduced against the live server — with a driver session, a forged form post, a
+stand-in payment provider and a stand-in mail server — and every resolution was re-proved by
+running the suite again. Nothing here is a suspicion.
+
+Severity is the distance between "an inconvenience" and "a breach": **high** means a boundary was
+crossed, **medium** means a promise the product makes was not kept, **low** means an operation
+would cost the company money, time or trust.
+
+### 7.1 The ⌘K search was a way around the role matrix — **high**
+
+The palette in the top bar is on every screen, for every role. Its API answered with trips,
+bookings, vehicles, drivers and employees — and it checked only the tenant, never the role.
+
+Reproduced with the **driver** account, the lowest-trust role in the product:
+
+| Request as the driver | Answer |
+| --- | --- |
+| `GET /api/search?q=SFS` | **5 employees** — names, staff codes, departments |
+| `GET /api/search?q=BKG` | **5 bookings** — every booking reference |
+| `GET /api/search?q=GR-` | **5 vehicles** — the whole fleet |
+| `GET /trips` | 307 — refused |
+| `GET /employees` | 307 — refused |
+
+The screens were closed and the data was not.
+
+**Fixed.** `src/app/api/search/route.ts` now gates every block of results with the same matrix the
+screens use: trips need `trips`, bookings need `bookings`, vehicles need `fleet`, drivers need
+`drivers` and employees need `employees`. The page results were already gated, so the palette now
+answers exactly what the navigation would let the person open.
+
+**Proved.** `scripts/smoke.mjs` gained two checks that fail if this ever comes back: as the driver
+the search may return pages only, and as the administrator it must still reach the employee
+register — so the gate cannot be "search returns nothing".
+
+### 7.2 An open redirect through `returnTo` — **medium**
+
+`authRedirect()` built the redirect with `new URL(path, request.url)`, and `path` came straight
+out of a form field. `POST /api/views/save` with `returnTo=https://evil.example` answered
+`303 Location: https://evil.example/…` — a link from a trusted application to a page an attacker
+controls, delivered after a legitimate-looking save.
+
+**Fixed.** `src/lib/guards.ts` gained `internalPath()`: only a plain path inside this origin is
+allowed. Absolute URLs, `//host`, `/\host`, any backslash and any `scheme:` form are refused and
+fall back to `/`. The same request now answers `303 Location: <this origin>/?notice=…`.
+
+### 7.3 Two saved-view routes had no cross-site check — **low/medium**
+
+`/api/views/save` and `/api/views/delete` were the only action-calling route handlers without
+`isCrossSiteRequest()`. A page on another site could have saved or deleted a saved view in the
+signed-in person's account.
+
+**Fixed.** Both call the same guard as the seven auth handlers. A post carrying
+`Origin: https://evil.example` is answered with **403**.
+
+### 7.4 The delivery worker stranded messages for ever — **medium**
+
+The worker marked a row `sending` before it called the provider. If the process died between the
+claim and the write-back, the row stayed `sending` for good: the message was never sent, and
+nothing in the product said so. The same happened to every message in a batch.
+
+**Fixed.** `src/lib/delivery.ts` now recovers claims older than ten minutes — they go back in the
+queue and the row is stamped with `updatedAt` — and the job reports how many it recovered.
+
+### 7.5 A failed delivery was never retried — **medium**
+
+One refusal from the provider and the message was lost. A company SMS gateway that is briefly
+down loses every trip reminder in that minute.
+
+**Fixed.** A new column, `notifications.delivery_attempts` (migration
+`drizzle/0008_delivery_attempts.sql`), records the attempts. A failure re-queues the row until
+three attempts have been made; after that the row is `failed` with the reason kept on it. The
+settings screen shows "attempt N of 3" and the job reports `retrying` and `recovered`.
+
+**Proved, live, against a stand-in gateway that refuses:**
+
+```
+attempt 1  →  queued      (the row goes back in the queue)
+attempt 2  →  queued
+attempt 3  →  failed — The SMS provider could not be reached: fetch failed (attempt 3 of 3)
+```
+
+### 7.6 The delivery worker asked the database once per message — **low**
+
+One recipient query for every message in the batch. A hundred messages were a hundred round trips.
+
+**Fixed.** One batched lookup (`recipientsFor()`) for the whole batch.
+
+### 7.7 The payment callback called the provider first, and believed the URL — **medium**
+
+`/api/payments/<provider>/callback` called the provider **before** it checked whether anyone was
+waiting for that reference, so an unknown reference still produced an outbound call. It also read
+the payment method from the URL, so a callback on the Flutterwave path could settle a Paystack
+payment as "flutterwave" — the money was real and the method on the row was wrong.
+
+**Fixed.** The reference is looked up locally first: an unknown reference never reaches the
+provider. A provider that is not the configured one is refused. The row is settled with the
+**configured** provider as the method.
+
+**Proved.** `npm run test:payment-audit` (new) starts a second instance of the application against
+a stand-in provider that records every request, and asserts that the provider received **no
+request at all** for an unknown reference and for a mismatched provider.
+
+### 7.8 The webhook only understood one provider's signature — **low/medium**
+
+Paystack signs with `x-paystack-signature`; Flutterwave signs with `verif-hash`. The route read
+the first header only, so Flutterwave webhooks were refused even though the documentation says
+Flutterwave is supported.
+
+**Fixed.** The route accepts either header — both are the HMAC-SHA512 of the raw body under the
+secret key — and refuses a webhook for a provider that is not the configured one (**409**).
+
+### 7.9 The test-session token was compared with `!==` — **low**
+
+A master key that opens a session for any account, compared in a way that leaks how much of the
+guess was right through the time the comparison takes.
+
+**Fixed.** `src/app/api/test/session/route.ts` compares the token with `timingSafeEqual`.
+
+### 7.10 The mail client could wait for ever, and could not talk to half the hosts — **low**
+
+Two defects in the same client:
+
+* after `STARTTLS` the session was replaced by the encrypted socket, which had **no timer** — a
+  server that stopped answering mid-session left the worker waiting for good;
+* only `AUTH LOGIN` was offered. Office 365, cPanel and several other hosts speak `AUTH PLAIN`
+  only, so a correct password was still refused.
+
+**Fixed.** The session owns the timer and re-arms it on the encrypted socket; the plain socket's
+timer is removed before the upgrade, so it cannot tear the encrypted session down. The
+authentication mechanisms are read from the server's own `EHLO` answer, and `PLAIN` is used when
+that is what the host offers.
+
+**Proved.** `tests/providers.test.ts` now runs a mail server that offers `AUTH PLAIN` only and one
+that never answers at all: 45 unit checks pass.
+
+### 7.11 The "Gateway check" could send to anybody — **low**
+
+Anyone who could reach the settings screen could send an SMS or an e-mail **in the company's
+name** to any number or address, and spend its airtime doing it. The check needs no such power.
+
+**Fixed.** The check always goes to the operator's own contact details. The field is disabled and
+shows the address it will use. `npm run test:delivery` now proves the point: it submits somebody
+else's number and the message still goes to the operator's own phone.
+
+### 7.12 Asking twice for a payment link opened a second transaction — **low**
+
+Every request for a payment link created a new pending payment and a new provider transaction.
+The first link was abandoned, and the provider's dashboard filled with transactions nobody was
+going to pay.
+
+**Fixed.** `requestPaymentLinkAction` returns the link that is already waiting for the invoice.
+The payment audit asks twice and asserts that the provider was asked **once**.
+
+### 7.13 The guards could not be tested where they live — **low**
+
+`isCrossSiteRequest()` and `internalPath()` sat in a module that imports `next/server`, so a
+plain Node test could not import them — the two rules that keep a foreign page out of the
+application had no test at all.
+
+**Fixed.** They moved to `src/lib/guards.ts`, which imports nothing, and `auth-forms.ts`
+re-exports them so no call site changed. `tests/security.test.ts` pins down the rules: six
+checks, including the proxy case where the host header has been rewritten.
+
+### 7.14 The migration
+
+`drizzle/0008_delivery_attempts.sql` adds `delivery_attempts` and `updated_at` to
+`notifications`. `npx drizzle-kit check` reports **Everything's fine**; the application applies it
+at boot, on both PGlite and PostgreSQL.
+
+### 7.15 Checked in this round and found sound
+
+| Check | Result |
+| --- | --- |
+| Secrets in the tracked files | none — only `.env.example` placeholders and test fixtures |
+| `dangerouslySetInnerHTML` | once, in the layout boot script, with static content |
+| SQL built by string concatenation | none in `src/`; the scripts use parameterised queries |
+| Server-action authorisation | 57/57 guarded, 0 unguarded |
+| The role matrix | 6 roles, 19 sections, 14 permissions; the sidebar counts are unchanged |
+| Read paths | no N+1 found in the dispatch board or the live feed |
+| Session cookie | `httpOnly`, `sameSite=lax`, `secure` only over https |
+| The tenant boundary | every query is scoped by `companyScope()`; no cross-tenant read was found |
+
+### 7.16 What the full pass verifies now
+
+| Command | Result |
+| --- | --- |
+| `npm run lint` | clean |
+| `npm run typecheck` | clean |
+| `npm test` | **45/45** (36 before this pass; +3 mail, +6 guards) |
+| `npm run test:smoke` | **56/56** (+2 search-scope regression checks) |
+| `npm run demo:check` | **55/55** |
+| `npm run test:payment-audit` | **27/27** (new) |
+| `npm run test:delivery` | **16/16** |
+| `npm run roles:check` | ROLE MATRIX PASSED |
+| `npx drizzle-kit check` | Everything's fine |
+| `npm run build` | compiled, no warnings |
+
+### 7.17 Still open
+
+The items in §6.7 are unchanged — they are deliberate boundaries rather than defects, and each one
+names what it would take to close it. Nothing new was added to that list by this pass.
+
+---
+
+## 8. Tracking the remaining work
 
 `docs/prompt-gap-map.md` §3 holds the 30-item gap list (T0 foundation, T1
 schema ports, T2 features, T3 interface rebuild). Every T0 and T1 item and

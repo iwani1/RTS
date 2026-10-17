@@ -1,5 +1,10 @@
 import { saveViewAction } from "@/app/actions/platform";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import {
+  authRedirect,
+  crossSiteResponse,
+  isCrossSiteRequest,
+  readForm,
+} from "@/lib/auth-forms";
 
 /**
  * Save the current filters of a list under a name.
@@ -8,6 +13,9 @@ import { authRedirect, readForm } from "@/lib/auth-forms";
  * form works the same way in every browser.
  */
 export async function POST(request: Request) {
+  // These handlers call the action directly, so React's own origin check
+  // does not apply. A form post from another site is refused here.
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await saveViewAction(null, formData);
   const scope = String(formData.get("scope") ?? "");

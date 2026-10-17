@@ -67,15 +67,25 @@ class SmtpSession {
   private queue: string[] = [];
   private pending: { resolve: (line: string) => void; reject: (error: Error) => void } | null = null;
   private failure: Error | null = null;
+  private readonly timeoutMs: number;
 
-  constructor(socket: net.Socket) {
+  constructor(socket: net.Socket, timeoutMs: number) {
     this.socket = socket;
+    this.timeoutMs = timeoutMs;
     this.attach(socket);
   }
 
   private attach(socket: net.Socket) {
     this.socket = socket;
     socket.setEncoding("utf8");
+    // The timeout is re-armed on every socket, including the TLS socket that
+    // replaces the plain one after STARTTLS. Without it a server that stops
+    // answering mid-session would leave the worker waiting for ever.
+    socket.setTimeout(this.timeoutMs);
+    socket.on("timeout", () => {
+      socket.destroy();
+      this.fail(new Error(`The mail server did not answer within ${this.timeoutMs}ms.`));
+    });
     socket.on("data", (chunk: string) => this.onData(chunk));
     socket.on("error", (error: Error) => this.fail(error));
     socket.on("close", () =>
@@ -135,6 +145,10 @@ class SmtpSession {
     plain.removeAllListeners("data");
     plain.removeAllListeners("error");
     plain.removeAllListeners("close");
+    // The plain socket's own timer would destroy the connection that the TLS
+    // socket is built on, so it is removed before the upgrade.
+    plain.removeAllListeners("timeout");
+    plain.setTimeout(0);
     await new Promise<void>((resolve, reject) => {
       const secure = tls.connect({ socket: plain, servername });
       secure.once("secureConnect", () => {
@@ -226,7 +240,7 @@ export async function sendEmail(
       }
     }
 
-    const capabilities = ehlo.lines.join(" ").toUpperCase();
+    let capabilities = ehlo.lines.join(" ").toUpperCase();
 
     if (config.startTls && !config.secure) {
       if (!capabilities.includes("STARTTLS")) {
@@ -250,10 +264,12 @@ export async function sendEmail(
       if (second.code !== 250) {
         return providerFail("smtp", `The mail server rejected the greeting: ${second.lines.join(" ")}`);
       }
+      // The list of mechanisms can change once the channel is encrypted.
+      capabilities = second.lines.join(" ").toUpperCase();
     }
 
     if (config.user) {
-      const auth = await authenticate(session, config);
+      const auth = await authenticate(session, config, authMechanisms(capabilities));
       if (!auth.ok) return auth.result;
     }
 
@@ -302,21 +318,80 @@ async function connect(config: EmailProviderConfig): Promise<SmtpSession> {
     const socket = config.secure
       ? tls.connect({ host: config.host, port: config.port, servername: config.host })
       : net.connect({ host: config.host, port: config.port });
-    socket.setTimeout(config.timeoutMs);
-    socket.once("timeout", () => {
+    let settled = false;
+    const giveUp = (error: Error) => {
+      if (settled) return;
+      settled = true;
       socket.destroy();
-      reject(new Error(`The mail server did not answer within ${config.timeoutMs}ms.`));
-    });
-    socket.once("error", (error) => reject(error));
+      reject(error);
+    };
+    socket.once("error", (error) => giveUp(error));
+    socket.setTimeout(config.timeoutMs, () =>
+      giveUp(new Error(`The mail server did not answer within ${config.timeoutMs}ms.`)),
+    );
     if (config.secure) {
-      (socket as tls.TLSSocket).once("secureConnect", () => resolve(new SmtpSession(socket)));
+      (socket as tls.TLSSocket).once("secureConnect", () => {
+        settled = true;
+        resolve(new SmtpSession(socket, config.timeoutMs));
+      });
     } else {
-      socket.once("connect", () => resolve(new SmtpSession(socket)));
+      socket.once("connect", () => {
+        settled = true;
+        resolve(new SmtpSession(socket, config.timeoutMs));
+      });
     }
   });
 }
 
+/**
+ * The mechanisms the server offers, read from the EHLO answer.
+ *
+ * Office 365, cPanel and several other hosts offer PLAIN only, so a client
+ * that only knows LOGIN fails on them even though the credentials are right.
+ */
+export function authMechanisms(capabilities: string): string[] {
+  for (const line of capabilities.toUpperCase().split(/\r?\n/)) {
+    const match = line.match(/^AUTH(?:\s+(.*))?$/);
+    if (match) {
+      return (match[1] ?? "")
+        .split(/\s+/)
+        .map((value) => value.trim())
+        .filter(Boolean);
+    }
+  }
+  return [];
+}
+
 async function authenticate(
+  session: SmtpSession,
+  config: EmailProviderConfig,
+  mechanisms: string[],
+): Promise<{ ok: boolean; result: ProviderResult }> {
+  // A server that says nothing about AUTH still usually understands LOGIN,
+  // so it is tried first and PLAIN is kept as the fallback.
+  const order =
+    mechanisms.length > 0
+      ? mechanisms.filter((value) => value === "LOGIN" || value === "PLAIN")
+      : ["LOGIN", "PLAIN"];
+
+  let last: ProviderResult = providerFail(
+    "smtp",
+    "The mail server does not accept any of the authentication methods this client knows.",
+  );
+
+  for (const mechanism of order.length > 0 ? order : ["LOGIN", "PLAIN"]) {
+    const attempt =
+      mechanism === "PLAIN"
+        ? await authenticatePlain(session, config)
+        : await authenticateLogin(session, config);
+    if (attempt.ok) return { ok: true, result: attempt.result };
+    last = attempt.result;
+  }
+
+  return { ok: false, result: last };
+}
+
+async function authenticateLogin(
   session: SmtpSession,
   config: EmailProviderConfig,
 ): Promise<{ ok: boolean; result: ProviderResult }> {
@@ -343,6 +418,30 @@ async function authenticate(
     return {
       ok: false,
       result: providerFail("smtp", `The mail server rejected the password: ${third.lines.join(" ")}`),
+    };
+  }
+  return { ok: true, result: providerOk("smtp") };
+}
+
+async function authenticatePlain(
+  session: SmtpSession,
+  config: EmailProviderConfig,
+): Promise<{ ok: boolean; result: ProviderResult }> {
+  const token = Buffer.from(`\u0000${config.user}\u0000${config.password}`, "utf8").toString("base64");
+  session.write(`AUTH PLAIN ${token}`);
+  let reply = await session.readReply();
+  if (reply.code === 334) {
+    // The server asked for the credentials separately.
+    session.write(token);
+    reply = await session.readReply();
+  }
+  if (reply.code !== 235) {
+    return {
+      ok: false,
+      result: providerFail(
+        "smtp",
+        `The mail server rejected the credentials (AUTH PLAIN): ${reply.lines.join(" ")}`,
+      ),
     };
   }
   return { ok: true, result: providerOk("smtp") };

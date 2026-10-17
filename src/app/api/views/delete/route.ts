@@ -1,8 +1,16 @@
 import { deleteViewAction } from "@/app/actions/platform";
-import { authRedirect, readForm } from "@/lib/auth-forms";
+import {
+  authRedirect,
+  crossSiteResponse,
+  isCrossSiteRequest,
+  readForm,
+} from "@/lib/auth-forms";
 
 /** Delete one of the signed-in user's saved views. */
 export async function POST(request: Request) {
+  // These handlers call the action directly, so React's own origin check
+  // does not apply. A form post from another site is refused here.
+  if (isCrossSiteRequest(request)) return crossSiteResponse();
   const formData = await readForm(request);
   const result = await deleteViewAction(null, formData);
   const scope = String(formData.get("scope") ?? "");

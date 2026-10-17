@@ -898,6 +898,10 @@ export const notifications = pgTable(
     providerRef: varchar("provider_ref", { length: 80 }),
     /** Why a delivery failed, in words an operator can act on. */
     deliveryError: text("delivery_error"),
+    /** How many times the message has been handed to a provider. */
+    deliveryAttempts: integer("delivery_attempts").notNull().default(0),
+    /** When the row was last written to, so a stranded claim can be spotted. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("notifications_user_idx").on(t.userId, t.readAt)],

@@ -135,6 +135,17 @@ jobs:
           SMS_PROVIDER_CLIENT_SECRET: ci-demo
         run: node scripts/delivery-check.mjs
 
+      # The payment path, proved end to end against a stand-in provider that
+      # records every request: an unknown reference never reaches the
+      # provider, a mismatched provider is refused, and only a webhook that
+      # carries a valid signature is applied. It starts its own instance of
+      # the application, so it needs nothing from the server above.
+      - name: Payment path test
+        env:
+          TEST_SESSION_ENABLED: "true"
+          TEST_SESSION_TOKEN: ci-smoke-token
+        run: npm run test:payment-audit
+
       # The Server Action CSRF guard. A browser whose origin matches the host
       # is allowed; a rewritten host is allowed only when the public origin is
       # configured. The build below is made with the extra origin in place.

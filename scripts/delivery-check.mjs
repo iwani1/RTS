@@ -156,6 +156,9 @@ async function main() {
       // 1. A message the gateway accepts.
       const sent = await submitForm(cookie, "/settings", fields, {
         channel: "sms",
+        // The address is deliberately somebody else's: the check must still
+        // go to the operator's own number, never to an address a form field
+        // chooses.
         to: "0244012345",
         body: "Delivery check from RTS.",
       });
@@ -180,7 +183,11 @@ async function main() {
         call.authorization ?? "",
       );
       const body = JSON.parse(call.body);
-      check("the number was converted to the international form", body.To === "+233244012345", body.To);
+      check(
+        "the message went to the operator's own number, not to the address in the form",
+        body.To === "+233241110001",
+        body.To,
+      );
       check("the sender id was sent", Boolean(body.From), body.From);
       check("the message was sent verbatim", body.Content === "Delivery check from RTS.", body.Content);
 
@@ -195,6 +202,11 @@ async function main() {
         to: "0244012345",
         body: "This one is refused.",
       });
+      check(
+        "the refused message also went to the operator's own number",
+        received.length === 2 && JSON.parse(received[1].body).To === "+233241110001",
+        received.length === 2 ? JSON.parse(received[1].body).To : `${received.length} requests`,
+      );
       check(
         "a refusal is reported, not swallowed",
         String(failed.result?.message ?? "").includes("not sent") &&

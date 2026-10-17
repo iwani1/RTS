@@ -278,6 +278,7 @@ npm run verify        # lint · typecheck · unit tests · schema drift
 npm run test:smoke   # route checks across all six roles (server running)
 npm run test:sso      # the OIDC sign-in flow, against a stand-in provider (server running)
 npm run test:delivery # a real message through a stand-in SMS gateway (server running)
+npm run test:payment-audit # the payment path against a stand-in provider (starts its own server)
 npm run test:auth    # native, no-JavaScript sign-in flow (server running)
 npm run test:action  # server-action transport + guard (server running)
 npm run test:demo    # the live demo: 55 checks against a running server
@@ -292,8 +293,8 @@ optimisation solver, the job runner, live tracking, multicurrency and the observ
 submissions use the same multipart path a browser without JavaScript would take, so it tests the real
 no-JavaScript behaviour rather than simulating it.
 
-With the server running and `TEST_SESSION_TOKEN` set, `npm run test:smoke` signs in as each of the eight
-roles and requests every reachable route — 67 checks covering the portal, the mobile apps, the detail
+With the server running and `TEST_SESSION_TOKEN` set, `npm run test:smoke` signs in as each of the six
+roles and requests every reachable route — 56 checks covering the portal, the mobile apps, the detail
 pages and the API.
 
 ## 7. Known limitations

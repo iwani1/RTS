@@ -57,6 +57,13 @@
       "when": 1792205185055,
       "tag": "0007_delivery_error",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792207787479,
+      "tag": "0008_delivery_attempts",
+      "breakpoints": true
     }
   ]
 }

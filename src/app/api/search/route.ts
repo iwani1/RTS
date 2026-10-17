@@ -24,8 +24,17 @@ type Result = {
 };
 
 /**
- * ⌘K search. Scoped to what the signed-in user is allowed to see — the
- * tenant boundary applies to search exactly as it does to every other read.
+ * ⌘K search. Scoped to what the signed-in user is allowed to see.
+ *
+ * Two boundaries apply, and both have to hold:
+ *
+ *  - the tenant boundary — a search never crosses the company the caller
+ *    belongs to;
+ *  - the role boundary — a kind of record only appears in the results if the
+ *    caller's role can open the screen that lists it. A driver may not open
+ *    the employee register or the fleet, so those records must not appear in
+ *    the palette either; otherwise the search becomes a way around the
+ *    permission matrix.
  */
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -55,7 +64,7 @@ export async function GET(request: Request) {
   if (term.length >= 2) {
     const like = `%${term}%`;
 
-    const tripRows = await db
+    const tripRows = canAccess(role, "trips") ? await db
       .select({
         id: trips.id,
         reference: trips.reference,
@@ -70,7 +79,7 @@ export async function GET(request: Request) {
           or(ilike(trips.reference, like), ilike(trips.notes, like)),
         ),
       )
-      .limit(6);
+      .limit(6) : [];
 
     for (const row of tripRows) {
       results.push({
@@ -82,7 +91,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const bookingRows = await db
+    const bookingRows = canAccess(role, "bookings") ? await db
       .select({
         id: bookings.id,
         reference: bookings.reference,
@@ -97,7 +106,7 @@ export async function GET(request: Request) {
           ilike(bookings.reference, like),
         ),
       )
-      .limit(5);
+      .limit(5) : [];
 
     for (const row of bookingRows) {
       results.push({
@@ -109,7 +118,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const vehicleRows = await db
+    const vehicleRows = canAccess(role, "fleet") ? await db
       .select({
         id: vehicles.id,
         registrationNo: vehicles.registrationNo,
@@ -125,7 +134,7 @@ export async function GET(request: Request) {
           ilike(vehicles.model, like),
         ),
       )
-      .limit(5);
+      .limit(5) : [];
 
     for (const row of vehicleRows) {
       results.push({
@@ -137,7 +146,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const driverRows = await db
+    const driverRows = canAccess(role, "drivers") ? await db
       .select({
         id: drivers.id,
         fullName: drivers.fullName,
@@ -152,7 +161,7 @@ export async function GET(request: Request) {
           or(ilike(drivers.fullName, like), ilike(drivers.licenseNo, like)),
         ),
       )
-      .limit(5);
+      .limit(5) : [];
 
     for (const row of driverRows) {
       results.push({
@@ -164,7 +173,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const employeeRows = await db
+    const employeeRows = canAccess(role, "employees") ? await db
       .select({
         id: employees.id,
         fullName: employees.fullName,
@@ -183,7 +192,7 @@ export async function GET(request: Request) {
           ),
         ),
       )
-      .limit(5);
+      .limit(5) : [];
 
     for (const row of employeeRows) {
       results.push({

@@ -4,7 +4,7 @@ import http from "node:http";
 import net from "node:net";
 import { toE164, maskPhone } from "../src/lib/providers/phone.ts";
 import { sendSms } from "../src/lib/providers/sms.ts";
-import { sendEmail, buildMessage } from "../src/lib/providers/email.ts";
+import { sendEmail, buildMessage, authMechanisms } from "../src/lib/providers/email.ts";
 
 /**
  * The provider clients are tested against real servers that run on the
@@ -108,6 +108,73 @@ async function withSmtpServer(run: (port: number, received: string[]) => Promise
   const port = typeof address === "object" && address ? address.port : 0;
   try {
     await run(port, received);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+}
+
+/** A mail server that only offers AUTH PLAIN, as Office 365 and cPanel do. */
+async function withPlainAuthServer(run: (port: number, received: string[]) => Promise<void>) {
+  const received: string[] = [];
+  const server = net.createServer((socket) => {
+    let buffer = "";
+    let inData = false;
+    socket.write("220 rts.test ESMTP ready\r\n");
+    socket.on("data", (chunk) => {
+      buffer += chunk.toString("utf8");
+      let index = buffer.indexOf("\r\n");
+      while (index >= 0) {
+        const line = buffer.slice(0, index);
+        buffer = buffer.slice(index + 2);
+        if (inData) {
+          if (line === ".") {
+            inData = false;
+            socket.write("250 2.0.0 Ok: queued as TEST2\r\n");
+          } else {
+            received.push(line);
+          }
+        } else if (/^EHLO/i.test(line)) {
+          socket.write("250-rts.test\r\n250-AUTH PLAIN\r\n250 SIZE 10240000\r\n");
+        } else if (/^AUTH PLAIN/i.test(line)) {
+          socket.write("235 2.7.0 Authentication successful\r\n");
+        } else if (/^MAIL FROM/i.test(line)) {
+          socket.write("250 2.1.0 Ok\r\n");
+        } else if (/^RCPT TO/i.test(line)) {
+          socket.write("250 2.1.5 Ok\r\n");
+        } else if (/^DATA/i.test(line)) {
+          inData = true;
+          socket.write("354 End data with <CR><LF>.<CR><LF>\r\n");
+        } else if (/^QUIT/i.test(line)) {
+          socket.write("221 2.0.0 Bye\r\n");
+          socket.end();
+        } else {
+          socket.write("250 2.0.0 Ok\r\n");
+        }
+        index = buffer.indexOf("\r\n");
+      }
+    });
+    socket.on("error", () => undefined);
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+  try {
+    await run(port, received);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+}
+
+/** A server that accepts the connection and then says nothing at all. */
+async function withSilentServer(run: (port: number) => Promise<void>) {
+  const server = net.createServer((socket) => {
+    socket.on("error", () => undefined);
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+  try {
+    await run(port);
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
@@ -266,6 +333,51 @@ test("a message body that looks like the end of a message is escaped", () => {
     body: "first line\n.\nlast line",
   });
   assert.match(message, /\r\n\.\.\r\n/);
+});
+
+test("a server that only offers AUTH PLAIN is still able to sign in", async () => {
+  clearEmailEnv();
+  await withPlainAuthServer(async (port, received) => {
+    process.env.EMAIL_PROVIDER = "smtp";
+    process.env.EMAIL_SMTP_HOST = "127.0.0.1";
+    process.env.EMAIL_SMTP_PORT = String(port);
+    process.env.EMAIL_SMTP_USER = "mailer";
+    process.env.EMAIL_SMTP_PASSWORD = "secret";
+    process.env.EMAIL_SMTP_STARTTLS = "false";
+    process.env.EMAIL_FROM = "RTS <no-reply@richietransportgh.com>";
+
+    const result = await sendEmail("ops@richietransportgh.com", "Hello", "Body");
+
+    assert.equal(result.ok, true, result.error ?? "");
+    assert.match(received.join("\n"), /Subject: Hello/);
+  });
+  clearEmailEnv();
+});
+
+test("the authentication methods are read from what the server offers", () => {
+  assert.deepEqual(authMechanisms("rts.test\r\nAUTH LOGIN PLAIN\r\nSIZE 10240000"), [
+    "LOGIN",
+    "PLAIN",
+  ]);
+  assert.deepEqual(authMechanisms("rts.test\r\nAUTH PLAIN\r\n"), ["PLAIN"]);
+  assert.deepEqual(authMechanisms("rts.test\r\nSIZE 10240000"), []);
+});
+
+test("a mail server that stops answering is given up on, not waited for", async () => {
+  clearEmailEnv();
+  await withSilentServer(async (port) => {
+    process.env.EMAIL_PROVIDER = "smtp";
+    process.env.EMAIL_SMTP_HOST = "127.0.0.1";
+    process.env.EMAIL_SMTP_PORT = String(port);
+    process.env.EMAIL_SMTP_TIMEOUT_MS = "500";
+    process.env.EMAIL_FROM = "RTS <no-reply@richietransportgh.com>";
+
+    const result = await sendEmail("ops@richietransportgh.com", "Hello", "Body");
+
+    assert.equal(result.ok, false);
+    assert.match(result.error ?? "", /did not answer within 500ms/);
+  });
+  clearEmailEnv();
 });
 
 test("with no mail server the client refuses and says why", async () => {

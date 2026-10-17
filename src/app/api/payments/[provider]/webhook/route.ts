@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { payments } from "@/db/schema";
 import { settlePayment } from "@/lib/payments";
-import { verifyPayment } from "@/lib/providers/payments";
+import { paymentsConfig, verifyPayment } from "@/lib/providers/payments";
 import { log } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
@@ -13,32 +16,41 @@ export const dynamic = "force-dynamic";
  * the signature matches. Even then the transaction is verified with the
  * provider, because a signed message still has to be checked against the
  * provider's own record of what was paid.
+ *
+ * Paystack signs with `x-paystack-signature`; Flutterwave signs with
+ * `verif-hash`. Both are the HMAC-SHA512 of the raw body under the secret
+ * key, so one check covers the two providers.
  */
 export async function POST(
   request: Request,
   context: { params: Promise<{ provider: string }> },
 ) {
   const { provider } = await context.params;
-  const secret =
-    provider === "flutterwave"
-      ? process.env.FLUTTERWAVE_SECRET_KEY
-      : process.env.PAYSTACK_SECRET_KEY;
+  const config = paymentsConfig();
 
-  if (!secret) {
+  if (!config.provider || !config.secretKey) {
     return NextResponse.json(
       { error: "No payment provider is configured." },
       { status: 503 },
     );
   }
+  if (config.provider !== provider) {
+    return NextResponse.json(
+      { error: "That provider is not the one configured." },
+      { status: 409 },
+    );
+  }
 
   const raw = await request.text();
-  const signature = request.headers.get("x-paystack-signature");
+  const signature =
+    request.headers.get("x-paystack-signature") ??
+    request.headers.get("verif-hash");
 
   if (!signature) {
     return NextResponse.json({ error: "The webhook was not signed." }, { status: 401 });
   }
 
-  const expected = createHmac("sha512", secret).update(raw).digest("hex");
+  const expected = createHmac("sha512", config.secretKey).update(raw).digest("hex");
   const a = Buffer.from(signature);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) {
@@ -64,6 +76,20 @@ export async function POST(
     return NextResponse.json({ received: true, applied: false });
   }
 
+  const [row] = await db
+    .select({ id: payments.id, status: payments.status })
+    .from(payments)
+    .where(eq(payments.reference, reference))
+    .limit(1);
+
+  if (!row) {
+    log("warn", "payments.webhook_unknown_reference", { reference, provider });
+    return NextResponse.json({ received: true, applied: false });
+  }
+  if (row.status === "successful") {
+    return NextResponse.json({ received: true, applied: false, already: true });
+  }
+
   const verified = await verifyPayment(reference);
   if (!verified.ok || !verified.paid) {
     log("warn", "payments.webhook_unverified", { reference, provider });
@@ -73,7 +99,7 @@ export async function POST(
   const result = await settlePayment({
     reference,
     amount: verified.amount ?? "0",
-    method: provider === "flutterwave" ? "flutterwave" : "paystack",
+    method: config.provider,
     paidAt: verified.paidAt,
     notes: `Confirmed by ${provider} webhook`,
   });

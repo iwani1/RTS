@@ -10,7 +10,7 @@
  */
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { companies, invoices, payments } from "@/db/schema";
 import type { ActionState } from "@/components/action-form";
@@ -85,7 +85,32 @@ async function requestPaymentLinkAction__impl(
     };
   }
 
-  const reference = `RTS-${invoice.invoiceNo}-${randomBytes(3).toString("hex")}`;
+  // One open link per invoice. Asking twice returns the link that is
+  // already waiting, so the provider's dashboard is not filled with
+  // abandoned transactions for the same invoice.
+  const [existing] = await db
+    .select({ reference: payments.reference, notes: payments.notes })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.invoiceId, invoice.id),
+        eq(payments.status, "pending"),
+      ),
+    )
+    .limit(1);
+
+  if (existing?.notes) {
+    const link = existing.notes.replace(/^Online payment link — /, "");
+    if (link.startsWith("http")) {
+      return {
+        ok: true,
+        message: "A payment link for this invoice is already waiting.",
+        data: { url: link, reference: existing.reference ?? "" },
+      };
+    }
+  }
+
+  const reference = `RTS-${invoice.invoiceNo}-${randomBytes(6).toString("hex")}`;
   const result = await initialisePayment({
     amount: outstanding.toFixed(2),
     currency: invoice.currency || "GHS",

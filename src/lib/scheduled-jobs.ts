@@ -668,6 +668,8 @@ export const deliverNotifications = defineJob({
       claimed: outcome.claimed,
       sent: outcome.sent,
       failed: outcome.failed,
+      retrying: outcome.retrying,
+      recovered: outcome.recovered,
     };
   },
 });

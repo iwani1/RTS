@@ -193,6 +193,7 @@ npm run test:origin    # 5 checks: the Server Action origin guard
 npm run test:login     # can all eight demo accounts actually sign in?
 npm run test:sso       # the OIDC sign-in flow, against a stand-in identity provider
 npm run test:delivery  # a real message through a stand-in SMS gateway
+npm run test:payment-audit  # the payment path, against a stand-in provider (starts its own server)
 npm run roles          # what each role can reach, read from the permission matrix
 npm run verify         # lint · typecheck · unit tests · migration drift · role matrix
 ```
@@ -257,7 +258,8 @@ that authentication never depends on a script bundle loading.
 resolves, runs, and returns a guarded result rather than a crash.
 
 `scripts/smoke.mjs` signs in as each of the six roles and requests every route each role can reach —
-67 checks covering the portal, the mobile apps, the detail pages and the API.
+56 checks covering the portal, the mobile apps, the detail pages and the API, including the check
+that the ⌘K search cannot return a record a role may not open.
 
 `scripts/demo.mjs` is the live demonstration: 55 checks that sign in through the real login form, walk
 every screen, and exercise saved views, pagination, PDF export, the route-optimisation solver, the job

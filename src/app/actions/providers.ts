@@ -40,10 +40,10 @@ async function sendTestMessageAction__impl(
     .where(eq(users.id, user.id))
     .limit(1);
 
-  const to =
-    str(fd, "to", 180) ||
-    (channel === "sms" ? account?.phone : account?.email) ||
-    "";
+  // The message always goes to the operator's own number or inbox. A check
+  // that can send to any address would be a way to spend the company's
+  // airtime or to send mail in its name, and the check does not need it.
+  const to = channel === "sms" ? account?.phone : account?.email;
 
   if (!to) {
     return {

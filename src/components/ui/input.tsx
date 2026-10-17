@@ -98,12 +98,15 @@ type FieldProps = {
   min?: string | number;
   max?: string | number;
   step?: string | number;
+  /** A field that is shown for information but cannot be edited. */
+  disabled?: boolean;
 };
 
 export function Field({
   label,
   hint,
   error,
+  disabled,
   required,
   className,
   children,
@@ -161,6 +164,7 @@ export function Field({
             max={max}
             step={step}
             required={required}
+            disabled={disabled}
           />
         ))}
 

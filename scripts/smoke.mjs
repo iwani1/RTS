@@ -135,6 +135,48 @@ for (const user of USERS) {
   }
 }
 
+// Regression: the ⌘K search must not become a way around the role matrix.
+// A driver may only find the pages a driver can open; the employee register,
+// the fleet and the booking list belong to the roles that own them.
+console.log("\nsearch scope");
+{
+  const driver = await signIn("driver.kwesi@richietransportgh.com");
+  const admin = await signIn("admin@richietransportgh.com");
+
+  const read = async (cookie, term) => {
+    const res = await fetch(`${base}/api/search?q=${encodeURIComponent(term)}`, {
+      headers: { cookie },
+    });
+    if (res.status !== 200) return { status: res.status, kinds: [], results: [] };
+    const body = await res.json();
+    const results = body.results ?? [];
+    return {
+      status: res.status,
+      results,
+      kinds: [...new Set(results.map((r) => r.kind))],
+    };
+  };
+
+  const asDriver = await read(driver, "SFS");
+  checks += 1;
+  const leaked = asDriver.kinds.filter((kind) => kind !== "page");
+  const ok = asDriver.status === 200 && leaked.length === 0;
+  if (!ok) failures += 1;
+  console.log(
+    `${ok ? "  ok " : "FAIL "} driver search exposes only pages (saw: ${asDriver.kinds.join(", ") || "nothing"})`,
+  );
+
+  // The same search for the administrator must still find the register, so
+  // the gate cannot be "search returns nothing".
+  const asAdmin = await read(admin, "SFS");
+  checks += 1;
+  const adminOk = asAdmin.status === 200 && asAdmin.kinds.includes("employee");
+  if (!adminOk) failures += 1;
+  console.log(
+    `${adminOk ? "  ok " : "FAIL "} admin search still reaches the employee register (saw: ${asAdmin.kinds.join(", ") || "nothing"})`,
+  );
+}
+
 // Public API routes.
 console.log("\napi");
 for (const route of ["/api/health", "/api/search?q=trip", "/api/dispatch/live"]) {
