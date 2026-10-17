@@ -46,14 +46,22 @@ changing a dependency. It takes about twenty seconds on a normal connection and 
 
 ### Updating your copy
 
-When I push new work, pull it with:
+**If you cloned the default `main` branch by mistake** — it still holds the original upload, not the
+finished build — move onto the right branch first:
+
+```bash
+git fetch origin
+git checkout -B arena/1ef49b8d-rts origin/arena/1ef49b8d-rts
+```
+
+**To pull new work** once you are on that branch:
 
 ```bash
 cd RTS
 git pull origin arena/1ef49b8d-rts
 ```
 
-Or let the helper do it — it refuses to run over uncommitted work, only ever fast-forwards, and
+Or let the helper do it. It refuses to run over uncommitted work, only ever fast-forwards, and
 tells you when the dependencies changed:
 
 ```bash
@@ -63,13 +71,6 @@ tells you when the dependencies changed:
 If the pull brought a new `package.json`, run `npm ci` again, then `npm run build` and restart
 `npm start`. Your database is not touched by any of this: the seed lives in `.data/`, so your
 data survives every update.
-
-If you cloned the default `main` branch by mistake, this moves you onto the finished build:
-
-```bash
-git fetch origin
-git checkout -B arena/1ef49b8d-rts origin/arena/1ef49b8d-rts
-```
 
 ### Step 2 — choose how to run it
 
