@@ -5,9 +5,13 @@
  * company actually asks — who touches the system, what they do, and what
  * the company gets out of it — in one readable document.
  *
- *   node --experimental-strip-types scripts/make-user-guide-pdf.mts
+ *   npm run docs:pdf
  *
- * The output is written to docs/Richie Transport Services-User-Guide.pdf.
+ * The output is written to docs/RTS-User-Guide.pdf.
+ *
+ * Every number in the role table is read out of the running application by
+ * `npm run roles:check`, which fails the build when this document and the
+ * permission matrix disagree.
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -34,7 +38,7 @@ const blocks: PdfBlock[] = [
         title: "Operations console",
         text:
           "Where the service is run: the dispatch command centre, the trip board, the live map, " +
-          "the roster, the vehicles, the money. Five of the six roles work here.",
+          "the staff register, the vehicles, the money. Five of the six roles work here.",
       },
       {
         title: "Driver app",
@@ -48,10 +52,10 @@ const blocks: PdfBlock[] = [
     type: "callout",
     title: "The one rule that explains the system",
     text:
-      "You only see what your role allows, and a corporate client only ever sees its own " +
-      "company. That is enforced by the server, not hidden in the menu — a role that cannot reach " +
-      "a screen is refused even if it types the address. The navigation is therefore a truthful " +
-      "picture of the job, not a smaller version of a bigger product.",
+      "You only see what your role allows, and each client's staff, trips and invoices stay under " +
+      "that client. Both are enforced by the server, not hidden in the menu — a role that cannot " +
+      "reach a screen is refused even if the address is typed by hand. The navigation is therefore " +
+      "a truthful picture of the job, not a smaller version of a bigger product.",
   },
   {
     type: "paragraph",
@@ -60,6 +64,16 @@ const blocks: PdfBlock[] = [
       "booking, a booking becomes a trip, a trip becomes a manifest, and a manifest becomes an " +
       "invoice line. Every step is recorded, so the company can always answer who was carried, " +
       "by which vehicle, under which agreement, and at what price.",
+  },
+  {
+    type: "callout",
+    title: "What this release covers",
+    text:
+      "This release runs the service from one console and the driver app. The client-side logins " +
+      "— a client portal and a staff app — are switched off for now, and nothing was thrown away: " +
+      "the client companies, the branches, the staff register, the trips, the bookings and the " +
+      "invoices are all in the system already, and either role can be switched back on without " +
+      "rebuilding anything.",
   },
 
   /* ------------------------------------------------------------------ */
@@ -86,7 +100,7 @@ const blocks: PdfBlock[] = [
       ],
       [
         "Operations Manager\n(17)",
-        "The service: corridors, client contracts, the plan, and the scheduled work that keeps it running.",
+        "The service: corridors, client contracts, the staff register, the plan, and the scheduled work that keeps it running.",
         "Routes and stops, route optimisation, employees, corporate clients, fleet, drivers, compliance, operations.",
       ],
       [
@@ -140,14 +154,14 @@ const blocks: PdfBlock[] = [
       { label: "What happens", width: 3.6 },
     ],
     rows: [
-      ["Previous week", "Operations Manager", "Adds joiners to the employee register, sets their shifts and pick-up zones. Sends a list for bulk upload."],
+      ["Previous week", "Operations Manager", "Adds joiners to the staff register, sets their shifts and pick-up zones. Sends a list for bulk upload."],
       ["Previous week", "Operations Manager", "Plans the corridor, runs route optimisation to order the stops, and agrees the client's service agreement."],
       ["Evening before", "Dispatcher", "Approves the ride requests, moves waitlisted passengers onto trips, confirms a driver and a vehicle for every run."],
       ["05:00", "Fleet Manager", "Confirms the vehicles are compliant and records the fuel."],
       ["06:00", "Driver", "Starts the journey and shares the position on the way in."],
       ["06:15", "Dispatcher", "Watches the live board. One bus is behind — the trip is opened and reassigned."],
       ["06:20", "Driver", "At the first stop, takes the boarding code and marks the passenger aboard."],
-      ["06:30", "Passenger", "Sees the vehicle on the live corridor and shows the boarding code."],
+      ["06:45", "Dispatcher", "The manifest, the seat count and the live position are on one screen — no phone call needed to know where the bus is."],
       ["09:00", "Dispatcher", "Closes the trip. Anything that went wrong is logged as a safety incident."],
       ["Month end", "Finance Officer", "The invoice is raised automatically on the billing day, reviewed, and the report is exported."],
       ["Any time", "Super Administrator", "The audit trail answers: who did that, and when."],
@@ -215,10 +229,10 @@ const blocks: PdfBlock[] = [
     type: "cards",
     items: [
       {
-        title: "Clients cannot see each other",
+        title: "Clients are kept apart",
         text:
-          "Every query is scoped on the server. A client portal account sees its own staff, its own " +
-          "trips and its own invoice, and cannot reach another company by any route.",
+          "Every query is scoped on the server. A client's staff, trips, bookings and invoices are " +
+          "held under that client, and no one reaches another company by any route.",
       },
       {
         title: "Access is refused, not hidden",
@@ -291,14 +305,14 @@ const blocks: PdfBlock[] = [
       { label: "Where it comes from", width: 1.8 },
     ],
     rows: [
-      ["Seat fill", "Are the buses half empty?", "Bookings against capacity, per trip and per corridor"],
-      ["On-time performance", "Are staff collected when they said they would be?", "Scheduled against actual departure, per route"],
-      ["Passengers carried", "How many journeys did we actually make?", "Completed trips and their manifests"],
+      ["On-time arrivals", "Are staff collected when they said they would be?", "Scheduled against actual departure, per route"],
+      ["Average delay", "How far behind is the service running?", "Trip deviation and the incident log"],
       ["Cost per passenger", "Is the shuttle cheaper than the alternatives?", "Invoices and payroll over passengers carried"],
-      ["Usage by branch", "Which sites are heavy and which are light?", "Employees, shifts and trips by branch"],
-      ["Vehicle utilisation", "Do we have the right number of buses?", "Trips and active time per vehicle"],
-      ["Safety record", "Any incidents, and how were they handled?", "Safety and incident log with the action taken"],
-      ["Spend per client", "What does each contract really cost to serve?", "Billing by company and by agreement"],
+      ["Seat fill, by vehicle", "Are the buses half empty?", "Seats sold against capacity, per vehicle"],
+      ["Revenue per client", "What does each contract cost, and what is still owed?", "Invoiced, collected and outstanding, by client"],
+      ["Driver performance", "Are the drivers good enough to keep?", "Trips, on-time record, passengers carried and rating"],
+      ["Safety and maintenance", "Any incidents, and what did the fleet cost?", "Incident log with the action taken, and maintenance spend"],
+      ["Completed journeys", "How many journeys did we actually make?", "Completed trips and their manifests"],
     ],
   },
   {
@@ -327,11 +341,11 @@ const blocks: PdfBlock[] = [
       { label: "Answer", width: 3.6 },
     ],
     rows: [
-      ["A driver calls in sick at 5 a.m. — what happens?", "The dispatcher sees the unassigned trip on the board, assigns another driver and a vehicle, and the change is recorded. The passengers are notified through the app."],
+      ["A driver calls in sick at 5 a.m. — what happens?", "The dispatcher sees the unassigned trip on the board, assigns another driver and a vehicle, and the change is recorded on the trip."],
       ["A passenger is late for the bus.", "The trip waits or departs per the corridor rule, and the manifest records who boarded. The boarding code is what settles it."],
-      ["A new employee joins next Monday.", "HR adds them once in the employee register and sets their shift and pick-up zone. They appear on the right runs automatically from then on."],
-      ["A client disputes an invoice.", "The invoice is raised from the trips that ran, under the agreed agreement. The dispatcher's bookings and the trip records show exactly what was carried."],
-      ["Can our staff see other companies' data?", "No. The scope is enforced on every query on the server, not by hiding links. A portal account is bound to its own company."],
+      ["A new employee joins next Monday.", "The operations team adds them once in the staff register and sets their shift and pick-up zone. They appear on the right runs automatically from then on."],
+      ["A client disputes an invoice.", "The invoice is raised from the trips that ran, under the agreed agreement. The bookings and the trip records show exactly what was carried."],
+      ["Can one client's staff see another client's data?", "No. The scope is enforced on every query on the server, not by hiding links, and each client's records are held under that client."],
       ["What happens if the internet drops in the vehicle?", "The driver app queues the updates offline and replays them when the connection returns, without duplicating records."],
       ["Who can see the audit trail?", "The Super Administrator alone. It records every change with the person and the time, and cannot be edited by the people it watches."],
       ["Is the data ours?", "The client records belong to the client, are separated by tenant, and are exportable at any time."],
@@ -350,7 +364,7 @@ const blocks: PdfBlock[] = [
     type: "numbers",
     items: [
       "Stage one — pilot (four weeks). Two branches, the routes they already run, the current drivers. The company sees the daily board, the first invoices and the first month-end pack. Exit measure: every trip in the pilot captured in the system, and the invoice reconciled against the old process.",
-      "Stage two — rollout. Every branch and every shift on the system, HR adding staff through the portal instead of a spreadsheet, finance paying from generated invoices. Exit measure: one invoice run, one report, no parallel spreadsheets.",
+      "Stage two — rollout. Every branch and every shift on the system, the operations team adding staff through the register instead of a spreadsheet, finance paying from generated invoices. Exit measure: one invoice run, one report, no parallel spreadsheets.",
       "Stage three — optimise. Route optimisation, seat-fill targets, vehicle utilisation, and a service-agreement review for each client. Exit measure: a cost per passenger that is measured, not estimated.",
     ],
   },
@@ -367,7 +381,8 @@ const blocks: PdfBlock[] = [
     text:
       "The platform runs on one server with an embedded database — no database server to install, " +
       "no cloud account to open. It is deployed as a container, it is backed up automatically, and " +
-      "it can be operated by a single administrator with a browser.",
+      "it can be operated by a single administrator with a browser. The driver app installs on a " +
+      "phone and keeps working when the network drops.",
   },
   {
     type: "spacer", height: 8,

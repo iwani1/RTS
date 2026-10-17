@@ -174,7 +174,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 6 0 R >>
 endobj
 6 0 obj
-<< /Length 3280 >>
+<< /Length 4225 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -203,12 +203,22 @@ f
 Q
 q
 0.970 0.960 0.950 rg
-46.00 496.89 503.28 75.00 re
+46.00 483.89 503.28 88.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-46.00 496.89 2.40 75.00 re
+46.00 483.89 2.40 88.00 re
+f
+Q
+q
+0.970 0.960 0.950 rg
+46.00 341.69 503.28 88.00 re
+f
+Q
+q
+1.000 0.388 0.078 rg
+46.00 341.69 2.40 88.00 re
 f
 Q
 q
@@ -256,13 +266,13 @@ BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
 1 0 0 1 58.00 634.39 Tm
-(the trip board, the live map, the roster, the vehicles, the) Tj
+(the trip board, the live map, the staff register, the) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
 1 0 0 1 58.00 622.89 Tm
-(money. Five of the six roles work here.) Tj
+(vehicles, the money. Five of the six roles work here.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -298,37 +308,73 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
 1 0 0 1 62.00 540.89 Tm
-(You only see what your role allows, and a corporate client only ever sees its own company. That is enforced by) Tj
+(You only see what your role allows, and each client's staff, trips and invoices stay under that client. Both are) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
 1 0 0 1 62.00 527.89 Tm
-(the server, not hidden in the menu — a role that cannot reach a screen is refused even if it types the address.) Tj
+(enforced by the server, not hidden in the menu — a role that cannot reach a screen is refused even if the) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
 1 0 0 1 62.00 514.89 Tm
-(The navigation is therefore a truthful picture of the job, not a smaller version of a bigger product.) Tj
+(address is typed by hand. The navigation is therefore a truthful picture of the job, not a smaller version of a bigger) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.4 Tf
+1 0 0 1 62.00 501.89 Tm
+(product.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 488.89 Tm
+1 0 0 1 46.00 475.89 Tm
 (Nothing in the service depends on a phone call or a spreadsheet. A request becomes a booking, a booking becomes a trip,) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 475.49 Tm
+1 0 0 1 46.00 462.49 Tm
 (a trip becomes a manifest, and a manifest becomes an invoice line. Every step is recorded, so the company can always) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 462.09 Tm
+1 0 0 1 46.00 449.09 Tm
 (answer who was carried, by which vehicle, under which agreement, and at what price.) Tj
+ET
+BT
+0.420 0.450 0.480 rg
+/F2 7.6 Tf
+1 0 0 1 62.00 411.69 Tm
+(WHAT THIS RELEASE COVERS) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.4 Tf
+1 0 0 1 62.00 398.69 Tm
+(This release runs the service from one console and the driver app. The client-side logins — a client portal and a) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.4 Tf
+1 0 0 1 62.00 385.69 Tm
+(staff app — are switched off for now, and nothing was thrown away: the client companies, the branches, the staff) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.4 Tf
+1 0 0 1 62.00 372.69 Tm
+(register, the trips, the bookings and the invoices are all in the system already, and either role can be switched) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.4 Tf
+1 0 0 1 62.00 359.69 Tm
+(back on without rebuilding anything.) Tj
 ET
 BT
 0.720 0.740 0.760 rg
@@ -354,7 +400,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 8 0 R >>
 endobj
 8 0 obj
-<< /Length 5912 >>
+<< /Length 5932 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -517,13 +563,13 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 170.14 601.29 Tm
-(plan, and the scheduled work that keeps it) Tj
+(staff register, the plan, and the scheduled) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 170.14 587.89 Tm
-(running.) Tj
+(work that keeps it running.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -723,7 +769,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 10 0 R >>
 endobj
 10 0 obj
-<< /Length 6025 >>
+<< /Length 6142 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -772,32 +818,32 @@ f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 430.69 503.28 0.60 re
+46.00 417.29 503.28 0.60 re
 f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 394.89 503.28 0.60 re
+46.00 381.49 503.28 0.60 re
 f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 359.09 503.28 0.60 re
+46.00 345.69 503.28 0.60 re
 f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 336.69 503.28 0.60 re
+46.00 323.29 503.28 0.60 re
 f
 Q
 q
 0.970 0.960 0.950 rg
-46.00 262.69 503.28 62.00 re
+46.00 249.29 503.28 62.00 re
 f
 Q
 q
 1.000 0.388 0.078 rg
-46.00 262.69 2.40 62.00 re
+46.00 249.29 2.40 62.00 re
 f
 Q
 q
@@ -857,13 +903,13 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 265.05 663.89 Tm
-(Adds joiners to the employee register, sets their shifts and pick-up) Tj
+(Adds joiners to the staff register, sets their shifts and pick-up zones.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 265.05 650.49 Tm
-(zones. Sends a list for bulk upload.) Tj
+(Sends a list for bulk upload.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -1001,102 +1047,108 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 440.09 Tm
-(06:30) Tj
+(06:45) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 143.29 440.09 Tm
-(Passenger) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 265.05 440.09 Tm
-(Sees the vehicle on the live corridor and shows the boarding code.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 417.69 Tm
-(09:00) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 143.29 417.69 Tm
 (Dispatcher) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 265.05 417.69 Tm
-(Closes the trip. Anything that went wrong is logged as a safety) Tj
+1 0 0 1 265.05 440.09 Tm
+(The manifest, the seat count and the live position are on one) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 265.05 426.69 Tm
+(screen — no phone call needed to know where the bus is.) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 54.00 404.29 Tm
+(09:00) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 143.29 404.29 Tm
+(Dispatcher) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 265.05 404.29 Tm
+(Closes the trip. Anything that went wrong is logged as a safety) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 265.05 390.89 Tm
 (incident.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 54.00 381.89 Tm
+1 0 0 1 54.00 368.49 Tm
 (Month end) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 143.29 381.89 Tm
+1 0 0 1 143.29 368.49 Tm
 (Finance Officer) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 265.05 381.89 Tm
+1 0 0 1 265.05 368.49 Tm
 (The invoice is raised automatically on the billing day, reviewed, and) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 265.05 368.49 Tm
+1 0 0 1 265.05 355.09 Tm
 (the report is exported.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 54.00 346.09 Tm
+1 0 0 1 54.00 332.69 Tm
 (Any time) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 143.29 346.09 Tm
+1 0 0 1 143.29 332.69 Tm
 (Super Administrator) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 265.05 346.09 Tm
+1 0 0 1 265.05 332.69 Tm
 (The audit trail answers: who did that, and when.) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F2 7.6 Tf
-1 0 0 1 62.00 306.69 Tm
+1 0 0 1 62.00 293.29 Tm
 (WHY THIS MATTERS COMMERCIALLY) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 293.69 Tm
+1 0 0 1 62.00 280.29 Tm
 (Every handover above leaves a record. If a passenger complains, if a vehicle breaks down, or if a client disputes) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.4 Tf
-1 0 0 1 62.00 280.69 Tm
+1 0 0 1 62.00 267.29 Tm
 (an invoice, the answer is a timestamped trail rather than a memory.) Tj
 ET
 BT
@@ -1557,7 +1609,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 14 0 R >>
 endobj
 14 0 obj
-<< /Length 5928 >>
+<< /Length 5919 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -1681,25 +1733,25 @@ BT
 0.060 0.070 0.080 rg
 /F2 10 Tf
 1 0 0 1 58.00 676.89 Tm
-(Clients cannot see each other) Tj
+(Clients are kept apart) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
 1 0 0 1 58.00 660.89 Tm
-(Every query is scoped on the server. A client portal) Tj
+(Every query is scoped on the server. A client's staff, trips,) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
 1 0 0 1 58.00 649.39 Tm
-(account sees its own staff, its own trips and its own) Tj
+(bookings and invoices are held under that client, and no) Tj
 ET
 BT
 0.420 0.450 0.480 rg
 /F1 8.6 Tf
 1 0 0 1 58.00 637.89 Tm
-(invoice, and cannot reach another company by any route.) Tj
+(one reaches another company by any route.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -1917,7 +1969,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 16 0 R >>
 endobj
 16 0 obj
-<< /Length 5607 >>
+<< /Length 5725 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2024,199 +2076,205 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 663.89 Tm
-(Seat fill) Tj
+(On-time arrivals) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 200.11 663.89 Tm
-(Are the buses half empty?) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 663.89 Tm
-(Bookings against capacity, per) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 650.49 Tm
-(trip and per corridor) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 628.09 Tm
-(On-time performance) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 200.11 628.09 Tm
 (Are staff collected when they said they would) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 200.11 614.69 Tm
+1 0 0 1 200.11 650.49 Tm
 (be?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 628.09 Tm
+1 0 0 1 411.17 663.89 Tm
 (Scheduled against actual) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 614.69 Tm
+1 0 0 1 411.17 650.49 Tm
 (departure, per route) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
+1 0 0 1 54.00 628.09 Tm
+(Average delay) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 200.11 628.09 Tm
+(How far behind is the service running?) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 628.09 Tm
+(Trip deviation and the incident) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 614.69 Tm
+(log) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
 1 0 0 1 54.00 592.29 Tm
-(Passengers carried) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 200.11 592.29 Tm
-(How many journeys did we actually make?) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 592.29 Tm
-(Completed trips and their) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 578.89 Tm
-(manifests) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 556.49 Tm
 (Cost per passenger) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 200.11 556.49 Tm
+1 0 0 1 200.11 592.29 Tm
 (Is the shuttle cheaper than the alternatives?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 556.49 Tm
+1 0 0 1 411.17 592.29 Tm
 (Invoices and payroll over) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 543.09 Tm
+1 0 0 1 411.17 578.89 Tm
 (passengers carried) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 54.00 520.69 Tm
-(Usage by branch) Tj
+1 0 0 1 54.00 556.49 Tm
+(Seat fill, by vehicle) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 200.11 520.69 Tm
-(Which sites are heavy and which are light?) Tj
+1 0 0 1 200.11 556.49 Tm
+(Are the buses half empty?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 520.69 Tm
-(Employees, shifts and trips by) Tj
+1 0 0 1 411.17 556.49 Tm
+(Seats sold against capacity, per) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 411.17 507.29 Tm
-(branch) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 484.89 Tm
-(Vehicle utilisation) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 200.11 484.89 Tm
-(Do we have the right number of buses?) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 484.89 Tm
-(Trips and active time per) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 411.17 471.49 Tm
+1 0 0 1 411.17 543.09 Tm
 (vehicle) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
+1 0 0 1 54.00 520.69 Tm
+(Revenue per client) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 200.11 520.69 Tm
+(What does each contract cost, and what is still) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 200.11 507.29 Tm
+(owed?) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 520.69 Tm
+(Invoiced, collected and) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 507.29 Tm
+(outstanding, by client) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 54.00 484.89 Tm
+(Driver performance) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 200.11 484.89 Tm
+(Are the drivers good enough to keep?) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 484.89 Tm
+(Trips, on-time record,) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 411.17 471.49 Tm
+(passengers carried and rating) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
 1 0 0 1 54.00 449.09 Tm
-(Safety record) Tj
+(Safety and maintenance) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 200.11 449.09 Tm
-(Any incidents, and how were they handled?) Tj
+(Any incidents, and what did the fleet cost?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 411.17 449.09 Tm
-(Safety and incident log with the) Tj
+(Incident log with the action) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 411.17 435.69 Tm
-(action taken) Tj
+(taken, and maintenance spend) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 413.29 Tm
-(Spend per client) Tj
+(Completed journeys) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 200.11 413.29 Tm
-(What does each contract really cost to serve?) Tj
+(How many journeys did we actually make?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 411.17 413.29 Tm
-(Billing by company and by) Tj
+(Completed trips and their) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 411.17 399.89 Tm
-(agreement) Tj
+(manifests) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -2278,7 +2336,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 18 0 R >>
 endobj
 18 0 obj
-<< /Length 4384 >>
+<< /Length 4436 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2292,12 +2350,12 @@ f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 661.69 503.28 0.60 re
+46.00 675.09 503.28 0.60 re
 f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 625.89 503.28 0.60 re
+46.00 639.29 503.28 0.60 re
 f
 Q
 q
@@ -2375,49 +2433,49 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 244.90 684.49 Tm
-(driver and a vehicle, and the change is recorded. The passengers are) Tj
+(driver and a vehicle, and the change is recorded on the trip.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 244.90 671.09 Tm
-(notified through the app.) Tj
-ET
-BT
-0.060 0.070 0.080 rg
-/F1 9.2 Tf
-1 0 0 1 54.00 648.69 Tm
+1 0 0 1 54.00 662.09 Tm
 (A passenger is late for the bus.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 244.90 648.69 Tm
+1 0 0 1 244.90 662.09 Tm
 (The trip waits or departs per the corridor rule, and the manifest records) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 244.90 635.29 Tm
+1 0 0 1 244.90 648.69 Tm
 (who boarded. The boarding code is what settles it.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 54.00 612.89 Tm
+1 0 0 1 54.00 626.29 Tm
 (A new employee joins next Monday.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
+1 0 0 1 244.90 626.29 Tm
+(The operations team adds them once in the staff register and sets their) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
 1 0 0 1 244.90 612.89 Tm
-(HR adds them once in the employee register and sets their shift and) Tj
+(shift and pick-up zone. They appear on the right runs automatically from) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 244.90 599.49 Tm
-(pick-up zone. They appear on the right runs automatically from then on.) Tj
+(then on.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -2435,19 +2493,25 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 244.90 563.69 Tm
-(agreement. The dispatcher's bookings and the trip records show exactly) Tj
+(agreement. The bookings and the trip records show exactly what was) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 244.90 550.29 Tm
-(what was carried.) Tj
+(carried.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 54.00 527.89 Tm
-(Can our staff see other companies' data?) Tj
+(Can one client's staff see another client's) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 54.00 514.49 Tm
+(data?) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -2459,7 +2523,7 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 244.90 514.49 Tm
-(links. A portal account is bound to its own company.) Tj
+(links, and each client's records are held under that client.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -2545,7 +2609,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 21 0 R /F2 22 0 R /F3 23 0 R >> >> /Contents 20 0 R >>
 endobj
 20 0 obj
-<< /Length 3556 >>
+<< /Length 3719 >>
 stream
 q
 1.000 0.388 0.078 rg
@@ -2564,7 +2628,7 @@ f
 Q
 q
 0.850 0.860 0.870 rg
-46.00 483.89 503.28 0.60 re
+46.00 470.49 503.28 0.60 re
 f
 Q
 q
@@ -2618,13 +2682,13 @@ BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 62.00 669.69 Tm
-(Stage two — rollout. Every branch and every shift on the system, HR adding staff through the portal instead of a) Tj
+(Stage two — rollout. Every branch and every shift on the system, the operations team adding staff through the register) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 62.00 656.29 Tm
-(spreadsheet, finance paying from generated invoices. Exit measure: one invoice run, one report, no parallel) Tj
+(instead of a spreadsheet, finance paying from generated invoices. Exit measure: one invoice run, one report, no parallel) Tj
 ET
 BT
 0.060 0.070 0.080 rg
@@ -2683,19 +2747,25 @@ ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
-1 0 0 1 46.00 471.89 Tm
-(Richie Transport Services Management System. Six roles, two interfaces, 42 database tables, live dispatch, automated) Tj
+1 0 0 1 46.00 497.89 Tm
+(The driver app installs on a phone and keeps working when the network drops.) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 46.00 458.49 Tm
-(billing and a full audit trail. This document describes how the system is used; the technical detail is in the project) Tj
+(Richie Transport Services Management System. Six roles, two interfaces, 42 database tables, live dispatch, automated) Tj
 ET
 BT
 0.060 0.070 0.080 rg
 /F1 9.2 Tf
 1 0 0 1 46.00 445.09 Tm
+(billing and a full audit trail. This document describes how the system is used; the technical detail is in the project) Tj
+ET
+BT
+0.060 0.070 0.080 rg
+/F1 9.2 Tf
+1 0 0 1 46.00 431.69 Tm
 (documentation.) Tj
 ET
 BT
@@ -2736,25 +2806,25 @@ xref
 0000000323 00000 n 
 0000002641 00000 n 
 0000002796 00000 n 
-0000006128 00000 n 
-0000006283 00000 n 
-0000012247 00000 n 
-0000012403 00000 n 
-0000018481 00000 n 
-0000018638 00000 n 
-0000025005 00000 n 
-0000025162 00000 n 
-0000031143 00000 n 
-0000031300 00000 n 
-0000036960 00000 n 
-0000037117 00000 n 
-0000041554 00000 n 
-0000041711 00000 n 
-0000045320 00000 n 
-0000045418 00000 n 
-0000045521 00000 n 
+0000007073 00000 n 
+0000007228 00000 n 
+0000013212 00000 n 
+0000013368 00000 n 
+0000019563 00000 n 
+0000019720 00000 n 
+0000026087 00000 n 
+0000026244 00000 n 
+0000032216 00000 n 
+0000032373 00000 n 
+0000038151 00000 n 
+0000038308 00000 n 
+0000042797 00000 n 
+0000042954 00000 n 
+0000046726 00000 n 
+0000046824 00000 n 
+0000046927 00000 n 
 trailer
 << /Size 24 /Root 1 0 R >>
 startxref
-45627
+47033
 %%EOF
