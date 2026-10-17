@@ -76,6 +76,14 @@ jobs:
           TEST_SESSION_TOKEN: ci-smoke-token
         run: node scripts/auth-form.mjs
 
+      # Every demonstration account must be able to sign in, and the failure
+      # message has to be the real one, not a generic refusal.
+      - name: Sign-in check for every role
+        env:
+          TEST_SESSION_ENABLED: "true"
+          TEST_SESSION_TOKEN: ci-smoke-token
+        run: node scripts/check-logins.mjs
+
       # Everything inside the app uses React server actions. This replays the
       # browser's request shape and asserts the action runs and is guarded.
       - name: Server action transport test

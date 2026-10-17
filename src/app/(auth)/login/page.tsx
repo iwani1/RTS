@@ -1,23 +1,25 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
+import { DemoAccounts } from "@/components/demo-accounts";
 import { Panel } from "@/components/ui";
 import { Field } from "@/components/ui/input";
 import { ButtonLink } from "@/components/ui/button";
 import { getSessionUser, homeFor } from "@/lib/auth";
+import { DEMO_PASSWORD } from "@/lib/seed";
 import type { Role } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
 const DEMO = [
-  ["Super Administrator", "admin@staffridegh.com", "2FA 246810"],
-  ["Operations Manager", "ops@staffridegh.com", ""],
-  ["Dispatcher", "dispatch@staffridegh.com", ""],
-  ["Fleet Manager", "fleet@staffridegh.com", ""],
-  ["Finance Officer", "finance@staffridegh.com", ""],
-  ["Corporate HR · Sikaman", "hr@sikamanfinancial.com", ""],
-  ["Employee · Sikaman", "ama@sikamanfinancial.com", ""],
-  ["Driver · Kwesi", "driver.kwesi@staffridegh.com", ""],
+  { role: "Super Administrator", email: "admin@staffridegh.com", code: "246810" },
+  { role: "Operations Manager", email: "ops@staffridegh.com" },
+  { role: "Dispatcher", email: "dispatch@staffridegh.com" },
+  { role: "Fleet Manager", email: "fleet@staffridegh.com" },
+  { role: "Finance Officer", email: "finance@staffridegh.com" },
+  { role: "Corporate HR · Sikaman", email: "hr@sikamanfinancial.com" },
+  { role: "Employee · Sikaman", email: "ama@sikamanfinancial.com" },
+  { role: "Driver · Kwesi", email: "driver.kwesi@staffridegh.com" },
 ];
 
 export default async function LoginPage({
@@ -117,24 +119,7 @@ export default async function LoginPage({
         title="Try a role"
         subtitle="Every account below uses the password Password123!"
       >
-        <ul className="divide-y divide-line">
-          {DEMO.map(([role, email, note]) => (
-            <li
-              key={email}
-              className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2"
-            >
-              <span className="text-[12.5px] text-ink">{role}</span>
-              <span className="flex items-center gap-2">
-                <code className="numeric rounded-[4px] bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-2">
-                  {email}
-                </code>
-                {note ? (
-                  <span className="numeric text-[11px] text-st-caution">{note}</span>
-                ) : null}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <DemoAccounts accounts={DEMO} password={DEMO_PASSWORD} />
       </Panel>
 
       <div className="mt-6 flex items-center justify-between border-t border-line pt-4">

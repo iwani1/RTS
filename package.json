@@ -23,7 +23,8 @@
     "test:auth": "node scripts/auth-form.mjs",
     "test:action": "node scripts/action-invoke.mjs",
     "test:demo": "node scripts/demo.mjs",
-    "test:origin": "node scripts/origin-check.mjs"
+    "test:origin": "node scripts/origin-check.mjs",
+    "test:login": "node scripts/check-logins.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",

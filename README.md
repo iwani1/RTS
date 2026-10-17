@@ -177,6 +177,7 @@ npm run test:auth      # the native, no-JavaScript sign-in flow
 npm run test:action    # the server-action transport
 npm run test:demo      # 54 checks: the live end-to-end demonstration
 npm run test:origin    # 5 checks: the Server Action origin guard
+npm run test:login     # can all eight demo accounts actually sign in?
 npm run roles          # what each role can reach, read from the permission matrix
 npm run verify         # lint · typecheck · unit tests · migration drift · role matrix
 ```
