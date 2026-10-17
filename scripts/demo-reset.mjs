@@ -43,8 +43,23 @@ async function main() {
     fs.rmSync(dataDir, { recursive: true, force: true });
   }
 
+  // The demonstration harness signs in as any account without a password, so
+  // `npm run demo:check` can walk every screen. It stays closed unless the
+  // token is presented, and the token is printed below.
+  const token = process.env.TEST_SESSION_TOKEN ?? "ci-smoke-token";
   console.log("Starting the application with fresh demonstration data ...");
-  const code = await run("npm", ["start"], { stdio: "inherit", detached: false });
+  console.log(
+    `The demonstration harness is open on this machine with the token "${token}" — it signs in as any account, so use it for the pitch only.`,
+  );
+  const code = await run("npm", ["start"], {
+    stdio: "inherit",
+    detached: false,
+    env: {
+      ...process.env,
+      TEST_SESSION_ENABLED: "true",
+      TEST_SESSION_TOKEN: token,
+    },
+  });
   process.exit(code);
 }
 
