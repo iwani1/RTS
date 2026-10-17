@@ -377,6 +377,7 @@ audit, a production build and the route smoke test on every push, and builds the
 
 | Document | Contents |
 | --- | --- |
+| `docs/StaffRide-User-Guide.pdf` | The client-facing guide — how every role uses the system, in one pitchable document (regenerate with `npm run docs:pdf`) |
 | `docs/USER-GUIDE.md` | How to use the system, organised by role — what each of the eight roles sees, owns and does |
 | `docs/ARCHITECTURE.md` | Mermaid diagrams — system context, layers, request lifecycle, ERD, tenancy, auth, boot, interface, deployment |
 | `docs/API.md` | REST + server action reference, request/response shapes |
