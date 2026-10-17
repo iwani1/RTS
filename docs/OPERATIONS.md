@@ -259,7 +259,9 @@ its work, so a crash still leaves a `running` row behind — that is how a faile
 | `purge-expired-data` | 1440 min | removes expired sessions, one-time codes, GPS events and job runs |
 | `backup-database` | 1440 min | takes an archive and prunes to the retention window |
 
-Any job can also be run on demand from **Operations** → *Run*. `JOBS_ENABLED=false` switches the runner off
+Any job can also be run on demand from **Operations** → *Run*. `node scripts/queue-message.mjs --channel sms --to 0244012345
+--body "…"` puts a message in the queue by hand, so the delivery worker can be exercised on demand
+(the server has to be stopped for that, because PGlite allows one writer at a time). `JOBS_ENABLED=false` switches the runner off
 entirely. The runner is idempotent: a multi-instance deployment should run the same job names from one
 dedicated worker instead, which is a configuration change rather than a rewrite.
 
