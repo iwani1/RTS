@@ -85,10 +85,33 @@ function allowThePortWeRunOn() {
   if (!serverActions || !Array.isArray(serverActions.allowedOrigins)) return;
 
   // The list as the build wrote it, without the entries a previous run of
-  // this script added for its own port.
-  const base = serverActions.allowedOrigins.filter(
-    (value) => !value.endsWith(`:${port}`),
+  // this script added for its own port. The two are kept apart in a small
+  // note next to the build, so the entries the build put there are never
+  // mistaken for the ones this script added.
+  const note = path.join(
+    root,
+    ".next",
+    "standalone",
+    ".next",
+    "rts-allowed-origins.json",
   );
+  let remembered = { build: [], added: [] };
+  try {
+    remembered = { build: [], added: [], ...JSON.parse(readFileSync(note, "utf8")) };
+  } catch {
+    remembered = { build: [], added: [] };
+  }
+
+  const current = serverActions.allowedOrigins;
+  const expected = new Set([...remembered.build, ...remembered.added]);
+  const untouched =
+    remembered.build.length > 0 &&
+    current.length === expected.size &&
+    current.every((value) => expected.has(value));
+
+  const base = untouched
+    ? [...remembered.build]
+    : current.filter((value) => !remembered.added.includes(value));
 
   const additions = [`localhost:${port}`, `127.0.0.1:${port}`];
   for (const entry of (process.env.SERVER_ACTION_ALLOWED_ORIGINS ?? "")
@@ -104,6 +127,7 @@ function allowThePortWeRunOn() {
   try {
     serverActions.allowedOrigins = desired;
     writeFileSync(file, JSON.stringify(manifest));
+    writeFileSync(note, JSON.stringify({ build: base, added: additions }));
   } catch {
     // The list stays as it was; the guard is stricter, not looser.
   }
