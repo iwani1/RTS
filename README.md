@@ -44,6 +44,33 @@ Without git, download the branch as a zip and unpack it:
 changing a dependency. It takes about twenty seconds on a normal connection and needs roughly
 800 MB of disk.
 
+### Updating your copy
+
+When I push new work, pull it with:
+
+```bash
+cd RTS
+git pull origin arena/1ef49b8d-rts
+```
+
+Or let the helper do it — it refuses to run over uncommitted work, only ever fast-forwards, and
+tells you when the dependencies changed:
+
+```bash
+./scripts/pull-latest.sh
+```
+
+If the pull brought a new `package.json`, run `npm ci` again, then `npm run build` and restart
+`npm start`. Your database is not touched by any of this: the seed lives in `.data/`, so your
+data survives every update.
+
+If you cloned the default `main` branch by mistake, this moves you onto the finished build:
+
+```bash
+git fetch origin
+git checkout -B arena/1ef49b8d-rts origin/arena/1ef49b8d-rts
+```
+
 ### Step 2 — choose how to run it
 
 **Option A — the production build (recommended for testing the real thing).**
