@@ -30,6 +30,7 @@ const { values } = parseArgs({
 const base = values.url.replace(/\/$/, "");
 const adminEmail = values.email;
 const driverEmail = "driver.kwesi@richietransportgh.com";
+const driverAbenaEmail = "driver.abena@richietransportgh.com";
 
 let failures = 0;
 let checks = 0;
@@ -458,6 +459,89 @@ heading("8 · Live tracking and geofence");
     feed.res.status === 401 || feed.res.status === 403,
     `status=${feed.res.status}`,
   );
+
+  // The tracking chain, end to end: the phone posts a fix, the server keeps
+  // it, the dispatcher sees it on the live feed, a replay is ignored, and a
+  // driver cannot post for someone else's trip.
+  const abena = await harnessSession(driverAbenaEmail);
+  const liveForDispatcher = await fetch(`${base}/api/dispatch/live`, {
+    headers: { cookie },
+    redirect: "manual",
+  });
+  let feedJson = { trips: [] };
+  try {
+    feedJson = JSON.parse(await liveForDispatcher.text());
+  } catch {
+    feedJson = { trips: [] };
+  }
+  const abenaTrip = (feedJson.trips ?? []).find((t) => t.driver === "Abena Darko");
+  const otherTrip = (feedJson.trips ?? []).find((t) => t.driver !== "Abena Darko");
+
+  if (!abenaTrip) {
+    step("a driver with a duty is on the live feed", false, "no trip assigned to the driver");
+  } else {
+    const fix = {
+      kind: "position",
+      tripId: abenaTrip.id,
+      lat: 5.6123,
+      lng: -0.1871,
+      speedKph: 24,
+      heading: 90,
+      clientRef: `demo-${Date.now()}`,
+      recordedAt: new Date().toISOString(),
+    };
+    const post = async (body) => {
+      const res = await fetch(`${base}/api/driver/sync`, {
+        method: "POST",
+        headers: { "content-type": "application/json", cookie: abena },
+        body: JSON.stringify({ items: [body] }),
+      });
+      return { status: res.status, body: await res.text() };
+    };
+
+    const sent = await post(fix);
+    step(
+      "the driver's phone posts a position",
+      sent.status === 200 && /"ok":true/.test(sent.body),
+      `status=${sent.status}`,
+    );
+
+    const replay = await post(fix);
+    step(
+      "a replayed fix is ignored, not duplicated",
+      replay.status === 200 && /Duplicate ignored/.test(replay.body),
+      "",
+    );
+
+    const after = await fetch(`${base}/api/dispatch/live`, {
+      headers: { cookie },
+      redirect: "manual",
+    });
+    let afterJson = { trips: [] };
+    try {
+      afterJson = JSON.parse(await after.text());
+    } catch {
+      afterJson = { trips: [] };
+    }
+    const trip = (afterJson.trips ?? []).find((t) => t.id === abenaTrip.id);
+    const seen = Boolean(
+      trip?.lastPosition && Math.abs(trip.lastPosition.lat - 5.6123) < 0.0001,
+    );
+    step("the dispatcher sees the driver's position on the live feed", seen, "");
+
+    if (otherTrip) {
+      const foreign = await post({
+        ...fix,
+        tripId: otherTrip.id,
+        clientRef: `demo-foreign-${Date.now()}`,
+      });
+      step(
+        "a driver cannot post a position for someone else's trip",
+        foreign.status === 200 && /not assigned to you/.test(foreign.body),
+        "",
+      );
+    }
+  }
 }
 
 /* ------------------------------------------------- 9. finance + currency */

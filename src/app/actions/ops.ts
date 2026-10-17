@@ -248,13 +248,32 @@ async function updateTripStatusAction__impl(_p: ActionState, fd: FormData): Prom
 }
 
 async function recordPositionAction__impl(_p: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await guard("trip.dispatch");
+  const user = await requireUser();
+  const role = user.role as Role;
+  const isDriver = role === "driver";
+
+  // A dispatcher or an administrator may log a position for any trip. A
+  // driver may only log one for a trip that is assigned to them — the same
+  // ownership check the rest of the driver app uses.
+  if (!isDriver && !can(role, "trip.dispatch")) {
+    throw new PermissionError("You do not have permission to perform this action.");
+  }
+
   const tripId = num(fd, "tripId");
   const lat = num(fd, "lat");
   const lng = num(fd, "lng");
   if (!tripId || lat == null || lng == null) return { ok: false, message: "Trip, latitude and longitude are required." };
   const [trip] = await db.select().from(trips).where(eq(trips.id, tripId)).limit(1);
   if (!trip) return { ok: false, message: "Trip not found." };
+
+  if (isDriver) {
+    const [driver] = await db.select().from(drivers).where(eq(drivers.userId, user.id)).limit(1);
+    if (!driver) return { ok: false, message: "No driver record linked to your account." };
+    if (trip.driverId !== driver.id) {
+      return { ok: false, message: "This trip is not assigned to you." };
+    }
+  }
+
   await db.insert(gpsEvents).values({
     tripId,
     vehicleId: trip.vehicleId,
@@ -262,10 +281,16 @@ async function recordPositionAction__impl(_p: ActionState, fd: FormData): Promis
     lng,
     speedKph: num(fd, "speedKph") ?? 0,
     heading: num(fd, "heading") ?? 0,
-    source: "dispatcher_demo",
+    source: isDriver ? "driver_app_manual" : "dispatcher_demo",
   });
   revalidatePath("/dispatch");
-  return { ok: true, message: `Position logged for ${trip.reference} (demo GPS source).` };
+  revalidatePath(`/driver/trip/${tripId}`);
+  return {
+    ok: true,
+    message: isDriver
+      ? `Position sent for ${trip.reference}.`
+      : `Position logged for ${trip.reference} (demo GPS source).`,
+  };
 }
 
 /* -------------------------------------------------------- route planning */

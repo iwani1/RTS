@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { boardings, bookings, branches, drivers, employees, trips, vehicles } from "@/db/schema";
 import { ActionForm, InlineActionForm } from "@/components/action-form";
 import { MapCanvas, type MapPoint } from "@/components/live-map";
+import { PositionTracker } from "@/components/driver/position-tracker";
 import {
   ButtonLink,
   DefinitionList,
@@ -300,14 +301,10 @@ export default async function DriverTripPage({
           subtitle="Works offline — queued locally, synced later"
           eyebrow="Tracking"
         >
-          <Notice tone="caution">
-            Position reports are queued in browser storage when the device is offline and
-            replayed to <code className="mx-1 rounded bg-surface-2 px-1">/api/driver/sync</code>{" "}
-            when connectivity returns. Duplicate submissions are ignored.
-          </Notice>
+          <PositionTracker tripId={tripId} active={row.trip.status === "in_progress"} />
           <ActionForm
             action={recordPositionAction}
-            submitLabel="Send position"
+            submitLabel="Send a position by hand"
             className="mt-3"
           >
             <input type="hidden" name="tripId" value={tripId} />
@@ -324,8 +321,11 @@ export default async function DriverTripPage({
             </div>
           </ActionForm>
           <p className="mt-2 text-[12px] text-ink-3">
-            Location is only collected while a journey is active, in line with the consent
-            notice shown at login.
+            The phone shares the position on its own while the journey is running. The form
+            above is the fallback for a device with no location service. Fixes are held in
+            browser storage when the device is offline and replayed to{" "}
+            <code className="mx-1 rounded bg-surface-2 px-1">/api/driver/sync</code> when
+            connectivity returns; duplicate submissions are ignored.
           </p>
         </Panel>
       </div>

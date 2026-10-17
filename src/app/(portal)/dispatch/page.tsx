@@ -165,6 +165,7 @@ export default async function DispatchPage() {
       lng: pos?.lng ?? null,
       speedKph: pos?.speedKph ?? null,
       heading: pos?.heading ?? null,
+      lastSeenAt: pos?.recordedAt ? new Date(pos.recordedAt).toISOString() : null,
       waitingMinutes: row.trip.waitingMinutes,
       overtimeMinutes: row.trip.overtimeMinutes,
       route: row.route,

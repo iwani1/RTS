@@ -66,11 +66,30 @@ export type DispatchTrip = {
   lng: number | null;
   speedKph: number | null;
   heading: number | null;
+  /** When the driver's phone last reported a position. */
+  lastSeenAt: string | null;
   waitingMinutes: number;
   overtimeMinutes: number;
   route: string | null;
   passengers: DispatchPassenger[];
 };
+
+/** How long ago the driver's phone last reported a position, in minutes. */
+function staleMinutes(lastSeenAt: string): number {
+  const seen = new Date(lastSeenAt).getTime();
+  if (!Number.isFinite(seen)) return 0;
+  return Math.max(0, Math.round((Date.now() - seen) / 60000));
+}
+
+/** The same age, in words the dispatcher reads at a glance. */
+function lastSeen(lastSeenAt: string): string {
+  const minutes = staleMinutes(lastSeenAt);
+  if (minutes < 1) return "seen just now";
+  if (minutes === 1) return "seen 1 minute ago";
+  if (minutes < 60) return `seen ${minutes} minutes ago`;
+  const hours = Math.round(minutes / 60);
+  return hours === 1 ? "seen 1 hour ago" : `seen ${hours} hours ago`;
+}
 
 export type DispatchAlert = {
   id: number;
@@ -356,6 +375,14 @@ export function CommandCentre({
                     icon={Gauge}
                     label="Speed"
                     value={`${Math.round(selected.speedKph)} km/h`}
+                  />
+                ) : null}
+                {selected.lastSeenAt ? (
+                  <Fact
+                    icon={Radio}
+                    label="Position"
+                    value={lastSeen(selected.lastSeenAt)}
+                    tone={staleMinutes(selected.lastSeenAt) > 5 ? "caution" : undefined}
                   />
                 ) : null}
                 {selected.waitingMinutes > 0 || selected.overtimeMinutes > 0 ? (

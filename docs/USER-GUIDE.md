@@ -180,8 +180,10 @@ is large-target, single-column and works offline.
 
 - **Current duty** — today's trip, with **Start journey**, **Report delay** and **Complete
   journey**.
-- **Share position** — queued in the device when offline and replayed when the connection returns.
-  This is what puts you on the dispatcher's map.
+- **Share position** — the phone shares your position on its own while the trip is running. Fixes are
+  queued in the device when there is no signal and replayed when the connection returns, so nothing is
+  lost and nothing is recorded twice. This is what puts you on the dispatcher's map. The panel also
+  shows when the office last heard from you.
 - **Boarding** — verify a passenger's boarding code and mark them aboard.
 - **My availability**, **My schedule**, **Earnings summary**.
 

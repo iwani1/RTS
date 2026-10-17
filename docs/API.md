@@ -52,8 +52,7 @@ success, `/reset-password?error=…&token=…` on failure (the token is preserve
 so the user does not have to paste it again).
 
 ### `GET /api/dispatch/live`
-**RBAC:** `dispatch` or `dashboard` sections (super admin, ops manager, dispatcher, fleet manager, finance officer,
-corporate admin — the last one is scoped to its own client).
+**RBAC:** `dispatch` or `dashboard` sections (super admin, ops manager, dispatcher, fleet manager, finance officer).
 
 Returns the latest known position for every active duty plus a compact trip feed. No-store cached; the dispatch map
 polls it every 15 seconds.
@@ -105,8 +104,12 @@ Duplicate prevention: `clientRef` is embedded in the `gps_events.source` column 
 `(booking_id, trip_id)` short-circuits a replay. Conflict handling: a boarding whose OTP no longer matches is rejected
 with `ok: false`, and positions for a trip that is no longer assigned to the driver are refused.
 
+The driver app posts to this endpoint on its own: the phone watches the location service while the trip is
+running, queues every fix in browser storage, and replays the queue when the connection returns. The dispatcher
+sees the result on the live map, with the age of the last fix in the inspector.
+
 ### `GET /api/reports/export?type=operating|trips|bookings|payroll&from=YYYY-MM-DD&to=YYYY-MM-DD&company=ID`
-**RBAC:** `reports` or `finance` sections; corporate admins are automatically scoped to their own client.
+**RBAC:** `reports` or `finance` sections.
 Returns `text/csv` with a `content-disposition` attachment header.
 
 * `operating` — per day / per client: trips, completed, passengers, capacity, planned km, seat fill %
@@ -115,7 +118,7 @@ Returns `text/csv` with a `content-disposition` attachment header.
 * `payroll` — one row per driver earnings entry (finance role only)
 
 ### `GET /api/reports/pdf?type=trips|manifest|invoice&from=YYYY-MM-DD&to=YYYY-MM-DD&company=ID&tripId=ID&id=ID`
-**RBAC:** `reports` or `finance`; an invoice also requires `finance`. Corporate admins are scoped to their own client.
+**RBAC:** `reports` or `finance`; an invoice also requires `finance`.
 Returns `application/pdf` with a `content-disposition` attachment header.
 
 The document is written server side by `src/lib/pdf.ts` — a small PDF writer with no dependencies — so the
