@@ -616,13 +616,29 @@ application had no test at all.
 re-exports them so no call site changed. `tests/security.test.ts` pins down the rules: six
 checks, including the proxy case where the host header has been rewritten.
 
-### 7.14 The migration
+### 7.14 The origin list was frozen when the application was built — **low**
+
+Found while testing the pushed commit on a second machine. Next's Server Action CSRF guard
+compares the browser's `Origin` with the host the request arrived on and consults a list of
+allowed origins that is written into the **build**. An application started on a port other than
+the one it was built for would therefore refuse its own mutations the moment a proxy rewrites
+the `Host` header: the browser says `localhost:3200` and the list only knows `localhost:3000`.
+
+**Fixed.** `scripts/start.mjs` now adds the port the server is actually running on — and the
+origins listed in `SERVER_ACTION_ALLOWED_ORIGINS` — to the list, in the build manifest and in the
+server bundle, before the server starts. Nothing else is added: an unknown origin is still
+refused.
+
+**Proved.** `scripts/origin-check.mjs` now passes **5/5** on a non-default port, including the
+case where the origin is rewritten by a proxy. Before the fix, that case was refused.
+
+### 7.15 The migration
 
 `drizzle/0008_delivery_attempts.sql` adds `delivery_attempts` and `updated_at` to
 `notifications`. `npx drizzle-kit check` reports **Everything's fine**; the application applies it
 at boot, on both PGlite and PostgreSQL.
 
-### 7.15 Checked in this round and found sound
+### 7.16 Checked in this round and found sound
 
 | Check | Result |
 | --- | --- |
@@ -635,7 +651,7 @@ at boot, on both PGlite and PostgreSQL.
 | Session cookie | `httpOnly`, `sameSite=lax`, `secure` only over https |
 | The tenant boundary | every query is scoped by `companyScope()`; no cross-tenant read was found |
 
-### 7.16 What the full pass verifies now
+### 7.17 What the full pass verifies now
 
 | Command | Result |
 | --- | --- |
@@ -646,11 +662,12 @@ at boot, on both PGlite and PostgreSQL.
 | `npm run demo:check` | **55/55** |
 | `npm run test:payment-audit` | **27/27** (new) |
 | `npm run test:delivery` | **16/16** |
+| `npm run test:origin` | **5/5** (the origin guard, on a non-default port) |
 | `npm run roles:check` | ROLE MATRIX PASSED |
 | `npx drizzle-kit check` | Everything's fine |
 | `npm run build` | compiled, no warnings |
 
-### 7.17 Still open
+### 7.18 Still open
 
 The items in §6.7 are unchanged — they are deliberate boundaries rather than defects, and each one
 names what it would take to close it. Nothing new was added to that list by this pass.

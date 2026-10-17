@@ -22,7 +22,7 @@
  */
 import { spawn, execFileSync } from "node:child_process";
 import net from "node:net";
-import { readFileSync, readlinkSync } from "node:fs";
+import { readFileSync, readlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -51,6 +51,81 @@ function resolvePort() {
 
 const bindHost = resolveBindHost();
 const port = resolvePort();
+
+/**
+ * Tell the Server Action CSRF guard which origin the browser is using.
+ *
+ * Next compares the browser's `Origin` with the host the request arrived on
+ * and refuses the action when they differ, unless the origin is on the
+ * allowed list. That list is written into the build, so an application
+ * started on a port other than the one it was built for would refuse its
+ * own mutations the moment a proxy rewrites the `Host` header — the browser
+ * says `localhost:3200` and the list only knows `localhost:3000`.
+ *
+ * The port the server is actually running on is added here, at start-up, so
+ * the guard always knows the origin the browser is really using. Nothing
+ * else is added: an unknown origin is still refused.
+ */
+function allowThePortWeRunOn() {
+  const file = path.join(
+    root,
+    ".next",
+    "standalone",
+    ".next",
+    "required-server-files.json",
+  );
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(file, "utf8"));
+  } catch {
+    return;
+  }
+
+  const serverActions = manifest?.config?.experimental?.serverActions;
+  if (!serverActions || !Array.isArray(serverActions.allowedOrigins)) return;
+
+  // The list as the build wrote it, without the entries a previous run of
+  // this script added for its own port.
+  const base = serverActions.allowedOrigins.filter(
+    (value) => !value.endsWith(`:${port}`),
+  );
+
+  const additions = [`localhost:${port}`, `127.0.0.1:${port}`];
+  for (const entry of (process.env.SERVER_ACTION_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => value.replace(/^https?:\/\//, "").replace(/\/.*$/, ""))) {
+    additions.push(entry, `${entry}:${port}`);
+  }
+
+  const desired = [...new Set([...base, ...additions])];
+
+  try {
+    serverActions.allowedOrigins = desired;
+    writeFileSync(file, JSON.stringify(manifest));
+  } catch {
+    // The list stays as it was; the guard is stricter, not looser.
+  }
+
+  // The same list is written into the server bundle, and that is the copy the
+  // running server reads.
+  const bundle = path.join(root, ".next", "standalone", "server.js");
+  try {
+    const source = readFileSync(bundle, "utf8");
+    const patched = source.replace(
+      /("allowedOrigins":)\[[^\]]*\]/g,
+      `$1${JSON.stringify(desired)}`,
+    );
+    if (patched !== source) writeFileSync(bundle, patched);
+  } catch {
+    // The bundle could not be rewritten; the guard is stricter, not looser.
+  }
+
+  console.log(
+    `[rts] the Server Action origin list now accepts ${additions.join(", ")}`,
+  );
+}
 
 if (process.env.HOSTNAME && process.env.HOSTNAME !== bindHost) {
   console.log(
@@ -138,6 +213,8 @@ function reportPortInUse() {
   console.error(`    PORT=${port + 1} npm start    # or run on a different port`);
   console.error("");
 }
+
+allowThePortWeRunOn();
 
 if (!(await portIsFree())) {
   reportPortInUse();
