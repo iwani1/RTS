@@ -433,7 +433,9 @@ The build now completes with no warnings at all.
 | --- | --- |
 | `braces` / `fast-glob` / `micromatch` | Build-time only, no upstream fix. Pinned to the patched releases. |
 | `esbuild` via `drizzle-kit` | Build-time only. The migration tool does not run a server. |
-| The map renderer | A stylised vector lattice, not a survey basemap. `NEXT_PUBLIC_MAP_PROVIDER` swaps in Mapbox or Google. |
+| The map renderer | Without `NEXT_PUBLIC_MAPBOX_TOKEN` the map draws the built-in corridor, not a survey basemap. With a token it draws a real Mapbox basemap and the markers sit where the vehicles are. |
+| Push delivery | Not implemented. There is no push sender behind the app, so a push request stays in the app and is marked in-app only. |
+| Live identity provider | The OIDC client is real and is proved end to end by `npm run test:sso`; no issuer is configured in this deployment, so the button is hidden. |
 | Telematics integration | Positions come from the driver app or manual entry. No tracker-vendor API. |
 | Multi-instance job execution | The runner is a single-process timer. Move the job names to a dedicated worker — a configuration change, not a rewrite. |
 

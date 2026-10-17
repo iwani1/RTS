@@ -29,6 +29,7 @@ import {
 } from "@/app/actions/admin";
 import { changeOwnPasswordAction } from "@/app/actions/auth";
 import { markNotificationsReadAction } from "@/app/actions/ops";
+import { sendTestMessageAction } from "@/app/actions/providers";
 import { requireUser } from "@/lib/auth";
 import { providerStatus } from "@/lib/providers";
 import { ROLE_LABELS, can, type Role } from "@/lib/rbac";
@@ -334,27 +335,64 @@ export default async function SettingsPage() {
               provisioned with two-factor authentication enabled.
             </p>
           </Panel>
-        ) : (
+        ) : null}
+
+        {canManageUsers ? (
           <Panel
-            title="Platform configuration"
-            eyebrow="Environment"
-            subtitle="What is actually connected, read from the running configuration"
+            title="Gateway check"
+            eyebrow="Providers"
+            subtitle="Send one message through the live provider and see what it says"
           >
-            <DefinitionList
-              items={[
-                { label: "Currency", value: "GHS (Ghana Cedi)" },
-                { label: "Timezone", value: "Africa/Accra (GMT)" },
-                { label: "Mapping", value: providers.map.detail },
-                { label: "SMS", value: providers.sms.detail },
-                { label: "Email", value: providers.email.detail },
-                { label: "Single sign-on", value: providers.sso.detail },
-                { label: "Payments", value: providers.payments.detail },
-                { label: "Session lifetime", value: "7 days" },
-                { label: "GPS retention", value: "90 days" },
-              ]}
-            />
+            <ActionForm
+              action={sendTestMessageAction}
+              submitLabel="Send a test message"
+              resetOnSuccess
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field
+                  label="Channel"
+                  name="channel"
+                  options={[
+                    { value: "sms", label: "SMS (Hubtel)" },
+                    { value: "email", label: "E-mail (SMTP)" },
+                  ]}
+                />
+                <Field
+                  label="Send to"
+                  name="to"
+                  type="text"
+                  hint="Leave empty to send it to yourself."
+                />
+              </div>
+              <div className="mt-3">
+                <Field label="Message" name="body" type="textarea" rows={2} />
+              </div>
+            </ActionForm>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
+              {providers.sms.detail} {providers.email.detail}
+            </p>
           </Panel>
-        )}
+        ) : null}
+
+        <Panel
+          title="Platform configuration"
+          eyebrow="Environment"
+          subtitle="What is actually connected, read from the running configuration"
+        >
+          <DefinitionList
+            items={[
+              { label: "Currency", value: "GHS (Ghana Cedi)" },
+              { label: "Timezone", value: "Africa/Accra (GMT)" },
+              { label: "Mapping", value: providers.map.detail },
+              { label: "SMS", value: providers.sms.detail },
+              { label: "Email", value: providers.email.detail },
+              { label: "Single sign-on", value: providers.sso.detail },
+              { label: "Payments", value: providers.payments.detail },
+              { label: "Session lifetime", value: "7 days" },
+              { label: "GPS retention", value: "90 days" },
+            ]}
+          />
+        </Panel>
       </div>
     </div>
   );

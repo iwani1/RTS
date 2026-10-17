@@ -160,15 +160,28 @@ Phone OTP sign-in. `POST /api/auth/otp` takes a phone number and issues a six-di
 hashed with scrypt with an expiry and an attempt counter, never in clear. `POST /api/auth/otp/verify` takes the
 phone number and the code, and creates the session on success.
 
-**Demo mode:** with no `SMS_PROVIDER_API_KEY` configured the message is not sent — the code is written to the
-server log and the delivery is recorded as `simulated`. The screen says so.
+**Delivery:** with `SMS_PROVIDER_CLIENT_ID`, `SMS_PROVIDER_CLIENT_SECRET` and `SMS_PROVIDER_SENDER_ID` set,
+the code is sent through Hubtel and the screen says it was sent. With no provider the code is not sent anywhere:
+the screen shows it on the page and says why it could not be sent.
 
 ### `GET /api/auth/oidc` and `GET /api/auth/oidc/callback`
 OIDC authorization-code flow with PKCE against a configured issuer. The redirect URI, the state parameter and
 the code verifier are all checked on the way back.
 
-**Demo mode:** with no `OIDC_ISSUER` configured the SSO buttons are hidden and the flow is unavailable. The
-client code is real; there is simply no issuer to talk to.
+**Delivery:** the flow is a real authorization-code exchange with PKCE — the redirect URI, the state and the code
+verifier are all checked on the way back. With no `OIDC_ISSUER` configured the SSO button is hidden and the
+sign-in page says which values would enable it. `npm run test:sso` drives the whole flow against a stand-in
+identity provider that runs on the machine and checks the PKCE challenge, the state and the session.
+
+### `GET /api/payments/{provider}/callback` and `POST /api/payments/{provider}/webhook`
+Where a payer lands after paying, and the provider's own confirmation. The callback reads the reference from the
+query string and asks the provider whether the money was received; the webhook is accepted only when its
+`x-paystack-signature` header matches the HMAC-SHA512 of the body under the secret key, and the transaction is
+then verified with the provider as well. Money is only written into the ledger after the provider confirms it,
+and settling the same reference twice changes nothing.
+
+**Delivery:** without `PAYSTACK_SECRET_KEY` (or `FLUTTERWAVE_SECRET_KEY`) no link can be created and the
+finance screen says that invoices are settled by bank transfer instead.
 
 ## Server actions
 
@@ -190,6 +203,7 @@ They are invoked by the `<ActionForm>` / `<InlineActionForm>` client components 
 | `admin.createStopAction` / `createRouteAction` / `toggleRouteAction` | `route.manage` | corridors and stop sequences |
 | `admin.inviteUserAction` / `updateUserStatusAction` | `user.manage` | user administration |
 | `admin.generateInvoiceAction` / `recordPaymentAction` / `approveEarningsAction` | `finance.manage` | billing & payroll |
+| `finance.requestPaymentLinkAction` | `finance.manage` | creates a real payment link for an invoice with the payment provider |
 | `ops.planTripsAction` | `trip.dispatch` | clustering + routing + vehicle/driver allocation |
 | `ops.createTripAction` | `trip.manage` | manual / emergency duty |
 | `ops.assignResourcesAction` | `trip.dispatch` | assign or reassign vehicle & driver (capacity guarded) |

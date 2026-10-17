@@ -21,7 +21,7 @@ the route smoke test; every `◐` and `○` item names what is missing.
 | 6 | Driver management & app | ● | Duty list, trip sheet, manifest, OTP boarding verification, no-shows, offline queue replay, SOS/breakdown reporting, availability |
 | 7 | Passenger app | ○ | Retired for now — self-service booking, live trip tracking, the corridor view, boarding code and feedback. The data stays; the screens and logins are switched off |
 | 8 | Dispatch | ● | Three-pane Command Centre: trip board, live corridor map, inspector with signed ETD deviation, event tape, alerts rail, reassignment, breakdown recovery |
-| 9 | GPS tracking | ● | Position capture from the driver app and dispatcher, speed + heading, live map, geofenced arrival detection, 90-day retention model, offline queue. ◐ *Basemap requires a provider key* |
+| 9 | GPS tracking | ● | Position capture from the driver app and dispatcher, speed + heading, live map, geofenced arrival detection, 90-day retention model, offline queue. ◐ *The basemap needs a Mapbox token; without one the map draws the built-in corridor* |
 | 10 | Billing, invoicing & payroll | ● | Per-passenger / per-trip / per-km / fixed pricing, waiting and overtime surcharges from the contract, VAT, invoices, payments, driver earnings, payroll CSV export, scheduled monthly invoicing, multicurrency |
 | 11 | Safety & compliance | ● | Incidents (breakdown, accident, SOS, delay, no-show, safety, complaint), severity, action taken, document expiry reminders, safety inspections with generated recurrence, fuel log screen |
 | 12 | Reporting & BI | ● | KPIs, trips/day, revenue by client, driver performance, route efficiency, incident frequency, service quality, server-generated CSV export, and server-rendered PDF export (trip register, passenger manifest, invoice) |
@@ -68,7 +68,7 @@ the route smoke test; every `◐` and `○` item names what is missing.
 | Secure REST APIs | ● | 20 routes, all authenticated except health, the public auth endpoints, logout and the QA-only session route |
 | Background jobs | ● | Eight registered jobs, a single-process timer, a `job_runs` history table and a "Run now" control on `/operations` |
 | Realtime | ◐ | The dispatch board polls `/api/dispatch/live`; the SSE upgrade path is documented but not implemented |
-| Configurable maps | ● | Map provider and token are environment variables; the app degrades to the labelled vector map |
+| Configurable maps | ● | Map provider and token are environment variables. With a token the live map draws a real Mapbox basemap and the markers sit where the vehicles are; without one it degrades to the labelled built-in corridor |
 | Capacity-aware routing heuristics | ● | `planRoute` in `src/lib/domain.ts`, unit tested |
 | Installable PWA (passenger + driver) | ● | Manifest, four icon sizes, service worker, offline shell |
 | Container-ready | ● | Multi-stage `Dockerfile`, `.dockerignore` |
@@ -129,7 +129,7 @@ against a running server.
 | 2 | Scheduled job runner | ● | `src/lib/jobs.ts` + `src/lib/scheduled-jobs.ts` — eight registered jobs, a single-process timer, a `job_runs` history table, and a "Run now" control on `/operations` |
 | 3 | Recurring booking expansion | ● | The `expand-recurring-bookings` job materialises the next 14 days of daily instances from the stored rule, skipping dates that already exist |
 | 4 | Waitlist auto-promotion | ● | The `promote-waitlist` job moves the first waitlisted passenger into a free seat and notifies them |
-| 5 | Notification fan-out | ● | `src/lib/notify.ts` writes one notification per recipient, records the delivery channel and status, and marks the delivery `simulated` when no SMS/e-mail/push provider is configured |
+| 5 | Notification fan-out | ● | `src/lib/notify.ts` writes one notification per recipient and records the delivery channel and status. `src/lib/delivery.ts` claims the queued rows and sends them through Hubtel (SMS) or SMTP (e-mail), writing back `sent` with the provider's message id, or `failed` with the reason. With no provider the delivery is `in_app_only` |
 | 6 | TOTP two-factor | ● | `src/lib/totp.ts` — RFC 6238 codes over a shared secret, with a one-period drift window; enrolment and removal are self-service on `/settings` |
 | 7 | Passenger live tracking of other passengers | ● | `/passenger/corridor` — a passenger sees the whole corridor, the occupancy of the vehicle they are in, and can create or revoke a share code for the other passengers on the same trip |
 | 8 | Geofenced arrival detection | ● | The `detect-geofence-arrivals` job compares the last GPS fix with the stop coordinates and records the arrival and the boarding |
@@ -141,7 +141,7 @@ against a running server.
 | 14 | Phone OTP sign-in | ● | `/otp` — the code is generated, hashed with scrypt, stored with an expiry and an attempt counter, and verified against the hash |
 | 15 | Fuel log entry screen | ● | `/compliance` — records litres, cost, odometer and station, and derives the cost per litre and the range from the vehicle's fuel economy |
 | 16 | OR-Tools VRP service | ◐ | `/optimise` runs a real solver — Clarke-Wright savings with a 2-opt pass — over live staff locations, the client campus and the available fleet. **It is not OR-Tools.** The screen says so, names OR-Tools as the upgrade path, and the solver sits behind one function so the swap is a replacement, not a rewrite |
-| 17 | SSO / SAML / OIDC | ◐ | `/api/auth/oidc` performs a real authorization-code exchange with PKCE against a configured issuer. **No identity provider is configured here**, so the SSO buttons are hidden and the flow is in demo mode until `OIDC_ISSUER` is set |
+| 17 | SSO / SAML / OIDC | ◐ | `/api/auth/oidc` performs a real authorization-code exchange with PKCE against a configured issuer, and `npm run test:sso` drives the whole flow — challenge, state, token exchange, session — against a stand-in provider. **No identity provider is configured here**, so the SSO button is hidden until `OIDC_ISSUER` is set |
 | 18 | Multicurrency | ● | `src/lib/currency.ts` + `/currencies` — an `exchange_rates` table with a base currency, inline rate updates with a date stamp, and client agreements billed in their own currency. Rates are indicative, and the screen says so |
 | 19 | Observability stack | ● | `src/proxy.ts` + `src/lib/observability.ts` — one structured JSON log line per request, request counters and latency percentiles, and a Prometheus text endpoint at `/api/metrics` that is session-guarded unless `METRICS_PUBLIC=true` |
 | 20 | Automated backups | ● | The `backup-database` job takes an archive on a schedule — `pg_dump` against a real server, a directory archive under PGlite — and prunes to the configured retention |
@@ -156,8 +156,10 @@ Legend: ● implemented · ◐ implemented with a stated, honest limitation ·
 | Item | Why | What it needs |
 | --- | --- | --- |
 | OR-Tools as the VRP solver | The shipped heuristic is a real solver but not an optimal one | Swap the body of `solveVrp` in `src/lib/vrp.ts`; the request and result types are already the boundary |
-| A real identity provider | The OIDC client is real; there is no issuer to talk to | Set `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` |
-| Real SMS, e-mail and push delivery | The messages are composed and recorded, the delivery is marked `simulated` | Provider credentials; the send path already branches on them |
+| A real identity provider | The OIDC client is real and is proven end to end by `npm run test:sso`; there is no issuer to talk to | Set `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` |
+| Real SMS and e-mail delivery | Hubtel and SMTP clients are real and tested against local servers; without credentials the message stays in the app | `SMS_PROVIDER_CLIENT_ID` / `SMS_PROVIDER_CLIENT_SECRET` / `SMS_PROVIDER_SENDER_ID`, and `EMAIL_SMTP_HOST` and friends |
+| Real push delivery | Not implemented in this build; a push request is recorded as in-app only | A push sender, a subscription store and a service-worker subscription flow |
+| Real online collection | The Paystack and Flutterwave clients are real, and the callback and signed webhook are in place; without a key invoices are settled by hand | `PAYSTACK_SECRET_KEY` or `FLUTTERWAVE_SECRET_KEY` |
 | Live market exchange rates | The rate table is seeded with a dated snapshot | A rate feed, and a scheduled job to refresh it |
 | A real telematics feed | GPS events arrive through the driver endpoint; there is no vendor poller | A vendor integration writing into `gps_events` |
 | Multi-instance job execution | The runner is a single-process timer, which is the right shape for one container plus managed PostgreSQL | Move the same job names to a dedicated worker; `runJob` is idempotent, so this is a configuration change |
@@ -171,7 +173,7 @@ Legend: ● implemented · ◐ implemented with a stated, honest limitation ·
 | 1 — Functional MVP | ● Delivered |
 | 2 — Live operations | ● Delivered — the job runner, live tracking, geofence detection, notification fan-out and TOTP are all live |
 | 3 — Finance & optimisation | ● Delivered — scheduled invoicing, multicurrency, PDF export and the VRP solver are live |
-| 4 — Enterprise scaling | ◐ Delivered in part — SSO/OIDC, the observability stack and automated backups are in; a real identity provider, real message delivery, OR-Tools, a dedicated job worker and native mobile apps remain |
+| 4 — Enterprise scaling | ◐ Delivered in part — SSO/OIDC, real message delivery, online collection, the observability stack and automated backups are in; a live identity provider, push delivery, OR-Tools, a dedicated job worker and native mobile apps remain |
 
 ### Verification at the time of writing
 

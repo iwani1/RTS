@@ -89,6 +89,29 @@ docker run -p 3000:3000 \
   migration from a build step.
 * `SEED_ON_BOOT=false` keeps the demonstration dataset out of a production database.
 
+### Turning the providers on
+
+Each provider is switched on by configuration alone; no code changes are needed. The settings screen
+reads the running configuration and says what is connected, so an operator can see the effect of a
+change without reading a log.
+
+| Provider | Switch on with | What changes |
+| --- | --- | --- |
+| SMS (Hubtel) | `SMS_PROVIDER_CLIENT_ID`, `SMS_PROVIDER_CLIENT_SECRET`, `SMS_PROVIDER_SENDER_ID` | Sign-in codes and trip reminders are sent through Hubtel. The delivery column records the message id Hubtel returned. |
+| E-mail (SMTP) | `EMAIL_PROVIDER=smtp`, `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_SMTP_USER`, `EMAIL_SMTP_PASSWORD`, `EMAIL_FROM` | Notifications, invoices and password resets are delivered by the company's own mail server. STARTTLS is used unless `EMAIL_SMTP_SECURE=true`. |
+| Map (Mapbox) | `NEXT_PUBLIC_MAP_PROVIDER=mapbox`, `NEXT_PUBLIC_MAPBOX_TOKEN` | The live map draws a real basemap and the markers sit where the vehicles are. `NEXT_PUBLIC_*` values are compiled in, so rebuild after changing them. |
+| Single sign-on (OIDC) | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | The sign-in page offers the identity provider. The flow is authorization code with PKCE; `npm run test:sso` proves it end to end. |
+| Payments (Paystack or Flutterwave) | `PAYSTACK_SECRET_KEY` (or `FLUTTERWAVE_SECRET_KEY`) | The finance screen creates a real payment link for an invoice. The money is only recorded after the provider confirms the transaction, by callback or by signed webhook. |
+
+Two rules keep the interface honest:
+
+* **A key that is not a working provider does not count.** The application asks the provider layer
+  whether a channel is live, not whether an environment variable is present. A message that could not
+  be sent is recorded as `in_app_only` or `failed` with the reason — never as sent.
+* **Nothing is marked as paid before the provider says so.** A browser redirect is not proof; the
+  application verifies the transaction with the provider, and the webhook signature is checked before
+  the body is read.
+
 ### Without a container
 
 ```bash
@@ -277,10 +300,12 @@ These are the honest edges of the build. Each one names what is real and what is
   optimal. The screen says this and names OR-Tools as the upgrade path. Swapping the solver means replacing
   one function in `src/lib/vrp.ts`.
 * **There is no identity provider configured.** The OIDC client performs a real authorization-code exchange
-  with PKCE, but without `OIDC_ISSUER` there is nothing to talk to, so the SSO buttons are hidden.
-* **Messages are composed but not delivered.** SMS, e-mail and push notifications are written to the
-  notification table with a delivery status of `simulated` and a copy in the server log until provider
-  credentials are configured.
+  with PKCE, and `npm run test:sso` drives the whole flow against a stand-in provider, but without
+  `OIDC_ISSUER` there is nothing to talk to, so the SSO button is hidden.
+* **Messages leave the building only when a provider is configured.** SMS (Hubtel) and e-mail (SMTP) are real
+  clients with real credentials: a queued message is claimed, sent, and written back as `sent` with the
+  provider's message id, or as `failed` with the reason. With no provider the message stays in the app and
+  the row says `in_app_only`. Push is not implemented in this build, so a push request is also in-app only.
 * **Exchange rates are indicative.** The rate table is seeded with a dated snapshot. A production deployment
   should pull live rates and record the rate actually used on an invoice, so a historical invoice never
   re-prices.
@@ -288,7 +313,9 @@ These are the honest edges of the build. Each one names what is real and what is
   positions are in `gps_events`; a telematics integration is a separate piece of work.
 * **The job runner is a single-process timer.** That is the right shape for one application container plus
   managed PostgreSQL. Running more than one instance means moving the job names to a dedicated worker.
-* **Mapping, payment and push providers** are documented interfaces with demo behaviour until credentials are
-  configured, clearly labelled in the interface.
+* **The map, the payment links and the identity provider work without credentials, but do nothing useful.**
+  Without `NEXT_PUBLIC_MAPBOX_TOKEN` the live map keeps the built-in corridor; without a payment key the finance
+  screen settles invoices by hand; without an issuer the sign-in button is hidden. Each state is labelled in the
+  interface, and the settings screen lists what is actually connected.
 * **The audit trail is append-only** and grows without a purge; archive it before a long-running deployment
   needs the space back.

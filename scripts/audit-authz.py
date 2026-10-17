@@ -22,6 +22,7 @@ FILES = [
     "src/app/actions/auth.ts",
     "src/app/actions/platform.ts",
     "src/app/actions/finance.ts",
+    "src/app/actions/providers.ts",
 ]
 
 GUARDS = [

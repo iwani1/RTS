@@ -272,7 +272,7 @@ than simulated.
 | Fleet, documents, maintenance, fuel, inspections | ✅ Phase 1 | `/fleet` |
 | Driver management & mobile duty app | ✅ Phase 1/2 | `/drivers`, `/driver`, `/driver/trip/[id]` |
 | Dispatch Command Centre (board · map · inspector) | ✅ Phase 1/2 | `/dispatch` |
-| Live GPS tracking & map | ✅ Phase 2 (demo provider) | `/dispatch`, `/api/dispatch/live` |
+| Live GPS tracking & map | ✅ Phase 2 (Mapbox when a token is set) | `/dispatch`, `/api/dispatch/live` |
 | Boarding OTP verification, no-shows | ✅ Phase 2 | `/driver/trip/[id]` |
 | Incidents, SOS, breakdown workflow, safety documents | ✅ Phase 2 | `/incidents` |
 | Offline driver actions + sync | ✅ Phase 2 | `/api/driver/sync` |
@@ -282,14 +282,16 @@ than simulated.
 | Installable PWA (driver + passenger), offline shell | ✅ Phase 2 | `public/manifest.webmanifest`, `public/sw.js`, `/offline` |
 | Calendar scheduling view | ✅ Phase 3 | `/calendar` |
 | Scheduled job runner — recurring expansion, waitlist promotion, invoicing, inspections, geofence, purge, backup | ✅ Phase 3 | `src/lib/scheduled-jobs.ts`, `/operations` |
-| Notification fan-out, TOTP, phone OTP, OIDC/PKCE | ✅ Phase 3 | `src/lib/notify.ts`, `src/lib/totp.ts`, `src/lib/otp.ts`, `src/lib/sso.ts` |
+| Notification fan-out + delivery worker (Hubtel SMS, SMTP e-mail) | ✅ Phase 3 | `src/lib/notify.ts`, `src/lib/delivery.ts`, `src/lib/providers/` |
+| TOTP, phone OTP, OIDC/PKCE single sign-on | ✅ Phase 3 | `src/lib/totp.ts`, `src/lib/otp.ts`, `src/lib/sso.ts` |
+| Online collection of invoices (Paystack / Flutterwave, signed webhook) | ✅ Phase 3 | `src/lib/payments.ts`, `src/lib/providers/payments.ts`, `/api/payments/[provider]` |
 | Passenger corridor view, live tracking of the corridor, share codes | ✅ Phase 3 | `/passenger/corridor` |
 | Multicurrency, exchange rates, per-currency agreements | ✅ Phase 3 | `src/lib/currency.ts`, `/currencies` |
 | Route optimisation solver | ◐ heuristic, not OR-Tools | `/optimise`, `src/lib/vrp.ts` |
 | Observability stack — JSON logs, Prometheus metrics | ✅ Phase 3 | `src/proxy.ts`, `/api/metrics` |
 | Automated backups | ✅ Phase 3 | `src/lib/backup.ts`, `/operations` |
 | Pagination and saved views | ✅ Phase 3 | `src/components/ui/pagination.tsx`, `src/components/saved-views.tsx` |
-| Real identity provider, real SMS/e-mail/push delivery, native apps, queue workers | ⏳ Phase 4 | see `/docs` roadmap |
+| Live identity provider, push delivery, native apps, queue workers | ⏳ Phase 4 | see `/docs` roadmap |
 
 The full per-module ledger — implemented, partial and pending — is `docs/FEATURE-CHECKLIST.md`.
 

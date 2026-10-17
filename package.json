@@ -26,7 +26,9 @@
     "test:action": "node scripts/action-invoke.mjs",
     "test:demo": "node scripts/demo.mjs",
     "test:origin": "node scripts/origin-check.mjs",
-    "test:login": "node scripts/check-logins.mjs"
+    "test:login": "node scripts/check-logins.mjs",
+    "test:sso": "node scripts/oidc-check.mjs",
+    "test:delivery": "node scripts/delivery-check.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",

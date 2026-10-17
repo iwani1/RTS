@@ -361,7 +361,7 @@ SMTP_URL=...                                      # optional (email)`}</Code>
               <tr>
                 <td className="px-3 py-2.5 font-medium text-ink">Phase 2 — Live ops</td>
                 <td className="px-3 py-2.5">
-                  <StatusChip tone="ok" label="Delivered (demo providers)" />
+                  <StatusChip tone="ok" label="Delivered" />
                 </td>
                 <td className="px-3 py-2.5">
                   GPS feed + live map, dispatch polling, notifications, boarding OTP,
@@ -387,12 +387,14 @@ SMTP_URL=...                                      # optional (email)`}</Code>
                   <StatusChip tone="caution" label="Delivered in part" />
                 </td>
                 <td className="px-3 py-2.5">
-                  Delivered: OIDC/PKCE single sign-on, the observability stack
-                  (structured JSON logs, Prometheus metrics), automated backups,
-                  the scheduled job runner and the calendar scheduling view.
-                  Still open: a real identity provider, real SMS/e-mail/push
-                  delivery, OR-Tools as the VRP solver, a dedicated job worker
-                  and native mobile apps.
+                  Delivered: OIDC/PKCE single sign-on, real SMS and email
+                  delivery, online collection of invoices, the observability
+                  stack (structured JSON logs, Prometheus metrics), automated
+                  backups, the scheduled job runner and the calendar scheduling
+                  view.
+                  Still open: a live identity provider, push delivery, OR-Tools
+                  as the VRP solver, a dedicated job worker and native mobile
+                  apps.
                 </td>
               </tr>
             </tbody>
@@ -418,13 +420,16 @@ SMTP_URL=...                                      # optional (email)`}</Code>
           </li>
           <li>
             There is no identity provider configured. The OIDC client performs a
-            real authorization-code exchange with PKCE, but without an issuer
-            the SSO buttons stay hidden.
+            real authorization-code exchange with PKCE — proved end to end by the
+            sign-on check — but without an issuer the SSO button stays hidden.
           </li>
           <li>
-            SMS, email and push messages are composed and recorded with a
-            delivery status of <em>simulated</em> until provider credentials are
-            configured. Mapping and payment providers behave the same way.
+            SMS and email are delivered for real when a provider is configured:
+            Hubtel for text messages, SMTP for mail. A queued message is claimed,
+            sent, and written back as <em>sent</em> with the provider&apos;s
+            message id, or as <em>failed</em> with the reason. Without a provider
+            the message stays in the app and the row says <em>in-app only</em>.
+            Push is not implemented in this build.
           </li>
           <li>
             Exchange rates are a dated snapshot, not a live feed. A production
